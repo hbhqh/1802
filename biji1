@@ -1,0 +1,2123 @@
+# shell练习
+
+#### sed
+
+```shell
+选项：
+        -n：静默输出,关闭模式空间的输出,不会输出未匹配到的行 一般与p命令结合使用
+        -e：允许进行多项编辑,也就是说对同一行做多次处理、. 可以做多点编辑  
+                -e '动作1'  -e '动作2'   ==  '动作1;动作2'
+        -f： 后接sed脚本,指定执行的sed脚本(将模式动作写到文件中)
+        -r：允许使用扩展正则
+        -i：直接作用于原文件 
+            -i.bak:修改原文件之前进行备份
+            
+ 动作-----处理命令:   ! 非 : 放在命令前面表示取反
+    1. d    删除       delete               
+    2. p    打印       print
+    3. r     读取       read              
+    4. w    写          write
+    5. a     追加   在匹配的行下面插入内容            append   
+    6. i      插入   在匹配行的上一行插入内容         insert
+    7. c     修改    本行替换                                   change
+    8. y     转换的命令,一一对应转换
+    9. n     处理下一行                                          next
+    10. q    退出,不会再向模式空间读入新的行       quit
+    11. s    查找替换
+        '模式s/旧的内容(正则表达式)/替换内容(新的内容)/[修饰符]'
+            修饰符：
+                g：全局替换
+                n：n为数字,1-512    替换第n个匹配到的内容
+                p：打印      -n
+                w：把处理过的行写入到另一个文件
+
+练习1： head /etc/passwd > /tmp/pass
+    1. 删除每行的第一个字符
+   sed 's/.//' pass   
+    2. 在每行行首插入hello
+    sed 's/^/hello/' pass 
+    3. 删除每行的第二个字符
+      sed 's/.//2' pass 
+      删除第二个字符
+       sed -r 's/^(.)(.)/\1/' pass 
+      删除第四个字符
+    sed -r 's/^(...)(.)/\1/' pass 
+    4. 把每个数字用()括起来   如:(1)(2)
+     sed -r 's/([0-9])()/(\1)/g' pass 
+     sed -r 's/[0-9]/(\0)/g' pass 
+     sed -r 's/[0-9]/(&)/g' pass
+\0,&符引用模式里的内容
+\u& 大写字母
+\l& 小写字母
+  5. 把每个数值用()括起来   如:(12) 
+    sed -r 's/[0-9]+/(&)/g' pass 
+    
+    6. 删除每行的倒数第二个字符
+    sed -r 's/(.)(.)$/\2/' pass 
+    7. 交换每行的第一个和最后一个字符
+    sed -r 's/^(.)(.*)(.)$/\3\2\1/' pass 
+    sed -r 's/(.)(.*)(.)/\3\2\1/' pass 
+    8. 删除刚好三个字符的单词
+ 	sed -r 's/\<[a-zA-Z]{3}\>//g' pass
+    9. 把ro或da替换成A
+    sed -r 's/ro|da/A/g' pass
+ 1. 删除每行的第一个单词(纯字母)
+  sed -r 's/(\<[a-zA-Z]+\>)(.*)/\2/g' /etc/passwd
+ 2. 交换第一个和倒数第二个单词(纯字母)
+sed -r  's/(\<[a-zA-Z]+\>)(.*)(\<[a-zA-Z]+)([^a-zA-Z])([a-zA-Z]+)$/\3\2\1\4\5/' /etc/passwd
+ 3.将文件中所有小写字母替换成大写字母:
+    # sed  's/[a-z]/\u&/g'  /tmp/pass
+练习2
+1. 从以root开头的行,到以login结尾的行,将sbin替换为bin (/etc/passwd文件或其一部分)
+     sed -r -n '/^root/,/login/p' /etc/passwd
+    2. 将格式为2014/08/17的日期,替换为2014; 08; 17这样的格式(注意分号后面有空格)  
+    sed -r 's/([0-9]+)([^0-9])([0-9]+)([^0-9])([0-9]+)/\1; \3; \5/g' pass   
+  sed 's/\//; /g' pass
+    3. 将pass文件每行打印3次
+    sed 'p;p' pass
+    4. 打印pass文件的第1行和第3行
+    sed -n '1p;3p' pass
+    5. 删除pass文件的第一行和最后一行
+    sed '1d;$d' pass
+    6. 删除pass文件中所有的数字
+     sed -r 's/[0-9]+//g' pass
+    7. 将文件中所有的root单词(仅root,不操作rooter这样的单词)替换为ROOT
+     sed 's/\<root\>/ROOT/g' pass
+    8. 在文件的第一行插入information  
+      sed '1s/^/information/gp' pass
+     sed '1s/$/information/gp' pass
+    9. 将含有root的行的内容替换为ROOT
+    sed 's/\<root\>.*/ROOT/' pass
+    10. 将文件中所有的abc替换为大写字母
+    sed 's/[a-c]/\u&/g' pass
+    sed 'y/abc/ABC/' pass
+    11. 用sed分别实现head -1和tail -1的功能
+sed -n '1p' pass
+sed -n '$p' pass
+
+模式空间和保持空间
+置换命令
+    h：将模式空间的内容复制到保留空间 —— 覆盖模式
+    H：将模式空间的内容追加到保留空间 —— 追加模式
+    g：将保留空间的内容复制到模式空间 —— 覆盖模式
+    G：将保留空间的内容追加到模式空间 —— 追加模式    
+    x：将模式空间和保留空间中的内容进行交换
+1.在每行后面添加一个空行       
+         sed  '1,$G' pass
+除了最后一行： sed '$!G' pass       
+    2.将第一行换 到最后一行
+          sed  '1h;1d;$G' pass  
+          sed '1{h;d};$G' pass
+    3.交换第一行和第二行内容    
+            sed  '1h;1d;2G' pass
+    4.将第一行复制到每个偶数行下面    
+     sed  '1h;1d;2~2G' pass
+    5.交换第一行和第三行的内容       
+       sed  '1h;1d;2G;2h;2d;3G' pass
+    6.用sed实现tac 
+    sed '1!G;$!h;$!d' pass 
+```
+
+#### awk
+
+```shell
+统计apache日志中每个IP的访问次数，取出前五名（非常重要的一个命令）
+ awk '{ip[$1]++}END{for(i in ip){print ip[i],i}}'/etc/httpd/logs/access_log|sort -nr|head -5
+
+
+
+练习：
+            1. 在每行下面打印一个空行    
+             awk '{print $0"\n"}' /etc/passwd
+            2.  ifconfig和awk结合,取出IP地址
+            ifconfig |awk '/broadcast/{print $2}
+            3.df和awk结合取出根分区百分数值
+            df -h|awk -F " +|%" '/\/$/{print $5}'
+
+			1.有文件内容如下:
+			cat a.txt
+			tom 18
+			lily 17
+			jim 19
+			cat b.txt
+			tom male
+			jim male
+			lily female
+			使用awk 将这两个文件合并,输出效果如下:
+			tom 18 male
+[root@qh scripts]# awk 'NR==FNR{a[$1]=$2}NR>FNR{if($1 in a)print $0,a[$1]}' a.txt b.txt 
+tom male 18
+jim male 19
+lily female 17
+[root@qh scripts]# awk 'NR==FNR{a[$1]=$0}NR>FNR{if($1 in a)print a[$1],$2}' a.txt b.txt
+tom 18 male
+jim 19 male
+lily 17 female
+
+[root@qh scripts]# awk '{if(NR==FNR){array[$1]=$2}else{print $1,array[$1],$2}}' a.txt b.txt 
+tom 18 male
+jim 19 male
+lily 17 female
+
+			2.有两个文件内容如下:
+			cat ip-a
+			192.168.10.1
+			192.168.10.2
+			192.168.10.2
+			192.168.10.10
+			10.3.144.222
+			cat ip-b
+			10.3.144.123
+			10.3.144.123
+			10.3.144.2
+			10.3.144.222
+			192.168.10.1
+			打印出ip-a 文件中有,ip-b 文件中也有的IP 地址
+awk 'NR==FNR{a[$1]=$0}NR>FNR{if($1 in a)print $1}' ip-a ip-b
+	当NR==FNR为真时,判断当前读入的是第一个文件，然后使用{a[$1]=$0}循环将第一个文件的每行记录都存入数组a,并使用$1第2个字段cid作为下标引用.
+	由NR>FNR为假时,判断当前读入了第二个文件，然后判断第二个文件的第一个字段cid是否在数组a中，如果在的话执行{print $1}
+-
+```
+
+shell脚本
+
+```shell
+1.判断一个网段内主机是否存活
+1 #!/bin/bash
+  2 #
+  3 #seq命令用于产生从某个数到另外一个数之间的所有整数。
+  4 #
+  5 for ip in `seq 1 254` 
+  6   do
+  7    {
+  8   ping -c 1 192.168.127.$ip &>/dev/null
+  9     if [ $? -eq 0 ];then
+ 10      echo 1192.168.127.$ip UP
+ 11 #    else
+ 12 #     echo 192.168.127.$ip DOWN   ##如果要统计不存活，则把注释拿掉
+ 13    fi
+ 14 }&
+ 15 done
+ 16 wait 
+ 
+ 2.将192.168.127.0/24这个网段内所有存活的主机IP和MAC地址一一对应记录到/tmp/hosts/文件中。
+[root@qh scripts]# vim ip-mac.sh 
+
+  1 #!/bin/bash
+  2 #
+  3 #seq命令用于产生从某个数到另外一个数之间的所有整数。
+  4 #
+  5 for ip in `seq 1 255`
+  6   do
+  7    {
+  8   ping -c 1 192.168.127.$ip &>/dev/null
+  9     if [ $? -eq 0 ];then
+ 10     mac=$(arping -I ens33 -c1 192.168.127.$ip|awk '/reply/{print $5}'|sed -r 's/(.)(.*)(.)/\2/')
+ 11      echo "192.168.127.$ip 存活，MAC地址为 $mac" >>/tmp/host
+ 12 #    else
+ 13 #     echo 192.168.127.$ip DOWN   ##如果要统计不存活，则把注释拿掉
+ 14    fi
+ 15 }&   #将进程放到后台运行
+ 16 done
+ 17 wait
+ 如果MAC地址相同，则为同一主机
+ 
+
+```
+
+#### shell脚本
+
+```shell
+字符串颜色 字符串颜色
+    再介绍下字符串输出颜色，有时候关键地方需要醒目，颜色是最好的方式：
+字体颜色
+字体背景颜色
+显示方式
+30：黑;31：红;32：绿;33：黄;34：蓝色;35：紫色;36：深绿37：白色40：黑;41：深红;42：绿;43：黄色;44：蓝色;45：紫色;46：深绿
+47：白色;0：终端默认设置;1：高亮显示4：下划线;5：闪烁;
+7：反白显示;8：隐藏
+格式
+\033[1;31;40m # 1是显示方式，可选。31是字体颜色。40m是字体背景颜色。
+\033[0m # 恢复终端默认颜色，即取消颜色设置
+1 #!/bin/bash
+  2 #字体颜色
+  3 for i in {31..37};do
+  4     echo -e "\033[$i;40mHello world!\033[0m"
+  5 done
+  6 #背景颜色
+  7 for i in {41..47};do
+  8     echo -e "\033[47;${i}mHello world!\033[0m"
+  9 done
+ 10 #显示方式
+ 11 for i in {1..8};do
+ 12     echo -e "\033[$i;31;40mHello world!\033[0m"
+ 13 done
+2.定义一个颜色输出字符串函数
+(1)
+[root@qh script]# vim echo_color.sh
+  1 #!/bin/bash
+  2 echo_color() {
+  3 case $1 in
+  4 green|绿色)
+  5     echo -e "\033[32;40m$2\033[0m"
+  6 ;;
+  7 red|红色)
+  8     echo -e "\033[31;40m$2\033[0m"
+  9 ;;
+ 10 *)
+ 11     echo "请接颜色！"
+ 12 esac
+ 13 }
+ 14 read -p "请输入你想要的颜色！" q
+ 15 echo_color $q 好
+(2)
+[root@qh script]# vim echo_color.sh
+  1 #!/bin/bash
+  2 echo_color() {
+  3     if [ $1 == "green" ];then
+  4         echo -e "\033[32;40m$2\033[0m"
+  5     elif [ $1 == "red" ];then
+  6         echo -e "\033[31;40m$2\033[0m"
+  7     fi
+  8 }
+  9 echo_color red "请注意！"
+
+3.批量创建用户并备份到文件中
+  1 #!/bin/bash
+  2 DATE=$(date +%F_%T)
+  3 USER_FILE=user.txt
+  4 echo_color(){
+  5 if [ $1 == "green" ]; then
+  6     echo -e "\033[32;40m$2\033[0m" 
+  7 elif [ $1 == "red" ]; then
+  8     echo -e "\033[31;40m$2\033[0m" 
+  9 fi
+ 10  }
+ 11 echo -e "User\tPassword" >> $USER_FILE
+ 12 echo "$DATE"             >>$USER_FILE
+ 13 echo "-----------------" >> $USER_FILE
+ 14 for USER in user{1..5};do
+ 15     if id $USER &>/dev/null;then
+ 16         echo_color red "$USER User already exists!"
+ 17     else
+ 18         PASS=$(echo $RANDOM |md5sum|cut -c 1-8)
+ 19         useradd $USER
+ 20         echo $PASS |passwd --stdin $USER &>/dev/null
+ 21         echo -e "$USER\t$PASS" >>$USER_FILE
+ 22         echo_color green "$USER User create successful"
+ 23     fi  
+ 24 done
+ 
+ 4.检查软件包是否安装
+[root@qh script]# vim rpm.sh
+  1 #!/bin/bash
+  2 while :;do
+  3 read -p "请输入你要查询的服务(输入q退出)：" q
+  4 if rpm -q $q &>/dev/null;then
+  5     echo "sysstat is already installd."
+  6 else
+  7     echo "sysstat is not install"
+  8 fi
+  9 [ $q == "q" ]&&exit
+ 10 done
+
+5.查看网段内主机是否在线
+#!/bin/bash
+for ip in {1..254}；do
+   {
+  ping -c 1 10.3.144.$ip &>/dev/null
+    if [ $? -eq 0 ];then
+        mac=$(arping -I ens33 -c1 10.3.144.$ip|awk '/reply/{print $5}'|sed -r 's/(.)(.*)(.)/\2/')
+     echo 1192.168.127.$ip 在线，MAC地址为 $mac
+    else
+    echo 10.3.144.$ip DOWN   #
+   fi
+}&
+done
+wait
+
+
+```
+
+#### rsync监控文件
+
+```shell
+[root@yumlamp ~]# yum install expect -y
+[root@yumlamp rsync]# vim chuangongyao.sh
+#!/bin/bash
+#接参数$1为机器IP,$2为机器密码
+#=========================
+rm -rf /root/.ssh/{id_rsa,id_rsa.pub,known_hosts}
+/usr/bin/expect <<EOF
+set timeout 300
+spawn ssh-keygen
+expect "Enter file in which to save the key (/root/.ssh/id_rsa):"
+send "\n"
+expect "Enter passphrase (empty for no passphrase):"
+send "\n"
+expect "Enter same passphrase again:"
+send "\n"
+spawn  ssh-copy-id  $1
+expect {
+    "yes/no" { send "yes\n"; exp_continue }
+    "root@$1's password:" { send "$2\n"}
+}
+expect eof
+EOF
+
+[root@yumlamp rsync]# vim rsync.sh
+#!/bin/bash
+# 有变化就会自动同步，首先得传好公钥
+inotifywait -mrq --format '%T %e %w%f' --timefmt '%Y-%m-%d %H:%M:%S' -e create,modify,attrib,move,delete /rsync/|while read line;do
+ rsync -az --delete /rsync/ 192.168.127.10:/rsync/ &> /dev/null
+ #将变化的内容增量复制到192.168.127.10的/rsync/目录下
+done
+[root@yumlamp rsync]# chmod +x rsync.sh
+[root@yumlamp rsync]# nohup ./rsync.sh & #放后台运行
+
+```
+
+
+
+# 系统初始化
+
+```shell
+#!/bin/bash
+#get version
+RELEASEVER=$(rpm -q --whatprovides redhat-release|awk -F "-" '{print $3}')
+#set network
+el6or7=$(ip a|awk -F: '/BROADCAST/{print $2}'|tr -d " ")
+if [ $RELEASEVER == 6 ];then
+cat  > /etc/sysconfig/network-scripts/ifcfg-${el6or7}<<EOF
+TYPE="Ethernet"
+BOOTPROTO="none"
+DEVICE="${el6or7}"
+ONBOOT="yes"
+IPADDR=192.168.127.100
+DNS1=114.114.114.114
+GATEWAY=192.168.127.2
+EOF
+/etc/init.d/network restart && echo "成功重启网卡"
+fi
+if [ $RELEASEVER == 7 ];then
+cat > /etc/sysconfig/network-scripts/ifcfg-${el6or7} <<EOF
+TYPE="Ethernet"
+BOOTPROTO="none"
+DEVICE="${el6or7}"
+ONBOOT="yes"
+IPADDR=192.168.127.200
+DNS1=114.114.114.114
+GATEWAY=192.168.127.2
+EOF
+ifdown ${el6or7};ifup ${el6or7} && echo "成功重启 ${el6or7} 网卡"
+fi
+
+#config yum source
+cd /etc/yum.repos.d
+[ -d /etc/yum.repos.d/bak ] || mkdir /etc/yum.repos.d/bak
+mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bak
+if [ $RELEASEVER == 6 ];then
+	curl http://mirrors.aliyun.com/repo/Centos-6.repo   > qh.repo
+     curl http://mirrors.aliyun.com/repo/epel-6.repo  > epel.repo
+fi
+if [ $RELEASEVER === 7 ];then
+	curl http://mirrors.aliyun.com/repo/Centos-7.repo    >qh.repo
+    curl http://mirrors.aliyun.com/repo/epel-7.repo   > epel.repo
+    
+fi
+yum clean all 
+yum check-update
+
+#set hostname
+hostnameip=$(ifconfig |awk -F ":"  '/Bcast/{print $2}'|cut -d" " -f1)
+
+if [ $RELEASEVER == 6 ];then
+hostname ${hostnameip}.qh.com
+sed -i "s/HOSTNAME=.*/HOSTNAME=${hostanme}.qh.com/" /etc/sysconfig/network
+fi
+if [ $RELEASEVER == 7 ];then
+hostname ${hostnameip}.qh.com
+echo "${hostnameip}.qh.com" > /etc/hostname
+fi
+
+#install base rpm packge
+yum -y install nc vim iftop iotop dstat tcpdump
+yum -y install ipmitool bind-libs bind-utils
+yum -y install libselinux-python ntpdate
+
+#update rpm package include kernel
+yum -y update
+rm -rf /etc/yum.repos.d/CentOS*
+
+#update ulimit configure
+if [ $RELEASEVER == 6 ];then
+	test -f /etc/security/limits.d/90-nproc.conf && rm -rf /etc/security/limits.d/90-nproc.conf && touch /etc/security/limits.d/90-nproc.conf
+fi
+if [ $RELEASEVER == 7 ];then
+	test -f /etc/security/limits.d/20-nproc.conf && rm -rf /etc/security/limits.d/20-nproc.conf && touch /etc/security/limits.d/20-nproc.conf
+fi
+
+> /etc/security/limits.conf
+cat >> /etc/security/limits.conf <<EOF
+* soft nproc 65535
+* head nproc 65535
+* soft nofile 65535
+* head nofile 65535
+EOF
+
+#set timezone
+test -f /etc/localtime && rm -rf /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+#set LANG
+if [ $RELEASEVER == 6 ];then
+	sed -i 's/LANG=.*$/LANG="en_US.UTF-8"/g' /etc/sysconfig/i18n
+fi
+if [ $RELEASEVER == 7 ];then
+	sed -i 's/LANG=.*$/LANG="en_US.UTF-8"/g' /etc/locale.conf
+fi
+
+#update time
+if [ $RELESEVER == 6 ];then
+	/usr/sbin/ntpdate -b pool.ntp.org
+	grep -q ntpdate /var/spool/cron/root
+	if [ $? -ne 0 ];then
+	echo '* * * * * /usr/sbin/ntpdate pool.ntp.org > /dev/null 2>&1' > /var/spool/cron/root;chmod 600 /var/spool/cron/root
+	fi
+	/etc/init.d/crond restart
+fi
+
+if [ $RELEASEVER == 7 ];then
+	yum install chrony -y
+	> /etc/chrony.conf
+cat >> /etc/chrony.conf << EOF
+server pool.ntp.org.iburst
+stratumweight 0
+driftfile /var/lib/chrony/drift
+rtcsync
+makeestep 10 3
+bindcmdaddress 127.0.0.1
+bindcmdaddress ::1
+keyfile /etc/chrony.keys
+commandkey 1
+generatecommandkey
+noclientlog
+logchange 0.5
+logdir /var/log/chrony
+EOF
+
+	systemctl restart chronyd
+	systemctl enable chronyd
+fi
+
+#clean iptables default rules
+if [ $RELEASEVER == 6 ];then
+	/sbin/iptables -F
+	service iptables save
+	chkconfig iptables off
+fi
+
+if [ $RELEASEVER == 7 ];then
+	systemctl disable firewalld
+fi
+
+#disable unused service
+chkconfig auditd off
+
+#disable ipv6
+cd /etc/modprobe.d/ && touch ipv6.conf
+> /etc/modprobe/ipv6.conf
+cat >> /etc/modprobe/ipv6.conf <<EOF
+alias net-pf-10 off
+alias ipv6 off
+EOF
+
+#disble iptable nat moudule
+cd /etc/modprode.d && touch connectiontracking.conf
+> /etc/modprode.d/connectiontraching.conf
+cat >> /etc/modprode.d/connectiontracking.conf <<EOF
+install nf_nat /bin/true
+install xt_state /bin/true
+install iptable_nat /bin/true
+install nf_conntrack /bin/true
+install nf_defrag_ipv4 /bin/true
+install nf_conntrack_ipv4 /bin/true
+install nf_conntrack_ipv6 /bin/true
+EOF
+
+#disable SELINUX
+setenforce 0
+sed -i 's/^SELINUX=.*/SELINUX=disable/' /etc/selinux/config
+
+#update record command
+sed -i 's/^HISTSIZE=.*/HISTSIZE=100000/' /etc/profile
+
+#install dsnmasq and update configure
+yum -y install dnsmasq
+> /etc/dnsmasq.conf
+cat >> /etc/dnsmasq.conf <<EOF
+listen-address=127.0.0.1
+no-dhcp-interface=lo
+log-queries
+log-facility=/var/log/dnsmasq.log
+all-servers
+no-negcache
+cache-size=1024
+dns-forward-max=512
+EOF
+
+if [ $RELEASEVER == 6 ];then
+	/etc/init.d/dnsmasq restart
+fi
+if [ $RELEASEVER == 7 ];then
+	systemctl restart dnsmasq
+	systemctl enable dnsmasq
+fi
+
+#update /etc/resolv.conf
+> /etc/resolv.conf
+cat >> /etc/resolv.conf <<EOF
+se
+options timeout:1
+nameserver 127.0.0.1
+nameserver 8.8.8.8
+EOF
+
+#update /etc/sysctl.conf
+cat >> /etc/sysctl.conf<<EOF
+net.ipv4.tcp_syncookies=1
+kernel.core_uses_pid=1
+kernel.core_pattern=/tem/core-%e-%p
+fs.suid_dumpable=2
+net.ipv4.tcp_tw_reuse=1
+net.ipv4.tcp_tw_recycle=0
+net.ipv4.tcp_timestamps=1
+EOF
+sysctl -p
+
+```
+
+#### 简化版
+
+```shell
+#!/bin/bash
+#接$1是设置IP,$2是主机名
+RELEASEVER=$(rpm -q --whatprovides redhat-release|awk -F "-" '{print $3}')
+#set network
+el6or7=$(ip a|awk -F: '/BROADCAST/{print $2}'|tr -d " ")
+if [ $RELEASEVER == 6 ];then
+cat  > /etc/sysconfig/network-scripts/ifcfg-${el6or7}<<EOF
+TYPE="Ethernet"
+BOOTPROTO="none"
+DEVICE="${el6or7}"
+ONBOOT="yes"
+IPADDR=192.168.127.100
+DNS1=114.114.114.114
+GATEWAY=192.168.127.2
+EOF
+/etc/init.d/network restart && echo "成功重启网卡"
+fi
+if [ $RELEASEVER == 7 ];then
+cat > /etc/sysconfig/network-scripts/ifcfg-${el6or7} <<EOF
+TYPE="Ethernet"
+BOOTPROTO="none"
+DEVICE="${el6or7}"
+ONBOOT="yes"
+IPADDR=192.168.127.$1
+DNS1=114.114.114.114
+GATEWAY=192.168.127.2
+EOF
+ifdown ${el6or7};ifup ${el6or7} && echo "成功重启 ${el6or7} 网卡"
+fi
+
+#config yum source
+cd /etc/yum.repos.d
+[ -d /etc/yum.repos.d/bak ] || mkdir /etc/yum.repos.d/bak
+mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bak
+if [ $RELEASEVER == 6 ];then
+        curl http://mirrors.aliyun.com/repo/Centos-6.repo   > qh.repo
+     curl http://mirrors.aliyun.com/repo/epel-6.repo  > epel.repo
+fi
+if [ $RELEASEVER == 7 ];then
+        curl http://mirrors.aliyun.com/repo/Centos-7.repo    >qh.repo
+    curl http://mirrors.aliyun.com/repo/epel-7.repo   > epel.repo
+
+fi
+yum clean all
+yum makecache
+
+#set hostname
+#ip   hostnameip=$(ifconfig |awk -F ":"  '/Bcast/{print $2}'|cut -d" " -f1)
+
+if [ $RELEASEVER == 6 ];then
+hostname $2.qh.com
+sed -i "s/HOSTNAME=.*/HOSTNAME=$2.qh.com/" /etc/sysconfig/network
+fi
+if [ $RELEASEVER == 7 ];then
+hostname $2.qh.com
+echo "$2.qh.com" > /etc/hostname
+fi
+
+#disable SELINUX
+setenforce 0
+sed -i 's/^SELINUX=.*/SELINUX=disable/' /etc/selinux/config
+
+#clean iptables default rules
+if [ $RELEASEVER == 6 ];then
+        /sbin/iptables -F
+        service iptables save
+        chkconfig iptables off
+fi
+
+if [ $RELEASEVER == 7 ];then
+        systemctl stop firewalld
+        systemctl disable firewalld
+fi
+```
+
+##### MYSQL数据的导入和导出
+
+```shell
+ 1）文件不要放在/tmp和/root家目录下，mysql读不到
+ 2）mysql用户对要导入的文件至少要有读的权限
+ 3）文件用双引号或单引号引起来
+ 导入
+1.创建表    
+mysql> create table passwd(user char(20),zw char(5),uid int,gid int,des char(30),home char(30),shell char(20));
+Query OK, 0 rows affected (1.08 sec)
+2.查看表的结构
+mysql> desc passwd;
++-------+----------+------+-----+---------+-------+
+| Field | Type     | Null | Key | Default | Extra |
++-------+----------+------+-----+---------+-------+
+| user  | char(20) | YES  |     | NULL    |       |
+| zw    | char(5)  | YES  |     | NULL    |       |
+| uid   | int(11)  | YES  |     | NULL    |       |
+| gid   | int(11)  | YES  |     | NULL    |       |
+| des   | char(30) | YES  |     | NULL    |       |
+| home  | char(30) | YES  |     | NULL    |       |
+| shell | char(20) | YES  |     | NULL    |       |
++-------+----------+------+-----+---------+-------+
+3.导入数据 记录
+ 语法：load data infile '文件名' into table 表名 fields terminated by '分隔符'；
+mysql> load data infile '/etc/passwd' into table passwd fields terminated by ':';
+Query OK, 21 rows affected, 1 warning (0.00 sec)
+Records: 21  Deleted: 0  Skipped: 0  Warnings: 1
+
+mysql> select * from passwd;
++-------------------+------+------+------+--------------------------------+--------------------+----------------+
+| user              | zw   | uid  | gid  | des                            | home               | shell          |
++-------------------+------+------+------+--------------------------------+--------------------+----------------+
+| root              | x    |    0 |    0 | root                           | /root              | /bin/bash      |
+| bin               | x    |    1 |    1 | bin                            | /bin               | /sbin/nologin  |
+| daemon            | x    |    2 |    2 | daemon                         | /sbin              | /sbin/nologin  |
+| adm               | x    |    3 |    4 | adm                            | /var/adm           | /sbin/nologin  |
+
+1）导出的文件一定是不存在的
+2）mysql用户对目录要有读写权限
+3）导出的文件默认以\t为字段分隔符，\n为行分隔符
+导出
+mysql> select * from passwd into outfile "/tmp/passwd";
+Query OK, 21 rows affected (0.01 sec)
+mysql> system cat /tmp/passwd;
+root	x	0	0	root	/root	/bin/bash
+bin	x	1	1	bin	/bin	/sbin/nologin
+daemon	x	2	2	daemon	/sbin	/sbin/nologin
+adm	x	3	4	adm	/var/adm	/sbin/nologin
+lp	x	4	7	lp	/var/spool/lpd	/sbin/nologin
+sync	x	5	0	sync	/sbin	/bin/sync
+shutdown	x	6	0	shutdown	/sbin	/sbin/shutdown
+halt	x	7	0	halt	/sbin	/sbin/halt
+
+
+```
+
+
+
+#### 使用LVM快照的方式备份数据库脚本
+
+```shell
+将数据库数据迁移到lvm
+加入一块硬盘sdb
+[root@ ~]# vgcreate mysql /dev/sdb
+  Physical volume "/dev/sdb" successfully created.
+  Volume group "mysql" successfully created
+
+[root@ ~]# lvcreate -n mysqldata -L 2G mysql
+  Logical volume "mysqldata" created.
+[root@ ~]# vgs
+  VG    #PV #LV #SN Attr   VSize  VFree
+  cl      1   2   0 wz--n- 19.00g    0 
+  mysql   1   1   0 wz--n-  5.00g 3.00g
+[root@ ~]# mkfs.xfs /dev/mysql/mysqldata 
+meta-data=/dev/mysql/mysqldata   isize=512    agcount=4, agsize=131072 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=524288, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+[root@ ~]# systemctl stop mysqld
+[root@ ~]# mount /dev/mysql/mysqldata /mnt
+[root@ /]# cp -a /mysql/data/* /mnt
+[root@ /]# rm -rf /mysql/data/*  #将原有的数据库文件删除
+[root@ ~]# vim /etc/fstab #加入开机自动挂载
+/dev/mysql/mysqldata   /mysql/data   xfs  defaults 0 0
+[root@ /]# mount -a
+[root@ ~]# umount /mnt/
+[root@ ~]# chown -R mysql.mysql /mysql/data/
+[root@ ~]# systemctl restart mysqld
+数据库转移完成
+
+#1.为保证数据的一致性，在做快照之前先加一个全局读锁(只读不写，快照速度很快，几乎感觉不到)
+mysql>flush tables with read lock
+#2.创建快照
+lvcreate -n mysqldata -L 2G mysql
+mysql -p1 -e 'show master status' >/backup/`date +%F`_position.txt #为方便知道备份时的位置和二进制文件，将状态写到文件中，
+#全局锁会在mysql会话结束后自动释放，
+[root@ /]# vim beifenshujuku.sh
+#！/bin/bash
+#LVM backmysql..
+back_dir=/backup/`date +%F`
+[ -d $back_dir ] || mkdir -p $back_dir
+echo "FLUSH TABLE WITH READ LOCK;SYSTEM lvcreate -L 500M -s -n mysql-snap /dev/mysql/mysqldata;" |mysql -p'1'
+mysql -p1 -e 'show master status' >/backup/`date +%F`_position.txt
+mount -o ro,nouuid /dev/mysql/mysql-snap /mnt/
+rsync -a /mnt/ $back_dir  #rsync可能需要安装，用于复制挂载的快照卷
+if [ $?s -eq 0 ];then
+        umount /mnt/
+        lvremove -f /dev/mysql/mysql-snap
+fi
+
+
+```
+
+#### AB复制互主加一从
+
+```shell
+master1:10.3.144.177  #与master2互为主从，作为写入服务器
+master2:10.3.144.178  #与master1互为主从，作为读服务器
+slave1 : 10.3.144.179 #master2的从服务器，作为读服务器
+#要想slave1同步master2从master1同步过来的数据，必须在配置文件中写入log_slave_updates
+
+master1:10.3.144.177
+[root@ /]# vim /etc/my.cnf
+[mysqld]
+log-bin=log_bin.log
+server-id=3
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+mysql> grant replication slave on *.* to 'master1'@'10.3.144.178' identified by '123456';
+Query OK, 0 rows affected (0.00 sec)
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+mysql> show master status;
++----------------+----------+--------------+------------------+-------------------+
+| File           | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++----------------+----------+--------------+------------------+-------------------+
+| log_bin.000001 |      411 |              |                  |                   |
++----------------+----------+--------------+------------------+-------
+mysql>  change master to MASTER_HOST='10.3.144.178',MASTER_USER='slave',MASTER_PASSWORD='123456',MASTER_LOG_FILE='log_bin.000006',MASTER_LOG_POS=328;
+Query OK, 0 rows affected, 2 warnings (0.03 sec)
+
+master2 10.3.144.178
+[root@ ~]# vim /etc/my.cnf
+[mysqld]
+log-bin=log_bin.log #开启二进制日志，
+server-id=1         #指定服务id,必须跟从服务器不相同
+log_slave_updates  #允许将同步过来的数据写入二进制文件，供slave1同步
+
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+mysql> change master to MASTER_HOST='10.3.144.177',MASTER_USER='master1',MASTER_PASSWORD='123456',MASTER_LOG_FILE='log_bin.000001',MASTER_LOG_POS=411;
+Query OK, 0 rows affected, 2 warnings (0.02 sec)
+mysql> start slave;
+Query OK, 0 rows affected (0.01 sec)
+mysql> grant replication slave on *.* to 'slave'@'10.3.144.177' identified by '123456';
+Query OK, 0 rows affected (0.01 sec)
+mysql>  grant replication slave on *.* to 'slave'@'10.3.144.179' identified by '123456';
+Query OK, 0 rows affected (0.01 sec)
+mysql> show master status;
++----------------+----------+--------------+------------------+-------------------+
+| File           | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++----------------+----------+--------------+------------------+-------------------+
+| log_bin.000006 |      328 |              |                  |                   |
++----------------+----------+--------------+------------------+-------------------+
+
+slave1设置10.3.144.179
+[root@ ~]# vim /etc/my.cnf
+[mysqld]
+server-id=2
+read_only = on  #只读权限对有 super权限的用户无效
+#回收某用户super权限，让其只能读，不能写
+#mysql> grant all on *.* to u@10.3.144.180 identified by '1';
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+mysql> change master to MASTER_HOST='10.3.144.178',MASTER_USER='slave',MASTER_PASSWORD='123456',MASTER_LOG_FILE='log_bin.000006',MASTER_LOG_POS=328;
+Query OK, 0 rows affected, 2 warnings (0.33 sec)
+mysql> start slave;
+Query OK, 0 rows affected (0.04 sec)
+```
+
+
+
+#### AB复制一主两从
+
+```shell
+master配置10.3.144.178
+[root@ ~]# vim /etc/my.cnf
+[mysqld]
+log-bin=log_bin.log #开启二进制日志，
+server-id=1         #指定服务id,必须跟从服务器不相同
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+master授权方式1：
+mysql> grant replication slave on *.* to 'slave'@'10.3.144.%' identified by '123456';
+Query OK, 0 rows affected (0.01 sec)
+#授权10.3.144.0/24网段内的所有ip都可以使用slave账号获取二进制文件
+mysql> select user,host,password from mysql.user;
++-------+--------------+-------------------------------------------+
+| user  | host         | password                                  |
++-------+--------------+-------------------------------------------+
+| root  | localhost    | *E6CC90B878B948C35E92B003C792C46C58C4AF40 |
+| root  | mysql.qh.com |                                           |
+| root  | 127.0.0.1    |                                           |
+| root  | ::1          |                                           |
+| slave | 10.3.144.%   | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
++-------+--------------+-------------------------------------------+
+5 rows in set (0.00 sec)
+
+授权方式2：
+mysql> grant replication slave on *.* to 'slave'@'10.3.144.177' identified by '123456';
+Query OK, 0 rows affected (0.01 sec)
+mysql>  grant replication slave on *.* to 'slave'@'10.3.144.179' identified by '123456';
+Query OK, 0 rows affected (0.01 sec)
+mysql> select user,host,password from mysql.user;
++-------+--------------+-------------------------------------------+
+| user  | host         | password                                  |
++-------+--------------+-------------------------------------------+
+| root  | localhost    | *E6CC90B878B948C35E92B003C792C46C58C4AF40 |
+| root  | mysql.qh.com |                                           |
+| root  | 127.0.0.1    |                                           |
+| root  | ::1          |                                           |
+| slave | 10.3.144.179 | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
+| slave | 10.3.144.177 | *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
++-------+--------------+-------------------------------------------+
+6 rows in set (0.01 sec)
+
+
+在master上查看日志文件及位置
+mysql> show master status;
++----------------+----------+--------------+------------------+-------------------+
+| File           | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++----------------+----------+--------------+------------------+-------------------+
+| log_bin.000006 |      328 |              |                  |                   |
++----------------+----------+--------------+------------------+-------------------+
+1 row in set (0.00 sec)
+#同步从log_bin.000006以后的操作，位置为328
+
+slave1设置10.3.144.177
+[root@ ~]# vim /etc/my.cnf
+[mysqld]
+log-bin=log_bin.log
+server-id=3
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+mysql>  change master to MASTER_HOST='10.3.144.178',MASTER_USER='slave',MASTER_PASSWORD='123456',MASTER_LOG_FILE='log_bin.000006',MASTER_LOG_POS=328;
+Query OK, 0 rows affected, 2 warnings (0.03 sec)
+
+mysql> show slave status\G
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: 10.3.144.178
+                  Master_User: slave
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: log_bin.000006
+          Read_Master_Log_Pos: 328
+               Relay_Log_File: -relay-bin.000003
+                Relay_Log_Pos: 281
+        Relay_Master_Log_File: log_bin.000006
+             Slave_IO_Running: Yes  #IO线程正常
+            Slave_SQL_Running: Yes  #SQL线程正常
+				                  #出现两个YES才是正常开启
+				                  
+slave2设置10.3。144.179
+[root@ ~]# vim /etc/my.cnf
+[mysqld]
+server-id=2
+[root@ /]# /usr/local/mysql/bin/mysqladmin -uroot -p1 shutdown
+[root@ /]# /usr/local/mysql/bin/mysqld_safe  --user=mysql &
+[root@ /]# mysql -p1
+mysql> change master to MASTER_HOST='10.3.144.178',MASTER_USER='slave',MASTER_PASSWORD='123456',MASTER_LOG_FILE='log_bin.000006',MASTER_LOG_POS=328;
+Query OK, 0 rows affected, 2 warnings (0.33 sec)
+mysql> start slave;
+Query OK, 0 rows affected (0.04 sec)
+mysql> show slave status\G
+*************************** 1. row ***************************
+               Slave_IO_State: Waiting for master to send event
+                  Master_Host: 10.3.144.178
+                  Master_User: slave
+                  Master_Port: 3306
+                Connect_Retry: 60
+              Master_Log_File: log_bin.000006
+          Read_Master_Log_Pos: 409
+               Relay_Log_File: -relay-bin.000892
+                Relay_Log_Pos: 281
+        Relay_Master_Log_File: log_bin.000006
+             Slave_IO_Running: Yes
+            Slave_SQL_Running: Yes
+
+
+出现这种错误导致slave起不来，直接创建一个报错的库 mm，sotp slave,start slave,问题解决
+mysql> show slave status\G
+Last_Error: Error 'Can't drop database 'mm'; database doesn't exist' on query. Default database: 'mm'. Query: 'drop database mm'
+
+mysql> create database mm;
+mysql> stop slave;
+Query OK, 0 rows affected (0.01 sec)
+mysql> start slave;
+Query OK, 0 rows affected (0.10 sec)
+mysql> show slave status\G
+
+
+                       
+				           
+```
+
+
+
+#### 读写分离amoeba
+
+```shell
+一主二从
+master server：   10.3.144.178   master.qf.com
+slave1 server:     10.3.144.179   slave1.qf.com
+slave2 server:     10.3.144.177   slave2.qf.com
+ameoba server:    10.3.144.180   ameoba.qf.com  无需安mysql
+
+root@amoeba amoeba]# tar xf jdk-7u67-linux-x64.tar.gz 
+[root@amoeba amoeba]# mv jdk1.7.0_67/ /usr/local/java
+[root@amoeba amoeba]# mkdir /usr/local/amoeba
+[root@amoeba amoeba]# tar xf amoeba-mysql-binary-2.2.0.tar.gz -C /usr/local/amoeba
+
+[root@ conf]#  vim /etc/profile.d/amoeba.sh
+export JAVA_HOME=/usr/local/java
+export PATH=$JAVA_HOME/bin:/usr/local/amoeba/bin:$PATH
+
+[root@ conf]# source /etc/profile.d/amoeba.sh
+[root@ conf]# java -version
+java version "1.7.0_67"
+Java(TM) SE Runtime Environment (build 1.7.0_67-b01)
+Java HotSpot(TM) 64-Bit Server VM (build 24.65-b04, mixed mode)
+
+三台服务器授权
+master:10.3.144.178
+mysql> grant all on *.* to amoeba@'10.3.144.180' identified by 'amoeba';
+Query OK, 0 rows affected (0.29 sec)
+
+slave1:10.3.144.179
+mysql> grant all on *.* to amoeba@'10.3.144.180' identified by 'amoeba';
+Query OK, 0 rows affected (0.29 sec)
+
+slave2:10.3.144.177
+mysql> grant all on *.* to amoeba@'10.3.144.180' identified by 'amoeba';
+Query OK, 0 rows affected (0.29 sec)
+
+[root@ conf]# vim /usr/local/amoeba/conf/dbServers.xml 
+20       <property name="port">3306</property>
+ 21 
+ 22       <!-- mysql schema -->
+ 23      <property name="schema">testt</property> #定义首先进入的库testt，必须要存在
+ 24 
+ 25      <!-- mysql user -->
+ 26      <property name="user">amoeba</property> #amoeba为三个服务器所授权的账号
+ 27      <property name="password">amoeba</property> #账号密码
+ 
+ 
+
+44         </dbServer>
+ 45 
+ 46         <dbServer name="master"  parent="abstractServer">  #master定义mysql主机名
+ 47                 <factoryConfig>
+ 48                         <!-- mysql ip -->
+ 49                         <property name="ipAddress">10.3.144.178</property>
+ 50                 </factoryConfig>     #master地址
+ 51         </dbServer>
+ 52 
+ 53         <dbServer name="slave1"  parent="abstractServer"> #slave1
+ 54                 <factoryConfig>
+ 55                         <!-- mysql ip -->
+ 56                         <property name="ipAddress">10.3.144.179</property>
+ 57                 </factoryConfig>       #slave1 ip 地址
+ 58         </dbServer>
+ 59         <dbServer name="slave2"  parent="abstractServer"> #slave2
+ 60                 <factoryConfig>
+ 61                         <!-- mysql ip -->
+ 62                         <property name="ipAddress">10.3.144.177</property>
+ 63                 </factoryConfig>    #slave2地址
+ 64 
+ 65         </dbServer>
+67         <dbServer name="slavepool" virtual="true"> #slavepool定义主机组
+ 68                 <poolConfig class="com.meidusa.amoeba.server.MultipleServerPool">
+ 69                  <!-- Load balancing strategy: 1=ROUNDROBIN , 2=WEIGHTBASED , 3=HA-->
+ 70                         <property name="loadbalance">1</property> #设置轮流捡取
+ 71 
+ 72                         <!-- Separated by commas,such as: server1,server2,server1 -->
+ 73                         <property name="poolNames">master,slave1,slave2</property>
+ 74                 </poolConfig>   #设置组成员
+ 75         </dbServer>
+ 76 
+ 77 </amoeba:dbServers>
+
+ 
+[root@ conf]# vim /usr/local/amoeba/conf/amoeba.xml 
+#定义端口号及用户名密码
+ 11                     <property name="port">8066</property>
+30                     <property name="user">admin</property> #用户名
+ 31 
+ 32                   <property name="password">admin</property> #密码
+ 
+#定义读写服务器----
+115                 <property name="defaultPool">master</property> #默认进入的库
+116                 <property name="writePool">master</property> #写服务器
+117                 <property name="readPool">slavepool</property> #读服务器组
+
+[root@ conf]# vim /usr/local/amoeba/bin/amoeba
+DEFAULT_OPTS="-server -Xms256m -Xmx256m -Xss256k"
+
+启动amoeba
+[root@amoeba amoeba]# amoeba start &
+
+连接
+[root@ amoeba]#  mysql -u admin -padmin -h 10.3.144.180 -P8066 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1699846387
+Server version: 5.1.45-mysql-amoeba-proxy-2.2.0 Source distribution
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+测试
+[root@ amoeba]#  mysql -u admin -padmin -h 10.3.144.180 -P8066 
+MySQL [(none)]> select * from db1.bb;
++------+--------+
+| id   | name   |
++------+--------+
+|    2 | slave1 |
++------+--------+
+1 row in set (0.01 sec)
+
+MySQL [(none)]> select * from db1.bb;
++------+--------+
+| id   | name   |
++------+--------+
+|    1 | slave2 |
++------+--------+
+1 row in set (0.01 sec)
+
+MySQL [(none)]> select * from db1.bb;
++------+--------+
+| id   | name   |
++------+--------+
+|    1 | master |
++------+--------+
+1 row in set (0.01 sec)
+
+MySQL [(none)]> select * from db1.bb;
++------+--------+
+| id   | name   |
++------+--------+
+|    2 | slave1 |
++------+--------+
+1 row in set (0.01 sec)
+
+报错，
+若有默认主机没有授权
+MySQL [(none)]> show databases;
+java.util.NoSuchElementException: Could not create a validated object, cause: ValidateObject failed
+解决：重新授权即可
+
+
+
+```
+
+#### 读写分离router
+
+```shell
+在AB复制互主加一从基础上
+master1: 10.3.144.177
+master2: 10.3.144.178
+slave  : 10.3.144.179
+route  : 10.3.144.180
+
+1.三台MySQL服务器上授权帐户
+mysql> grant all on *.* to router@'10.3.144.180' identified by '123456';
+Query OK, 0 rows affected (0.05 sec)
+2.创建测试表
+master1: 10.3.144.177
+mysql> insert into db1.bb set id=1,name='master1';
+Query OK, 1 row affected (0.01 sec)
+mysql> select * from db1.bb;
++------+---------+
+| id   | name    |
++------+---------+
+|    1 | master1 |
++------+---------+
+1 row in set (0.02 sec)
+
+master2: 10.3.144.178
+mysql> insert into db1.bb set id=2,name='master2';
+Query OK, 1 row affected (0.00 sec)
+mysql> select * from db1.bb;
++------+---------+
+| id   | name    |
++------+---------+
+|    2 | master2 |
++------+---------+
+1 row in set (0.00 sec)
+
+slave1  : 10.3.144.179
+mysql> insert into db1.bb set id=3,name='slave1';
+Query OK, 1 row affected (0.00 sec)
+mysql> select * from db1.bb;
++------+--------+
+| id   | name   |
++------+--------+
+|    3 | slave1 |
++------+--------+
+1 row in set (0.00 sec)
+
+3.router代理配置
+3.1安装mysql-router软件    
+[root@ ~]# tar xvf mysql-router-2.1.4-linux-glibc2.12-x86-64bit.tar.gz
+[root@ ~]# mv mysql-router-2.1.4-linux-glibc2.12-x86-64bit/ /usr/local/mysql-router
+3-2.创建配置文件
+[root@ ~]# cd /usr/local/mysql-router/
+[root@ mysql-router]# cp share/doc/mysqlrouter/sample_mysqlrouter.conf  ./mysqlrouter.conf
+
+[root@ mysql-router]# vim mysqlrouter.conf 
+[logger]
+level = INFO        #日志级别
+[routing:read_write]
+# To be more transparent, use MySQL Server port 3306
+bind_address = 10.3.144.180   #监听地址
+bind_port = 7001          #写操作端口
+mode = read-write              #模式:可写,调度策略为主备
+destinations = 10.3.144.177,10.3.144.178   #写服务器地址
+ 
+[routing:read_only]      #配置负载均衡
+# To be more transparent, use MySQL Server port 3306
+bind_address = 10.3.144.180     
+bind_port = 7002             #读操作端口
+mode = read-only            #模式:只读,调度策略为轮循
+destinations = 10.3.144.178,10.3.144.177,10.3.144.179
+
+3.3启动服务
+[root@ mysql-router]# /usr/local/mysql-router/bin/mysqlrouter  &
+查看服务是否启动
+[root@ mysql-router]# netstat -tanp |grep 700
+tcp        0      0 10.3.144.180:7001       0.0.0.0:*               LISTEN      2682/mysqlrouter 
+tcp        0      0 10.3.144.180:7002       0.0.0.0:*               LISTEN      2682/mysqlrouter    
+4.客户端验证
+
+[root@ mysql-router]# mysql -urouter -p123456 -h 10.3.144.180 -P7001 -e "select * from db1.bb;"
++------+---------+
+| id   | name    |
++------+---------+
+|    1 | master1 |
++------+---------+
+[root@ mysql-router]# mysql -urouter -p123456 -h 10.3.144.180 -P7002 -e "select * from db1.bb;"
++------+---------+
+| id   | name    |
++------+---------+
+|    1 | master1 |
++------+---------+
+[root@ mysql-router]# mysql -urouter -p123456 -h 10.3.144.180 -P7002 -e "select * from db1.bb;"
++------+---------+
+| id   | name    |
++------+---------+
+|    2 | master2 |
++------+---------+
+[root@ mysql-router]# mysql -urouter -p123456 -h 10.3.144.180 -P7002 -e "select * from db1.bb;"
++------+--------+
+| id   | name   |
++------+--------+
+|    3 | slave1 |
++------+--------+
+
+```
+
+### 源码安装LAMP--qq农场--discuz论坛
+
+```shell
+mysql安装
+[root@LAMP apr-1.5.2]# useradd -M -s /sbin/nologin mysql
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4.tar.gz  httpd-2.4.23.tar.gz  php-5.5.30.tar.gz
+apr-1.5.2.tar.gz  farm-ucenter1.5.zip    mysql-5.6.22.tar.gz
+[root@LAMP lamp]# tar xf mysql-5.6.22.tar.gz 
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4.tar.gz  httpd-2.4.23.tar.gz  mysql-5.6.22.tar.gz
+apr-1.5.2.tar.gz  farm-ucenter1.5.zip    mysql-5.6.22         php-5.5.30.tar.gz
+[root@LAMP lamp]# cd mysql-5.6.22/
+[root@LAMP mysql-5.6.22]# ls
+BUILD           config.h.cmake       extra               libmysqld    packaging  sql-bench      unittest
+BUILD-CMAKE     configure.cmake      include             libservices  plugin     sql-common     VERSION
+client          COPYING              INSTALL-SOURCE      man          README     storage        vio
+cmake           dbug                 INSTALL-WIN-SOURCE  mysql-test   regex      strings        win
+CMakeLists.txt  Docs                 libevent            mysys        scripts    support-files  zlib
+cmd-line-utils  Doxyfile-perfschema  libmysql            mysys_ssl    sql        tests
+[root@LAMP apr-1.5.2]#  yum install gcc  gcc-c++  cmake  make  bison  ncurses  ncurses-devel  openssl-devel perl-Data-Dumper -y
+[root@LAMP mysql-5.6.22]#  cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql-5.6.22 -DSYSCONFDIR=/etc -DMYSQL_DATADIR=/usr/local/mysql-5.6.22/data -DINSTALL_MANDIR=/usr/share/man -DMYSQL_TCP_PORT=3306 -DMYSQL_UNIX_ADDR=/tmp/mysql.sock -DDEFAULT_CHARSET=utf8 -DEXTRA_CHARSETS=all -DDEFAULT_COLLATION=utf8_general_ci -DWITH_SSL=system -DWITH_EMBEDDED_SERVER=1 -DENABLED_LOCAL_INFILE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1
+[root@LAMP mysql-5.6.22]# make -j2 && make install
+1.初始化
+[root@LAMP mysql-5.6.22]# /usr/local/mysql-5.6.22/scripts/mysql_install_db --user=mysql --basedir=/usr/local/mysql-5.6.22/ --datadir=/usr/local/mysql-5.6.22/data 
+2.生成MySQL主配置文件
+使用源码包提供的默认配置文件，生产环境自定义配置文件
+                  #cd /usr/local/mysql-5.6.22
+[root@LAMP mysql-5.6.22]# cp support-files/my-default.cnf  /etc/my.cnf
+cp: overwrite ‘/etc/my.cnf’? y
+
+3. 生成MySQL Sys V脚本
+[root@LAMP mysql-5.6.22]# cp support-files/mysql.server /etc/rc.d/init.d/mysqld
+[root@LAMP mysql-5.6.22]# chmod 755 /etc/rc.d/init.d/mysqld
+4.启动服务设置开机启动
+[root@LAMP mysql-5.6.22]# /etc/init.d/mysqld start 
+Starting MySQL. SUCCESS! 
+[root@LAMP mysql-5.6.22]# chkconfig mysqld on
+
+5. 配置MySQL环境变量和apache变量
+[root@LAMP bin]# vim /etc/profile.d/httpd.sh
+export PATH=$PATH:/usr/local/apache/bin:/usr/local/mysql-5.6.22/bin
+[root@LAMP mysql-5.6.22]# . /etc/profile.d/httpd.sh
+
+mysql密码
+[root@LAMP bin]# ./mysqladmin -uroot password
+New password: 1
+Confirm new password: 1
+
+
+apache安装
+apr 安装
+[root@LAMP lamp]# tar -xf apr-1.5.2.tar.gz 
+[root@LAMP lamp]# cd apr-1.5.2 
+[root@LAMP apr-1.5.2]# ./configure --prefix=/usr/local/apr
+[root@LAMP apr-1.5.2]# make -j2 && make install
+
+apr-util安装
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4.tar.gz  httpd-2.4.23.tar.gz  mysql-5.6.22.tar.gz
+apr-1.5.2.tar.gz  farm-ucenter1.5.zip    mysql-5.6.22         php-5.5.30.tar.gz
+[root@LAMP lamp]# tar xf apr-util-1.5.4.tar.gz 
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4         farm-ucenter1.5.zip  mysql-5.6.22         php-5.5.30.tar.gz
+apr-1.5.2.tar.gz  apr-util-1.5.4.tar.gz  httpd-2.4.23.tar.gz  mysql-5.6.22.tar.gz
+[root@LAMP lamp]# cd apr-util-1.5.4/
+[root@LAMP apr-util-1.5.4]# ./configure --prefix=/usr/local/apr-util --with-apr=/usr/local/apr
+[root@LAMP apr-util-1.5.4]# make && make install
+
+apache安装
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4         farm-ucenter1.5.zip  mysql-5.6.22         php-5.5.30.tar.gz
+apr-1.5.2.tar.gz  apr-util-1.5.4.tar.gz  httpd-2.4.23.tar.gz  mysql-5.6.22.tar.gz
+[root@LAMP lamp]# tar xf httpd-2.4.23.tar.gz 
+[root@LAMP lamp]# ls
+apr-1.5.2         apr-util-1.5.4         farm-ucenter1.5.zip  httpd-2.4.23.tar.gz  mysql-5.6.22.tar.gz
+apr-1.5.2.tar.gz  apr-util-1.5.4.tar.gz  httpd-2.4.23         mysql-5.6.22         php-5.5.30.tar.gz
+[root@LAMP lamp]# cd httpd-2.4.23/
+[root@LAMP httpd-2.4.23]#  ./configure --prefix=/usr/local/apache --sysconfdir=/etc/httpd --enable-modules=all --enable-mods-shared=all --enable-so --enable-ssl --enable-cgi --enable-rewrite --with-apr=/usr/local/apr --with-apr-util=/usr/local/apr-util/ --with-pcre --with-libxml2 --with-mpm=event --enable-mpms-shared=all 
+[root@LAMP httpd-2.4.23]# make -j2&& make install
+[root@LAMP httpd-2.4.23]# /usr/local/apache/bin/httpd -k start
+
+PHP安装
+[root@LAMP lamp]# tar xf php-5.5.30.tar.gz 
+[root@LAMP lamp]# cd php-5.5.30/
+[root@LAMP php-5.5.30]# yum install libxml2-devel  bzip2-devel -y
+[root@LAMP php-5.5.30]#  ./configure --prefix=/usr/local/php --with-apxs2=/usr/local/apache/bin/apxs  --with-config-file-path=/etc/ --with-config-file-scan-dir=/etc/php.d/  --with-libxml-dir  --with-openssl  --with-pcre-regex   --with-zlib  --with-bz2  --with-libxml-dir  --with-pcre-dir --with-jpeg-dir  --with-png-dir  --with-zlib-dir  --with-freetype-dir --enable-mbstring  --with-mysql=/usr/local/mysql-5.6.22/    --with-mysqli=/usr/local/mysql-5.6.22/bin/mysql_config  --with-libxml-dir --enable-zip   --enable-maintainer-zts 
+[root@LAMP php-5.5.30]# make && make install 
+安装完会生成 /usr/local/apache/modules/libphp5.so
+[root@LAMP php-5.5.30]#  cp php.ini-production /etc/php.ini
+[root@LAMP php-5.5.30]#  grep php5  /etc/httpd/httpd.conf
+LoadModule php5_module        modules/libphp5.so
+    AddHandler  php5-script  .php
+
+	
+apache支持php的网页
+270 <IfModule dir_module>
+271     DirectoryIndex index.html index.php
+272         AddHandler   php5-script   .php
+273         AddType   text/html   .php
+274 </IfModule>
+重启httpd服务
+[root@LAMP ~]# httpd -k stop
+[root@LAMP ~]# httpd -k start
+测试php和apache的连接
+# cd /usr/local/apache/htdocs
+# rm -rf  index.html 
+# vim index.php
+<?php
+phpinfo();
+?>
+测试mysql和和php的连接
+[root@LAMP htdocs]# vim index.php
+<?php
+mysql_connect("localhost","root","1") or die("NOT");
+ echo "Success";
+?>
+[root@LAMP lamp]# yum install unzip -y
+[root@LAMP lamp]# unzip farm-ucenter1.5.zip
+[root@LAMP htdocs]# rm -rf /usr/local/apache/htdocs/*
+[root@LAMP htdocs]# cp -r /root/lamp/upload/*  /usr/local/apache/htdocs/
+[root@LAMP lamp]# /usr/local/mysql-5.6.22/bin/mysql -u root -p1
+mysql> create database farm;
+Query OK, 1 row affected (0.00 sec)
+[root@LAMP lamp]#  /usr/local/mysql-5.6.22/bin/mysql -u root -p1 -D farm < /usr/local/apache/htdocs/qqfarm.sql
+Warning: Using a password on the command line interface can be insecure.
+浏览器：
+	http://10.3.144.180	
+    根据提示更改
+[root@LAMP lamp]# vim /etc/php.ini
+ 202 short_open_tag = On
+[root@LAMP lamp]# httpd -k stop
+[root@LAMP lamp]# httpd -k start
+[root@LAMP lamp]# chmod 777 /usr/local/apache/htdocs/* -R
+
+
+
+
+在LAMP的基础上搭建Discuz论坛
+[root@LAMP htdocs]# unzip Discuz_X3.3.zip 
+[root@LAMP htdocs]# ls
+admin.php  config           data         group.php  member.php  robots.txt  template
+api        connect.php      Discuz       home.php   misc.php    search.php  uc_client
+api.php    cp.php           favicon.ico  index.php  plugin.php  source      uc_server
+archiver   crossdomain.xml  forum.php    install    portal.php  static      userapp.php
+[root@LAMP htdocs]# chmod 777 ./ -R
+[root@LAMP htdocs]# mysql -p1
+Warning: Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 246
+Server version: 5.6.22 Source distribution
+Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+mysql> create database Discuz;
+Query OK, 1 row affected (0.01 sec)
+
+
+
+基于IP的虚拟主机（需要两个网卡）
+将主配置文件490行的注释打开
+[root@LAMP network-scripts]# vim /etc/httpd/httpd.conf
+490 Include /etc/httpd/extra/httpd-vhosts.conf
+[root@LAMP /]# mkdir /www/discuz
+[root@LAMP /]# mkdir /www/farm
+[root@LAMP /]# mv /discuz/dd/* /www/discuz/
+[root@LAMP /]# mv /discuz/farm/* /www/farm/
+[root@LAMP network-scripts]# vim /etc/httpd/extra/httpd-vhosts.conf
+<directory "/www">
+Require all granted
+</directory>
+<VirtualHost 10.3.144.180:80>
+    DocumentRoot "/www/discuz"
+    ServerName www.discuz.com
+    ErrorLog "logs/dummy-host.example.com-error_log"
+    CustomLog "logs/dummy-host.example.com-access_log" common
+</VirtualHost>
+<VirtualHost 10.3.144.179:80>
+    DocumentRoot "/dwww/farm"
+    ServerName www.farm.com
+    ErrorLog "logs/dummy-host.example.com-error_log"
+    CustomLog "logs/dummy-host.example.com-access_log" common
+</VirtualHost>
+
+[root@LAMP /]# httpd -t
+Syntax OK
+[root@LAMP /]# httpd -k stop
+[root@LAMP /]# httpd -k start
+
+
+
+
+
+
+```
+
+#### yum安装lamp
+
+```shell
+yum install httpd php mariadb-server mariadb php-mysql -y
+systemctl start mariadb.service
+systemctl start httpd
+systemctl enable httpd
+systemctl enable mariadb.service 
+将网页放进/var/www/html/下就可以使用
+
+[root@yumlamp html]# unzip farm-ucenter1.5.zip 
+[root@yumlamp html]# ls
+farm-ucenter1.5.zip  index.html  upload
+[root@yumlamp html]# mv upload/* ./
+打开网页根据提示修改
+[root@yumlamp html]# vim /etc/php.ini 
+[root@yumlamp html]# systemctl restart httpd
+
+```
+
+#### redis主从复制
+
+```shell
+#写入配置文件，实现开机自动挂载
+[root@yumlamp redis-4.0.10]# /redis-4.0.10/src/redis-server redis.conf >bash &
+[root@lanmp redis-4.0.10]# yum install gcc* -y
+[root@lanmp redis-4.0.10]# make
+[root@lanmp redis-4.0.10]# make MALLOC=libc  #make提示严重错误时使用
+[root@lanmp redis-4.0.10]# ./src/redis-server redis.conf & #启动
+[root@lanmp redis-4.0.10]# netstat -tanp|grep 6379
+tcp        0      0 127.0.0.1:6379          0.0.0.0:*               LISTEN      11881/./src/redis-s 
+[root@lanmp redis-4.0.10]# ls
+00-RELEASENOTES  CONTRIBUTING  deps     Makefile   README.md   runtest          runtest-sentinel  src    utils
+BUGS             COPYING       INSTALL  MANIFESTO  redis.conf  runtest-cluster  sentinel.conf     tests
+
+master
+[root@yumlamp redis-4.0.10]# vim redis.conf
+[root@lanmp redis-4.0.10]# grep -E -n -v  "^#|^$" redis.conf 
+69:bind 0.0.0.0    
+88:protected-mode no  #允许其他主机连接
+92:port 6379 # 监听端口号,默认为 6379
+136:daemonize yes #yes为启用守护进程
+500: requirepass 1  #密码
+127.0.0.1:6379> INFO replication
+# Replication
+role:master
+connected_slaves:2 #设置了两个从服务器
+slave0:ip=192.168.127.20,port=6379,state=online,offset=2990,lag=0
+slave1:ip=192.168.127.10,port=6380,state=online,offset=2990,lag=0
+master_replid:9fe3068d95e437238710428ab29143addbdee7f5
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:2990
+
+slave
+[root@yumlamp redis-4.0.10]# vim redis.conf
+88:protected-mode yes
+92:port 6379
+136:daemonize yes
+281:masterauth 1
+282:slaveof 192.168.127.10 6379
+500:requirepass 1
+
+127.0.0.1:6379> INFO replication
+# Replication
+role:slave
+master_host:192.168.127.10
+master_port:6379
+master_link_status:up
+
+启动登录
+[root@lanmp redis-4.0.10]# /usr/local/redis-4.0.10/src/redis-server redis.conf &
+12102:C 24 Jan 15:31:38.239 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+12102:C 24 Jan 15:31:38.239 # Redis version=4.0.10, bits=64, commit=00000000, modified=0, pid=12102, just started
+12102:C 24 Jan 15:31:38.239 # Configuration loaded
+[root@lanmp redis-4.0.10]# /usr/local/redis-4.0.10/src/redis-cli 
+127.0.0.1:6379> multi
+(error) NOAUTH Authentication required.
+127.0.0.1:6379> AUTH 1
+OK
+
+[root@yumlamp ~]# ps -aux |grep 637 #需要重启时使用
+root      12637  0.0  0.0      0     0 ?        S    16:29   0:00 [kworker/u256:0]
+root      13672  0.2  0.2 142984  2548 pts/0    Sl   19:33   0:06 /redis-4.0.10/src/redis-server *:6379
+root      13708  0.0  0.0 112708   968 pts/1    R+   20:25   0:00 grep --color=auto 637
+[root@yumlamp ~]# pkill redis
+
+
+一台机器上部署多个redis,以端口号区分
+直接复制redis数据目录
+[root@lanmp redis-4.0.10]# mkdir /usr/local/redis2
+[root@lanmp redis-4.0.10]# cp -r redis-4.0.10/* ./redis2
+[root@lanmp redis-4.0.10]# cd ../redis2
+[root@lanmp redis2]# vim redis.conf
+69:bind 0.0.0.0
+88:protected-mode no
+92:port 6380  #复制整个数据目录过来只改端口
+[root@lanmp redis2]# ./src/redis-server redis.conf
+[root@lanmp redis2]# ./src/redis-cli -p 6380
+127.0.0.1:6380> 
+
+
+
+
+集群
+#三台服务器哨兵同样配置
+[root@lanmp redis-4.0.10]# vim sentinel.conf 
+[root@lanmp redis-4.0.10]# grep -E -v -n "^#|^$" sentinel.conf 
+15:bind 0.0.0.0  #
+17:protected-mode no #
+21:port 26379
+50:dir "/usr/local/redis-4.0.10" #
+51:logfile "./sentinel.log"  #
+52:sentinel myid b98facfe644196f729a9dea311ddf7512abbfd7b
+71:sentinel monitor mymaster 192.168.127.30 6379 2  #
+90:sentinel auth-pass mymaster 1  #
+98:sentinel config-epoch mymaster 1  #
+106:sentinel leader-epoch mymaster 1  #
+108:sentinel known-slave mymaster 192.168.127.10 6380
+197:sentinel known-slave mymaster 192.168.127.10 6379
+198:sentinel known-slave mymaster 192.168.127.20 6379
+199:sentinel known-sentinel mymaster 192.168.127.10 26380 b21408811ca32301d1e3195d2c2620d83ab1acb5
+200:sentinel known-sentinel mymaster 192.168.127.20 26379 ca87e443e05dc7373709d71904142a5a7d968e17
+201:sentinel current-epoch 1
+
+
+[root@lanmp redis2]# ps -aux |grep redis  #查找运行中的redis
+root      12561  0.1  0.1 143000  2224 ?        Ssl  19:32   0:04 ./src/redis-server 0.0.0.0:6379
+root      12651  0.1  0.1 142952  2208 ?        Ssl  20:07   0:01 ./src/redis-server 0.0.0.0:6380
+root      12692  0.0  0.0 112708   972 pts/0    R+   20:22   0:00 grep --color=auto redis
+[root@lanmp redis2]# kill 12651  #按进程号kill
+[root@lanmp redis2]# kill 12561
+
+master ip 192.168.127.10
+[root@lanmp ~]# vim /usr/local/redis-4.0.10/redis.conf
+69:bind 0.0.0.0
+88:protected-mode no
+92:port 6379
+288:masterauth 1
+500: requirepass 1
+[root@lanmp ~]# /usr/local/redis-4.0.10/src/redis-server /usr/local/redis-4.0.10/redis.conf &  #启动redis
+#服务器未down掉之前
+[root@lanmp ~]# /usr/local/redis-4.0.10/src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> INFO replication
+# Replication
+role:master  #当前为master
+connected_slaves:2  #slave两个
+#配置文件改好之后，启动哨兵
+[root@yumlamp redis-4.0.10]# ./src/redis-sentinel  sentinel.conf &
+#模拟matser down掉
+[root@lanmp redis-4.0.10]# ps -aux|grep redis
+root       1372  0.3  0.1 143048  2332 ?        Ssl  09:51   0:03 ./src/redis-server 0.0.0.0:6379
+root       1385  0.5  0.1 141964  2708 pts/0    Sl   09:58   0:04 ./src/redis-sentinel 0.0.0.0:26379 [sentinel]
+[root@lanmp redis-4.0.10]# kill 1372
+#重启
+[root@lanmp redis-4.0.10]# ./src/redis-server redis.conf &
+#被降级为slave
+[root@lanmp redis-4.0.10]# ./src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> info replication
+# Replication
+role:slave
+master_host:192.168.127.30
+master_port:6379
+master_link_status:up
+
+slave1 ip 192.168.127.20
+69:bind 0.0.0.0
+88:protected-mode no
+92:port 6380
+281:masterauth 1
+282:slaveof 192.168.127.10 6379
+500: requirepass 1
+[root@lanmp redis2]# ./src/redis-server redis.conf &
+[root@lanmp redis2]# netstat -tanp|grep 63
+tcp        0      0 0.0.0.0:6379            0.0.0.0:*               LISTEN      12696/redis-server  
+tcp        0      0 0.0.0.0:6380            0.0.0.0:*               LISTEN      12709/./src/redis-s 
+#主服务器未down掉之前
+[root@yumlamp redis-4.0.10]# ./src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> info replication
+# Replication
+role:slave
+master_host:192.168.127.10  #master IP 为192.168.127.10
+master_port:6379
+master_link_status:up
+#配置文件改好之后，启动哨兵
+[root@yumlamp redis-4.0.10]# ./src/redis-sentinel  sentinel.conf &
+[2] 1415
+#查看redis是否启动成功
+[root@yumlamp redis-4.0.10]# ps -aux|grep redis
+root       1318  0.2  0.2 143140  2680 pts/0    Sl   09:33   0:05 ./src/redis-server 0.0.0.0:6379
+root       1415  0.5  0.2 141936  2580 pts/0    Sl   10:05   0:00 ./src/redis-sentinel 0.0.0.0:26379 [sentinel]
+root       1423  0.0  0.0 112708   968 pts/0    R+   10:08   0:00 grep --color=auto redis
+#查看哨兵是否启动成功
+[root@yumlamp redis-4.0.10]# ps -aux|grep sentinel
+root       1415  0.5  0.2 141936  2580 pts/0    Rl   10:05   0:01 ./src/redis-sentinel 0.0.0.0:26379 [sentinel]
+root       1425  0.0  0.0 112708   968 pts/0    R+   10:08   0:00 grep --color=auto sentinel
+#手动kill master 之后
+[root@yumlamp redis-4.0.10]# ./src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> info replication
+# Replication
+role:slave
+master_host:192.168.127.30  #自动将192.168.127.30作为新master
+master_port:6379
+master_link_status:up
+
+
+
+slave2  ip 192.168.127.30  #配置和slave1全部一样
+[root@yumlamp redis-4.0.10]# /redis-4.0.10/src/redis-server redis.conf &
+[root@yumlamp redis-4.0.10]# /redis-4.0.10/src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> INFO replication
+# Replication
+role:slave
+master_host:192.168.127.10
+master_port:6379
+master_link_status:up
+master_last_io_seconds_ago:1
+#master down掉之后被重新选为master
+[root@yumlamp redis-4.0.10]# ./src/redis-cli 
+127.0.0.1:6379> AUTH 1
+OK
+127.0.0.1:6379> info replication
+# Replication
+role:master
+connected_slaves:2  #原master重新上线后也只能作为slave
+
+```
+
+# NGINX服务器
+
+```shell
+搭建虚拟主机
+40     server {
+ 41         listen       80;
+ 42         server_name  www.qh1.com;
+ 43         location / {
+ 44             root   /www/qh1;
+ 45             index  index.html index.htm;
+ 46                  }
+ 47         }
+ 48 
+ 49     server {
+ 50         listen       80;
+ 51         server_name  www.qh2.com;
+ 52         location / {
+ 53             root   /www/qh2;
+ 54             index  index.html index.htm;
+ 55                  }
+ 56         }
+ 57 
+ 58     server {
+ 59         listen       80;
+ 60         server_name  www.qh3.com;
+66         location / {
+ 67             root   html;
+ 68             index  index.html index.htm;
+ 69         }
+75         error_page   500 502 503 504  /50x.html;
+ 76         location = /50x.html {
+ 77             root   html;
+ 78         }
+102     }
+[root@localhost /]# mkdir /www/qh{1,2} -p
+[root@localhost /]# echo qh1 > /www/qh1/index.html
+[root@localhost /]# echo qh2 > /www/qh2/index.html
+[root@localhost ~]# nginx -t
+nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+[root@localhost /]# nginx
+[root@localhost /]# netstat -tuanp|grep 80
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1548/nginx: master 
+
+客户端测试
+[root@localhost ~]# vim /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.127.5 www.qh1.com www.qh2.com www.qh3.com
+[root@localhost ~]# curl www.qh1.com
+qh1
+[root@localhost ~]# curl www.qh2.com
+qh2
+[root@localhost ~]# curl www.qh3.com
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+注意关闭机器防火墙
+
+使用inclued将虚拟主机配置放到子配置文件中
+[root@localhost conf.d]# vim /usr/local/nginx/conf/nginx.conf
+38     #gzip  on;
+39         include /usr/local/nginx/conf/conf.d/*.conf;
+
+:40,102w /usr/local/nginx/conf/conf.d/server.conf
+:40,102d
+[root@localhost /]# nginx -t
+nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+[root@localhost conf.d]# nginx -s reload
+
+客户端测试
+[root@localhost ~]# curl www.qh1.com
+qh1
+[root@localhost ~]# curl www.qh2.com
+qh2
+[root@localhost ~]# curl www.qh3.com
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+
+
+用户验证和访问控制
+访问控制:
+有时我们会有这么一种需求,就是你的网站并不想提供一个公共的访问或者某些页面不希望公开,我们希望的是某些特定的客户端可以访问.
+那么我们可以在访问时要求进行身份认证,就如给你自己的家门加一把锁,以拒绝那些不速之客.
+我们在服务课程中学习过apache的访问控制,对于Nginx来说同样可以实现,并且整个过程和Apache 非常的相似.
+
+[root@localhost conf.d]# vim /usr/local/nginx/conf/conf.d/server.conf 
+    server {
+        listen       80;
+        server_name  www.qh1.com;
+        location / {
+            root   /www/qh1;
+            index  index.html index.htm;
+                auth_basic "user&&passwd";  #用户验证
+                auth_basic_user_file  /usr/local/nginx/passwd.db;
+                 }
+        }
+
+    server {
+        listen       80;
+        server_name  www.qh2.com;
+        location / {
+            root   /www/qh2;
+            index  index.html index.htm;
+                allow   192.168.127.0/24;#访问控制，deny/allow顺序:从上到下
+                deny    all;
+                 }
+        }
+[root@localhost conf.d]# htpasswd -c /usr/local/nginx/passwd.db user1    #第一次添加用户时需要加-c,再次添加用户时不能加-c，否则会覆盖原有的用户
+New password: 
+Re-type new password: 
+Adding password for user user1
+
+反向代理
+#该功能由ngx_http_proxy_module模块提供
+root@localhost ~]# vim /usr/local/nginx/conf/conf.d/server.conf
+    server {
+        listen       80;
+        server_name  www.qh1.com;
+        location / {
+                proxy_pass http://192.168.127.30;#只需要加入这一行，192.168.127.30 为真实服务器，192.168.127.5为本机ip
+        }
+         auth_basic "user&&passwd";  #用户验证
+         auth_basic_user_file  /usr/local/nginx/passwd.db;
+                 location ~ /status {
+                 stub_status on;
+                 access_log off;
+               }
+        }
+[root@localhost ~]# nginx -t
+nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+[root@localhost ~]# nginx -s reload
+客户端测试
+[root@localhost ~]# curl 192.168.127.5
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta content="Comsenz Inc." name="Copyright" />
+<title>首页</title>
+<style>
+...
+
+负载均衡
+该功能由ngx_http_upstream_module+ngx_http_proxy_module模块提供
+调度策略:
+轮循
+加权轮循
+ip_hash: 把同一客户端的请求调度到同一台真实服务器上
+1. 轮循 - 后端每台服务器的权重相同
+[root@localhost ~]# vim /usr/local/nginx/conf/conf.d/server.conf 
+        upstream webs {
+                server 192.168.127.30;
+                server 192.168.127.20;
+        }
+    server {
+        listen       80;
+        server_name  www.qh1.com;
+        location / {
+                proxy_pass http://webs;
+        }
+                 location ~ /status {
+                 stub_status on;
+                 access_log off;
+               }
+        }
+ 客户端测试
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.20
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.20
+        
+2.加权轮循: 在每台服务器上加入权值,权值越高的服务器分配到的请求越多
+[root@localhost ~]# vim /usr/local/nginx/conf/conf.d/server.conf 
+
+        upstream webs {
+                server 192.168.127.30 weight=1;
+                server 192.168.127.20 weight=2;
+				server 192.168.127.10 backup;#backup:备份,其他服务器全部宕机后启用 
+        }
+    server {
+        listen       80;
+        server_name  www.qh1.com;
+        location / {
+                proxy_pass http://webs;
+        }
+                 location ~ /status {
+                 stub_status on;
+                 access_log off;
+               }
+        }
+客户端测试
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.20
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.20
+
+3. ip_hash: 让同一客户端在一定时间内访问到同一台服务器
+[root@localhost ~]# vim /usr/local/nginx/conf/conf.d/server.conf 
+
+        upstream webs {
+                ip_hash;
+                server 192.168.127.30;
+                server 192.168.127.20;
+                server 192.168.127.10;
+        }
+客户端测试:
+同一客户端访问一直得到同一个页面.
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+[root@localhost ~]# curl 192.168.127.5
+192.168.127.30
+
+
+nginx+(apache|nginx) ,WEB服务器获取客户端真实IP
+
+[root@localhost ~]# vim /usr/local/nginx/conf/conf.d/server.conf 
+        upstream webs {
+                server 192.168.127.30;
+                server 192.168.127.20;
+        }
+    server {
+        listen       80;
+        server_name  www.qh1.com;
+        location / {
+                proxy_pass http://webs;
+                proxy_set_header X-Real-ip $remote_addr;#代理服务器添加此行
+        }
+                 location ~ /status {
+                 stub_status on;
+                 access_log off;
+               }
+        }
+WEB服务器为apache:
+[root@yumlamp html]# vim /etc/httpd/conf/httpd.conf
+196     LogFormat "%{X-Real-ip}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined #只需将%h改为%{X-Real-ip}i 
+
+客户端访问
+[root@localhost ~]# curl 192.168.127.5
+real-apache
+[root@localhost ~]# curl 192.168.127.5
+real-nginx
+
+apache服务器查看日志
+[root@yumlamp html]# cat /var/log/httpd/access_log
+192.168.127.5 - - [12/Feb/2019:17:27:07 +0800] "GET / HTTP/1.0" 200 12 "-" "curl/7.29.0"  #未设置获取客户端真实IP之前，只能看到代理服务器的ip
+192.168.127.20 - - [12/Feb/2019:17:29:31 +0800] "GET / HTTP/1.0" 200 12 "-" "curl/7.29.0" #设置了获取客户端真实ip之后，能看到真实客户端的ip
+
+WEB服务器为nginx:
+[root@localhost logs]# vim /usr/local/nginx/conf/nginx.conf
+43         location / {
+ 44             root   html;
+ 45             index  index.html index.htm;
+ 46             set_real_ip_from 192.168.127.5;#此为代理服务器ip
+ 47             real_ip_header X-Real-ip;
+ 48         }
+
+[root@localhost logs]# nginx -t
+nginx: [emerg] unknown directive "set_real_ip_from" in /usr/local/nginx/conf/nginx.conf:46  #提示指令没有，需要添加模块
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test failed
+#查看已有模块
+[root@localhost nginx-1.12.2]# nginx -V
+nginx version: nginx/1.12.2
+built by gcc 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) 
+built with OpenSSL 1.0.2k-fips  26 Jan 2017
+TLS SNI support enabled
+configure arguments: --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http_stub_status_module --with-http_ssl_module --sbin-path=/usr/sbin/
+#查找所需模块 --with-http_realip_module 
+[root@localhost nginx-1.12.2]# ./configure --help|grep real
+  --with-http_realip_module          enable ngx_http_realip_module
+  --with-stream_realip_module        enable ngx_stream_realip_module
+
+#添加所需模块
+[root@localhost nginx-1.12.2]# ./configure  --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http_stub_status_module  --with-http_ssl_module  --sbin-path=/usr/sbin/ --with-http_realip_module 
+[root@localhost nginx-1.12.2]# make #不能make install,否则会覆盖安装
+ #替换nginx二进制文件
+[root@localhost objs]# cp nginx /usr/sbin/nginx 
+cp: overwrite ‘/usr/sbin/nginx’? y
+[root@localhost objs]# nginx 
+[root@localhost objs]# netstat -tuanp|grep 80
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      30684/nginx: master
+
+#客户端访问
+[root@yumlamp html]# curl 192.168.127.5
+real-apache
+[root@yumlamp html]# curl 192.168.127.5
+real-nginx
+#真实nginx服务器查看日志
+[root@localhost logs]# cat /usr/local/nginx/logs/access.log
+192.168.127.1 - - [12/Feb/2019:19:15:00 +0800] "GET / HTTP/1.1" 304 0 "-" "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E)"
+192.168.127.20 - - [12/Feb/2019:19:20:58 +0800] "GET / HTTP/1.0" 200 11 "-" "curl/7.29.0"
+192.168.127.20 - - [12/Feb/2019:19:20:59 +0800] "GET / HTTP/1.0" 200 11 "-" "curl/7.29.0"
+192.168.127.30 - - [12/Feb/2019:19:22:03 +0800] "GET / HTTP/1.0" 200 11 "-" "curl/7.29.0"
+#设置了获取客户端真实ip后，日志中记录了访问的客户端ip，而不是代理服务器的ip
+```
+
+#### 编译安装lnmp
+
+```shell
+lnmp脚本
+#nginx
+yum install gcc gcc-c++ pcre-devel openssl-devel -y
+./configure --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http_stub_status_module  --with-http_ssl_module   --sbin-path=/usr/sbin/
+make && make install
+useradd -M -s /sbin/nologin nginx
+#mysql
+yum install ncurses-devel cmake -y
+cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/mysql/data  -DDEFAULT_CHARSET=utf8  -DEXTRA_CHARSETS=all -DDEFAULT_COLLATION=utf8_general_ci  -DWITH_SSL=system -DWITH_EMBEDDED_SERVER=1 -DENABLED_LOCAL_INFILE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_SSL=bundled
+/usr/local/mysql/bin/mysqld_safe --user=mysql &
+
+#php(配置文件在下面)
+yum install libxml2-devel libpng-devel -y
+./configure --prefix=/usr/local/php5 --with-gd --with-zlib --with-mysql=/usr/local/mysql --with-config-file-path=/usr/local/php5 --enable-mbstring --enable-fpm
+make -j2 && make install
+
+编译安装nginx(解压源码包然后进入目录)
+[root@lnmp nginx-1.12.2]# yum install gcc gcc-c++ pcre-devel openssl-devel -y
+[root@lnmp nginx-1.12.2]# ./configure --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http_stub_status_module  --with-http_ssl_module   --sbin-path=/usr/sbin/
+[root@lnmp nginx-1.12.2]#  make && make install
+[root@lnmp nginx-1.12.2]# useradd -M -s /sbin/nologin nginx
+useradd -M -s /sbin/nologin mysql
+mkdir /mysql/data -p
+chown mysql.mysql /mysql/ -R
+/usr/local/mysql/scripts/mysql_install_db --user=mysql  --datadir=/mysql/data/ --basedir=/usr/local/mysql
+编译安装mysql(解压源码包然后进入目录)
+[root@lnmp mysql-5.6.22]# yum install ncurses-devel cmake -y
+[root@lnmp mysql-5.6.22]# cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/mysql/data  -DDEFAULT_CHARSET=utf8  -DEXTRA_CHARSETS=all -DDEFAULT_COLLATION=utf8_general_ci  -DWITH_SSL=system -DWITH_EMBEDDED_SERVER=1 -DENABLED_LOCAL_INFILE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_SSL=bundled
+[root@lnmp mysql-5.6.22]# useradd -M -s /sbin/nologin mysql
+[root@lnmp mysql-5.6.22]# mkdir /mysql/data -p
+[root@lnmp mysql-5.6.22]# chown mysql.mysql /mysql/ -R
+[root@lnmp mysql-5.6.22]# /usr/local/mysql/scripts/mysql_install_db --user=mysql  --datadir=/mysql/data/ --basedir=/usr/local/mysql
+[root@lnmp mysql-5.6.22]# vim /etc/my.cnf
+[mysqld] #其他全删只剩这个
+[root@lnmp mysql-5.6.22]# /usr/local/mysql/bin/mysqld_safe --user=mysql &
+#定义为系统命令
+[root@lnmp mysql-5.6.22]# echo export PATH=/usr/local/mysql/bin:$PATH > /etc/profile.d/mysql.sh
+[root@lnmp mysql-5.6.22]# source  /etc/profile.d/mysql.sh
+
+编译安装php(解压源码包然后进入目录)
+[root@lnmp php-5.6.30]# yum install libxml2-devel libpng-devel -y
+[root@lnmp php-5.6.30]# ./configure --prefix=/usr/local/php5 --with-gd --with-zlib --with-mysql=/usr/local/mysql --with-config-file-path=/usr/local/php5 --enable-mbstring --enable-fpm
+[root@lnmp php-5.6.30]# make -j2 && make install
+[root@lnmp php-5.6.30]# vim /usr/local/nginx/conf/nginx.conf
+ 2 user  nginx;
+45             index  index.html index.htm index.php;
+65         location ~ \.php$ {
+ 66             root           html;
+ 67             fastcgi_pass   127.0.0.1:9000;
+ 68             fastcgi_index  index.php;
+ 69             fastcgi_param  SCRIPT_FILENAME  /usr/local/nginx/html$fastcgi_script_name;
+ 70             include        fastcgi_params;
+ 71         }
+
+[root@lnmp php-5.6.30]# grep -Ev "^;|^ *$" /usr/local/php5/etc/php-fpm.conf.default >/usr/local/php5/etc/php-fpm.conf
+[root@lnmp php-5.6.30]# vim /usr/local/php5/etc/php-fpm.conf
+[global]
+[www]
+user = nginx
+group = nginx
+listen = 127.0.0.1:9000
+pm = dynamic
+pm.max_children = 50
+pm.start_servers = 10
+pm.min_spare_servers = 10
+pm.max_spare_servers = 30
+#测试与nginx的连接
+[root@lnmp html]# nginx -t
+nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+[root@lnmp html]# nginx -s reload
+[root@lnmp html]# /usr/local/php5/sbin/php-fpm #启动php服务
+#查看php是否正常启动
+[root@lnmp html]# netstat -tuanp|grep 9000
+tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN      30898/php-fpm: mast 
+[root@lnmp html]# ps aux|grep php
+root      30898  0.0  0.1 163108  3624 ?        Ss   16:27   0:00 php-fpm: master process (/usr/local/php5/etc/php-fpm.conf)
+nginx     30899  0.0  0.1 163108  3308 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30900  0.0  0.2 163108  4884 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30901  0.0  0.1 163108  3308 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30902  0.0  0.1 163108  3312 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30903  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30904  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30905  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30906  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30907  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+nginx     30908  0.0  0.1 163108  3316 ?        S    16:27   0:00 php-fpm: pool www
+root      30931  0.0  0.0 112712   968 pts/0    S+   16:32   0:00 grep --color=auto php
+#测试与nginx连接
+[root@lnmp html]# vim /usr/local/nginx/html/index.php
+<?php
+phpinfo();
+?>
+
+#测试与mysql的连接
+mysql> create database wp;
+mysql> grant all on wp.* qh@localhost identified by '123';
+[root@lnmp html]# vim index.php 
+<?php
+ mysql_connect("localhost","qh","123") or die("NOT");
+ echo "Success";
+?>
+[root@lnmp html]# curl 192.168.127.100 #连接mysql成功
+Success
+
+#部署WEB应用
+[root@lnmp ~]# tar xf wordpress-4.5.3-zh_CN.tar.gz
+[root@lnmp ~]# cd wordpress/
+[root@lnmp wordpress]# mv * /usr/local/nginx/html/
+mv: overwrite ‘/usr/local/nginx/html/index.php’? y
+#打开浏览器按提示一步一步安装即可
+
+```
+
