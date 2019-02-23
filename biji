@@ -1,0 +1,4867 @@
+#### 高级文件管理命令
+
+```shell
+文件查找
+locate
+功能: 快速列出名称中含有文件名称关键字的所有文件
+ 语法: locate [选项] 文件名关键字
+ 选项:
+ -i 不区分大小写
+ 
+ 优点: 速度快
+ 缺点: 自上次更新后新建的文件不能找到.
+ 解决: 可在查找前手动更新数据库(updatedb)
+
+# alias locate='updatedb;locate'   //设置别名,使用前先更新数据库
+
+ 影响环境的四个文件:
+ /etc/profile
+ /etc/bashrc
+ ~/.bash_profile
+ ~/.bashrc
+ 
+ /etc下的两个文件影响所有用户,家目录下的两个文件影响单个用户
+ 两个profile文件一定要完全登录才能生效
+find
+功能: 递归按条件查找文件
+ 语法: find 查找路径 查找条件 [-exec 处理动作 \;]
+ 查找条件: - 对于值为数字的: 前缀为"+"表示大于n; "-"表示小于n; 没有前缀表示刚好为n
+ -name 文件名,支持通配符
+ -type 文件类型
+ -size 文件大小 [+-]n[kMG]
+ -group 组名
+ -user 用户名
+ -empty             查找空文件或目录
+ -mtime +n 查找n天前修改过内容的文件
+ -mmin  +n 查找n分钟前修改过内容的文件
+ -ctime +n 查找n天前修改过状态的文件
+ -cmin  -n 查找n分钟内修改过状态的文件
+ ...(详见man find)
+
+ 多条件查找:
+ 如果查找条件有多个,默认是and的关系
+
+# find 查找路径 条件1 条件2               //查找 同时满足 条件1和条件2的文件
+
+ 使用-o连接多个条件,这些条件之间是or的关系
+
+# find 查找路径 条件1 -o 条件2             //查找满足条件1 或 条件2的文件
+
+ 查找条件前面加!表示not
+
+# find 查找路径 ! 条件1                   //查找 不满足 条件1的文件
+
+ 查找后的处理:
+ -ok     交互处理,每一个文件处理前询问
+ -exec   直接处理
+
+# find 查找路径 查找条件 -exec 处理动作 \;   //在处理动作中使用{}代表要处理的文件
+
+grep
+功能: 打印出匹配到"模式"的行
+ 语法: grep [选项] 模式 文件
+ 模式:
+ root 包含有root的行
+ ^root 以root开头的行
+ root$ 以root结尾的行
+ ^$ 行首和行尾中间没有任何字符,空行
+ 选项:
+ -i 忽略大小写
+ -v 取反,打印出没有匹配到"模式"的行
+ -n 带行号打印
+ -q 不输出
+ -c 统计匹配到"模式"的行的数量
+wc - 统计
+功能: 统计行数,字符数,单词数
+ 语法: wc [选项] 文件
+ 选项:
+ -l 统计行数
+ -c 统计字节数
+sort - 行排序
+功能: 将文件中的行进行排序后输出
+ 语法: sort [选项] 文件
+ 选项:
+ -n 按照数值进行排序
+ -r 逆序输出
+ -t 指定字段分隔符
+ -k 指定按照第几列排序
+uniq
+功能: 过滤掉连续重复的行
+ 语法: uniq [选项] 文件
+ 选项:
+ -c 统计相同的行的行数,输出时将行数写在行的前面
+ -i 不区分大小写
+ -u 只打印不重复的行
+xargs
+功能: 将从标准输入中接收到的内容(以空格分隔) 传递给后面的命令作为其参数
+ 例:
+ [root@desk ~]# echo "tom jim jerry"|xargs -n1 id   //将"tom jim jerry"一个一个地传递给id作为其参数
+ uid=10005(tom) gid=10006(tom) 组=10006(tom),0(root)
+ id: jim: no such user
+ uid=10006(jerry) gid=10007(jerry) 组=10007(jerry)
+cut - 处理列
+功能: 打印列
+ 语法: cut 选项 文件                   
+ 选项:
+ -d 指定字段分隔符
+ -f 指定需要打印的字段(列)
+tr - 处理字符
+功能: 从标准输入中替换、缩减或删除字符，并将结果写到标准输出
+ 语法: tr [选项] set1 [set2]
+ 选项:
+ -d 删除set1中所有的字符
+ -s 如果只有set1:将set1中的连续字符缩减为1个; 如果有set1和set2则将set1中的字符缩减后替换成set2
+ -t 将set1中的字符对应替换成set2中的字符(set1中的字符不要重复)
+tee
+功能: 将从标准输入中读取到的内容同时写入到标准输出和文件中
+ 语法: tee [选项] 文件
+ 选项:
+ -a 追加到文件中                         //默认是覆盖
+```
+
+
+
+#### 文件的打包与压缩
+
+~~~shell
+文件的打包与压缩
+压缩的好处:
+   1.节省磁盘空间
+   2.节省网络带宽,加快传输速度
+zip
+压缩:压缩后原文件不会消失,压缩后的后缀是.zip
+ 语法: zip [选项] 压缩包名 需要压缩的文件列表
+ 选项:
+  -r 压缩列表中有目录
+ 
+ 解压:
+ 语法: unzip zip压缩包 [-d exdir]
+ 选项:
+  -d exdir   解压到指定目录
+tar
+功能: 既可打包,也可压缩
+   打包: 仅归档,文件的大小不会变化
+   压缩: 压缩后文件的大小会变化
+ 
+ 打包/压缩语法:
+
+# tar 选项 包名 文件列表
+
+ 解包/解压语法:
+
+# tar 选项 包名 [-C exdir]
+
+ 选项:
+ -c 创建归档
+ -x 解包/压
+ -f 后接包名,必接选项
+ -t 查询包中有哪些文件
+ -r 往打好的包中追加文件,不适用于压缩包
+ -z 通过gzip压缩     xxx.tar.gz
+ -j 通过bzip2压缩 xxx.tar.bz2
+ -J 通过xz压缩 xxx.tar.xz
+ -a 程序通过规范的后缀名自动选择压缩程序进行压缩
+ -v 可以看到压缩或解压的过程
+
+ 例:
+ 1.将/test目录下所有的文件打包到/tmp,包名叫test.tar
+
+# tar cf /tmp/test.tar /test/*
+
+ 2.将/test目录下所有的文件采用gzip方式压缩存放到/opt
+
+# tar czf /opt/test.tar.gz /test/*
+
+```
+# tar caf /opt/test.tar.gz /test/*                 //使用-a 文件名一定要规范
+```
+
+ 3.解压:将文件解压到/tmp目录
+
+# tar xf /opt/test.tar.gz -C /tmp                 //不接-C表示解压到当前目录
+
+file
+如果你碰到未知类型的文件,不知道使用什么程序来处理,可以使用file命令来确定文件的类型,再作相应的处理
+
+~~~
+
+#### 文件权限
+
+```shell
+权限
+文件的归属
+文件的基本权限-UGO权限
+P.S: ugo权限不能限制root帐户
+rwx对应的操作是什么?
+普通文件
+每个文件都属于一个特定的用户和一个特定的组
+可通过ls -l查看
+属主: 上图中的第三列,表示文件的所有者
+属组: 上图中的第四列,表示文件的所属组
+修改文件归属:
+
+# chown 属主:属组 文件
+
+-R 作用于目录,表示递归修改目录下的子文件的归属
+U - user, 属主
+G - group, 属组
+O - other, 其他人
+UGO描述的是用户对文件的身份,匹配顺序:
+1.先看用户是否文件的属主:如果是,则应用属主的权限
+2.看用户是否文件属组的成员:如果是,则应用属组的权限
+3.如果以上2个都不是,是应用其他人的权限
+r - read 读 4
+w - write 写 2
+x - execute 执行 1
+目录
+改变文件的权限
+权限掩码UMASK
+高级权限
+suid - 4
+r - 查看文件的内容, cat,more,less,tail,tac,vim...
+w - 修改文件的内容, vim/vi > >> ...
+x - 执行文件, 默认无此权限
+r - 查看目录的内容, ls
+w - 修改目录的内容, mkdir,mv,cp,rm
+x - 进入目录,基本权限, cd
+
+# chmod [ugoa][+-=][rwx] 文件
+
+u:user g:group o:others a:all,可以省略
++:在原来的基础上增加
+-:在原来的基础上减少
+=:覆盖原来的权限
+
+# chmod 644 a.txt //使用数字的形式改变文件的权限,比较常用
+
+666 rw-rw-rw-
+644 rw-r--r--
+755 rwxr-xr-x
+632 rw--wx-w-
+640 rw-r-----
+Linux中,目录的最大权限:777 ; 普通文件的最大权限:666
+创建文件或目录的权限: 在最大权限的基础上去掉umask掩掉的权限
+sgid - 2
+sticky - 1
+隐藏权限
+作用于可执行文件,用户在执行此文件时,会临时获取此文件所有者的权限
+实验:SUID
+实验目的:让tom用户可以看到jerry家目录下的文件内容
+过程:
+
+# cp /usr/bin/cat /tmp
+
+# chown jerry /tmp/cat
+
+# chmod u+s /tmp/cat //给文件加suid权限
+
+# su - tom
+
+$ /tmp/cat /home/jerry/jerry.txt //使用加了suid的cat可以看到jerry家目录下的文件了
+1.作用于可执行文件,用户在执行此文件时,会临时获取此文件所属组的权限
+2.作用于目录,在目录下创建文件会继承目录的属组
+实验:SGID
+实验目的:要求所有用户在/IT目录下创建的文件属组都为IT
+过程:
+
+# groupadd IT
+
+# mkdir /IT
+
+# chown .IT /IT
+
+# chmod g+s /IT //给目录加上sgid权限
+
+# echo test > /IT/test
+
+# ll /IT/test
+
+-rw-r--r-- 1 root IT 5 11月 28 14:22 /IT/test //可以看到root用户创建的文件属组也为IT
+一般作用于共享目录,用户不能删除别人的东西
+实验:STICKY
+实验目标:普通用户在/share目录中只能删除自己的文件
+过程:
+[root@desk ~]# mkdir /share
+[root@desk ~]# chmod 1777 /share //给______________目录加上sticky权限,或用 o+t 添加
+[root@desk ~]# ll -d /share/
+drwxrwxrwt 2 root root 21 11月 28 14:42 /share
+[root@desk ~]# su - tom
+[tom@desk ~]$ touch /share/tom.txt
+[tom@desk ~]$ su - jerry
+[jerry@desk ~]$ ll /share/
+-rw-rw-rw- 1 tom tom 6 11月 28 14:45 tom.txt
+[jerry@desk ~]$ rm -rf /share/tom.txt
+rm: 无法删除"/share/tom.txt": 不允许的操作 //虽然目录权限为777,但不能删除别人的文件
+ACL权限
+授权的原则
+普通帐户提权
+su
+sudo
+i: 所有人(包括root)不可删除,不可修改
+a: 只能追加,不能删除
+lsattr 文件名 #查询文件有没有隐藏权限
+chattr [+-=][ia] #修改文件的隐藏权限
+acl权限是为了满足个性化的权限需求
+[root@desk ~]# getfacl /info/zhangsan
+getfacl: Removing leading '/' from absolute path names
+
+# file: info/zhangsan //文件名
+
+# owner: hr //文件的属主
+
+# group: hr //文件的属组
+
+user::rw- //默认用户(属主)的权限,跟ls -l看到的权限一致
+user:zhangsan:rw- //为用户zhangsan授权的acl权限
+group::--- //默认的组(属组)权限
+group:IT:r-- //为IT组授权的acl权限
+mask::rw- //掩码
+other::--- //其他人的权限
+
+# setfacl -m u:zhangsan:rw /info/zhangsan //给zhangsan用户设置acl权限
+
+# setfacl -m g:IT:r-- /info/lisi //给IT组设置acl权限
+
+# setfacl -x g:IT /info/zhangsan //移除对IT组的授权
+
+# setfacl -b /info/ //移除文件所有的acl权限
+
+# setfacl -m m::r-- file //设置mask,真正的权限是与mask相与的结果
+
+1.满足使用需求
+2.影响范围尽量小
+su切换到root帐户
+1.需要输入root密码
+2.root安全性问题
+管理员授权普通用户可以在指定主机上以指定用户的身份(root)来运行指定的命令
+不用输入root密码,为验证是否本人操作,输入的是用户自己的密码
+
+# export EDITOR=vim
+
+# visudo
+
+授权的格式:
+user MACHINE=(user) COMMANDS
+user: 所授权的帐户
+MACHINE: 在哪台主机上
+(user): 以谁的身份,可以省略
+COMMANDS: 执行的命令列表,多个命令使用,隔开,必须要用绝对路径
+例:
+tom ALL=(ALL) /usr/sbin/useradd,/usr/sbin/usermod,/usr/sbin/gpasswd
+jim ALL=(ALL) ALL,! /usr/sbin/userdel //jim用户除了userdel命令之外,其他所有命令都可以执行
+...
+Cmnd_Alias ACCOUNT = /usr/sbin/useradd,/usr/sbin/userdel,/usr/sbin/usermod //定义别名
+...
+tom ALL=(ALL) ACCOUNT,!/usr/bin/passwd root //tom用户可以执行ACCOUNT别名列表中所有的命令
+...
+%wheel ALL=(ALL) ALL //wheel组的所有成员可以执行所有的命令
+jim ALL=(ALL) NOPASSWD: ALL //jim用户可以执行所有的命令,不需要密码验证
+```
+
+# 软件包管理
+
+#### rpm包查询管理
+
+```shell
+查询
+查询已安装的: 
+查询指定软件包有没有安装: # rpm -q 包名 
+查询所有已安装的软件包:   # rpm -qa 
+查询已安装的软件包安装的所有文件: # rpm -ql 包名  
+查询已安装的软件包安装的配置文件: # rpm -qc 包名  
+通过文件名反查文件是由哪个包安装的: # rpm -qf 文件的绝对路径   
+查询未安装的: 
+查询未安装的软件包将会安装的所有文件: # rpm -qpl 包全名 
+查询未安装的软件包将会安装的配置文件: # rpm -qpc 包全名rpm包无法自动解决依赖性问题,需要手动解决,非常麻烦.. 
+yum可以解决软件包之间的依赖问题 
+在Linux中,不同的发行版软件管理的方式可能不一样,具体来说,主要分为两大派:
+1. dpkg     .deb   apt-get
+
+代表发行版: Ubuntu,Debian,Mint
+
+2. rpm       .rpm   rpm,yum
+
+代表发行版: Redhat,Centos,Fedora,OpensuseRPM: Rpm Package Manager
+
+CentOS系统软件安装三种方式
+rpm: 安装简单,可定制性差,一台机器上不能装多个相同的软件,稳定性高
+
+源码包: 编译安装,安装复杂,可定制性好,一台机器上可安装多个相同的软件
+
+二进制包: 安装简单,可定制性差,一台机器可安装多个相同的软件,稳定性较高
+怎样获取rpm包
+在网络上下载rpm包: http://rpmfind.net/             //下载不常见的rpm包
+
+网络yum源中获取
+
+镜像中获取: 在光盘镜像中的Packages目录下
+怎样查看光盘的内容
+1.将光盘连接上
+
+2.将光盘挂载到相应的挂载点
+
+# mount /dev/cdrom /mnt
+
+3.通过挂载点访问光盘内容
+
+# ls /mnt
+rpm包介绍
+zsh-5.0.2-25.el7.x86_64.rpm       包全名
+
+zsh: 包名
+
+5.0.2: 主版本号.次版本号.源程序的发行号
+
+25: rpm发行号
+
+el7: 平台   一般来说,不同平台的包不兼容
+
+x86_64: 架构   
+
+x86_64: 64位      
+
+i686: 32位      
+
+noarch: 通用
+rpm包管理
+
+rpm工具
+
+安装
+# rpm -ivh 包全名             //安装软件包
+
+# rpm -Uvh 包全名             //升级软件包,如果本来没有安装,则安装
+卸载
+# rpm -e 包名
+
+--nodeps               //只卸载当前软件,不检查依赖关系
+```
+
+#### yum命令的使用
+
+```shell
+yum命令的使用
+
+# yum list //列出所有的软件包,,最后一列以@开头的是本机已安装的
+
+# yum repolist                 //列出所有的仓库
+
+# yum clean all                 //清缓存
+
+# yum makecache                 //创建缓存
+
+# yum install xxx xxx           //安装软件
+
+-y //不交互
+
+--downloadonly             //仅下载,不安装
+
+--downloaddir=DLDIR         //指定下载的目录
+
+# yum reinstall xxx -y         //重新安装
+
+# yum localinstall 包全名 -y     //本地安装,不在仓库里找此包本身
+
+# yum groupinstall xxx -y       //安装组件
+
+# yum remove xxx xxx           //卸载软件,会卸载本软件及所有依赖本软件的软件
+
+# yum provides path/file       //查询文件是由什么包安装的
+
+# yum search 关键字             //搜索所有源中名称或描述中包含有关键字的包
+
+# yum update xxx               //升级软件包,如果不接包名,将升级所有的软件包
+```
+
+配置本地yum仓库
+
+```shell
+要使用yum仓库,需要先进行配置
+主配置文件: /etc/yum.conf
+# PUT YOUR REPOS HERE OR IN separate files named file.repo
+# in /etc/yum.repos.d实验:配置本地yum仓库
+配置过程: 
+1.将系统光盘挂载到/mnt
+2.关闭其他仓库
+# cd /etc/yum.repos.d
+# mkdir repo
+# mv *.repo repo/
+3.创建配置文件
+# vim localdisk.repo
+[localdisk]                               //仓库ID
+name=local disk for centos7.3             //仓库名称(描述)
+baseurl=file:///mnt                       //仓库的URL
+enabled=1                                 //开关,0为关,1为开
+gpgcheck=0                                 //校验开关
+4.检验
+# yum repolist
+```
+
+#### 配置网络源
+
+ 
+
+```shell
+网络源
+常用网络源: centos官方源, epel源 
+国外源下载比较慢,建议使用国内镜像源: 如阿里云,清华大学,网易... 直接搜索 xxx开源镜像站 
+例: 
+# cat /etc/yum.repos.d/tsinghua.repo 
+[centos7]  
+name=centos-el7-tsinghua  baseurl=https://mirrors.tuna.tsinghua.edu.cn/centos/7/os/x86_64/ 
+enabled=1 
+gpgcheck=1 
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7    [epel] 
+name=epel-el7-tsinghua  baseurl=https://mirrors.tuna.tsinghua.edu.cn/epel/7/x86_64/ 
+enabled=1 
+gpgcheck=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/epel/RPM-GPG-KEY-EPEL-7
+
+#### 服务
+```
+
+#### 制作yum仓库
+
+```shell
+扩展:制作yum仓库
+实验:手动制作标准yum仓库并配置使用
+
+配置过程:
+
+# mkdir /test                         //使用本地/test目录作为yum仓库
+
+# cd /mnt/Packages
+
+# cp a* b* c* /test/                 //往/test目录中放rpm包
+
+# createrepo /test/                   //生成标准yum仓库
+
+# cat > /etc/yum.repos.d/test.repo << eof       //配置yum使用此仓库
+
+[test]
+
+name=test
+
+baseurl=file:///test
+
+gpgcheck=0
+
+eof
+
+# yum repolist                       //测试
+
+扩展: 网络源的使用
+如果要保存从网络源上下载的软件,修改主配置文件
+[root@clone1 ~]# head -3 /etc/yum.conf 
+
+[main]
+
+cachedir=/var/cache/yum/$basearch/$releasever   //保存的位置
+
+keepcache=1                                     //1为打开,0为关闭,默认关闭g 
+```
+
+# 磁盘管理
+
+#### 磁盘分区
+
+```shell
+
+
+Fdisk
+MBR 磁盘的前512字节 
+ bootloader(446)+分区表(64)+magic number(2)
+
+ 列出所有设备的分区表信息
+
+# fdisk -l
+
+ 磁盘 /dev/sda：21.5 GB, 21474836480 字节，41943040 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x000c17b9
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sda1 * 2048 2099199 1048576 83 Linux
+ /dev/sda2 2099200 41943039 19921920 8e Linux LVM
+ 设备名字 是否是引导分区 起始扇区 结束扇区 分区大小 分区类型编号 系统
+ 带*是引导分区
+
+# fdisk -l /dev/sdb 列出指定设备的分区表信息
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+
+------
+
+ 一、分区
+
+# fdisk /dev/sdb
+
+ 欢迎使用 fdisk (util-linux 2.23.2)。
+
+ 更改将停留在内存中，直到您决定将更改写入磁盘。
+ 使用写入命令前请三思。
+
+ Device does not contain a recognized partition table
+ 使用磁盘标识符 0x2656627c 创建新的 DOS 磁盘标签。
+
+ 命令(输入 m 获取帮助)：m
+ 命令操作
+ d delete a partition //删除分区
+ l list known partition types //列出已知分区类型
+ m print this menu //打印菜单，打印帮助
+ n add a new partition //创建分区
+ p print the partition table //打印分区表
+ q quit without saving changes //不保存退出
+ t change a partition's system id //更改分区id
+ w write table to disk and exit //保存并退出
+
+ 命令(输入 m 获取帮助)：n
+ Partition type:
+ p primary (0 primary, 0 extended, 4 free) //主分区
+ e extended //扩展分区
+ Select (default p): p
+ 分区号 (1-4，默认 1)：1
+ 起始 扇区 (2048-20971519，默认为 2048)： 
+ 将使用默认值 2048
+ Last 扇区, +扇区 or +size{K,M,G} (2048-20971519，默认为 20971519)：+1G //指定分区大小
+ 分区 1 已设置为 Linux 类型，大小设为 1 GiB
+
+ 命令(输入 m 获取帮助)：p
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x2656627c
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sdb1 2048 2099199 1048576 83 Linux
+
+ 命令(输入 m 获取帮助)：n
+ Partition type:
+ p primary (1 primary, 0 extended, 3 free)
+ e extended
+ Select (default p): p
+ 分区号 (2-4，默认 2)：2
+ 起始 扇区 (2099200-20971519，默认为 2099200)：
+ 将使用默认值 2099200
+ Last 扇区, +扇区 or +size{K,M,G} (2099200-20971519，默认为 20971519)：+2G
+ 分区 2 已设置为 Linux 类型，大小设为 2 GiB
+
+ 命令(输入 m 获取帮助)：p
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x2656627c
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sdb1 2048 2099199 1048576 83 Linux
+ /dev/sdb2 2099200 6293503 2097152 83 Linux
+
+ 命令(输入 m 获取帮助)：w
+ The partition table has been altered!
+
+ Calling ioctl() to re-read partition table.
+ 正在同步磁盘。
+
+ 二、通知内核重读分区表(el6)
+ 查看分区文件是否存在
+
+# ls /dev/sd
+
+ sda sda1 sda2 sdb sdb1 sdb2 
+
+ 如果不存在，通知内核重读分区表
+
+# partx -a /dev/sdb
+
+ partx: /dev/sdb: error adding partitions 1-2 
+
+ 或 # partprobe
+
+ 内核记录分区表的文件: # cat /proc/partitions
+
+ 三、创建文件系统 make file system (格式化)
+
+# mkfs.xfs /dev/sdb1 //命令后接分区
+
+ 四、挂载使用
+ 1.创建挂载点
+
+# mkdir /mnt/sdb1
+
+ 2.将分区挂载到本地目录
+
+# mount /dev/sdb1 /mnt/sdb1
+
+# df -h
+
+ 文件系统 容量 已用 可用 已用% 挂载点
+ /dev/mapper/cl-root 17G 3.5G 14G 21% /
+ devtmpfs 473M 0 473M 0% /dev
+ tmpfs 489M 144K 489M 1% /dev/shm
+ tmpfs 489M 7.0M 482M 2% /run
+ tmpfs 489M 0 489M 0% /sys/fs/cgroup
+ /dev/sda1 1014M 155M 860M 16% /boot
+ /dev/sr0 4.1G 4.1G 0 100% /mnt/test
+ tmpfs 98M 16K 98M 1% /run/user/0
+ /dev/sdb1 1014M 33M 982M 4% /mnt/sdb1
+
+创建逻辑分区
+扩展分区 3G
+ 逻辑分区2个每个1G
+
+# fdisk /dev/sdb
+
+ 欢迎使用 fdisk (util-linux 2.23.2)。
+
+ 更改将停留在内存中，直到您决定将更改写入磁盘。
+ 使用写入命令前请三思。
+
+ 命令(输入 m 获取帮助)：p
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x2656627c
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sdb1 2048 2099199 1048576 83 Linux
+ /dev/sdb2 2099200 6293503 2097152 83 Linux
+
+ 命令(输入 m 获取帮助)：n
+ Partition type:
+ p primary (2 primary, 0 extended, 2 free)
+ e extended
+ Select (default p): e
+ 分区号 (3,4，默认 3)：3
+ 起始 扇区 (6293504-20971519，默认为 6293504)：
+ 将使用默认值 6293504
+ Last 扇区, +扇区 or +size{K,M,G} (6293504-20971519，默认为 20971519)：+3G
+ 分区 3 已设置为 Extended 类型，大小设为 3 GiB
+
+ 命令(输入 m 获取帮助)：p
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x2656627c
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sdb1 2048 2099199 1048576 83 Linux
+ /dev/sdb2 2099200 6293503 2097152 83 Linux
+ /dev/sdb3 6293504 12584959 3145728 5 Extended
+
+ 命令(输入 m 获取帮助)：n
+ Partition type:
+ p primary (2 primary, 1 extended, 1 free)
+ l logical (numbered from 5)
+ Select (default p): l
+ 添加逻辑分区 5
+ 起始 扇区 (6295552-12584959，默认为 6295552)：
+ 将使用默认值 6295552
+ Last 扇区, +扇区 or +size{K,M,G} (6295552-12584959，默认为 12584959)：+1G
+ 分区 5 已设置为 Linux 类型，大小设为 1 GiB
+
+ 命令(输入 m 获取帮助)：n
+ Partition type:
+ p primary (2 primary, 1 extended, 1 free)
+ l logical (numbered from 5)
+ Select (default p): l
+ 添加逻辑分区 6
+ 起始 扇区 (8394752-12584959，默认为 8394752)：
+ 将使用默认值 8394752
+ Last 扇区, +扇区 or +size{K,M,G} (8394752-12584959，默认为 12584959)：+1G
+ 分区 6 已设置为 Linux 类型，大小设为 1 GiB
+
+ 命令(输入 m 获取帮助)：P
+
+ 磁盘 /dev/sdb：10.7 GB, 10737418240 字节，20971520 个扇区
+ Units = 扇区 of 1 * 512 = 512 bytes
+ 扇区大小(逻辑/物理)：512 字节 / 512 字节
+ I/O 大小(最小/最佳)：512 字节 / 512 字节
+ 磁盘标签类型：dos
+ 磁盘标识符：0x2656627c
+
+ 设备 Boot Start End Blocks Id System
+ /dev/sdb1 2048 2099199 1048576 83 Linux
+ /dev/sdb2 2099200 6293503 2097152 83 Linux
+ /dev/sdb3 6293504 12584959 3145728 5 Extended
+ /dev/sdb5 6295552 8392703 1048576 83 Linux
+ /dev/sdb6 8394752 10491903 1048576 83 Linux
+
+ 命令(输入 m 获取帮助)：W
+ The partition table has been altered!
+
+ Calling ioctl() to re-read partition table.
+ 正在同步磁盘。
+
+# ll /dev/sd
+
+ sda sda1 sda2 sdb sdb1 sdb2 sdb3 sdb5 sdb6 
+Parted
+列出所有设备的分区表信息
+
+# parted -l
+
+ 分区-使用过程:
+ 1.分区
+ 2.通知内核重读分区表
+ 3.格式化
+ 4.挂载使用
+
+ parted命令使用:
+ 语法: 
+ parted [选项] 设备 命令 参数
+ 选项:
+ -s 不交互
+ 常用命令:
+ p,print 打印分区表
+ mklabel,mktable 创建磁盘标签,后面可接msdos或gpt
+ mkpart 创建新的分区,语法: mkpart 类型或名字 起始 结束
+ rm 删除分区,后接要删除的分区编号
+ rescue 恢复分区,对于误删的分区进行恢复,语法: rescue 起始 结束
+ *注意:创建磁盘标签将会丢失所有的数据
+
+ 1.分区
+ parted可以对msdos或gpt类型的磁盘的进行分区
+ 实验:将sdb分一个主分区,一个扩展分区,在扩展分区中分一个逻辑分区
+ msdos类型:
+ 1).查看磁盘情况,可以看到没有任何分区
+ [root@clone1 ~]# parted /dev/sdb p
+ Model: VMware, VMware Virtual S (scsi)
+ Disk /dev/sdb: 2147MB
+ Sector size (logical/physical): 512B/512B
+ Partition Table: msdos #磁盘标签已经是msdos. 如果不是,需要更改
+ Disk Flags: 
+
+ Number Start End Size Type File system Flags 
+
+ 2).分一个主分区,大小为500M
+ [root@clone1 ~]# parted -s /dev/sdb mkpart p 0 500M #-s 不交互
+ P.S: 对于MSDOS类型,此命令中的p表示primary
+ [root@clone1 ~]# parted /dev/sdb p
+ Model: VMware, VMware Virtual S (scsi)
+ Disk /dev/sdb: 2147MB #从这里可以看到此磁盘最大位置
+ Sector size (logical/physical): 512B/512B
+ Partition Table: msdos
+ Disk Flags: 
+
+ Number Start End Size Type File system Flags
+ 1 512B 500MB 500MB primary #可以看到已分好
+
+ 3).剩下的空间分到扩展分区中
+ [root@clone1 rpms]# parted -s /dev/sdb mkpart e 500M 2147M
+ P.S: 此处的e表示extended
+ [root@clone1 rpms]# parted /dev/sdb p
+ Model: VMware, VMware Virtual S (scsi)
+ Disk /dev/sdb: 2147MB
+ Sector size (logical/physical): 512B/512B
+ Partition Table: msdos
+ Disk Flags: 
+
+ Number Start End Size Type File system Flags
+ 1 512B 500MB 500MB primary
+ 2 500MB 2147MB 1647MB extended lba
+
+ ====================================================
+ mklabel gpt|msdos //会清空所有数据
+ p 打印分区表
+ mkpart 类型 起始位置 结束位置 创建分区
+ rm 分区编号 删除分区
+
+ 
+
+ 实验：删除分区，通过rescue找回分区和存放在分区内的数据 不是绝对能找回数据 
+ 1.在/dev/sdb1分区内创建一个文件hello.txt 并写入内容 hello world 
+ [root@localhost ~]# cd /mnt/sdb1
+ [root@localhost sdb1]# ls
+ [root@localhost sdb1]# echo "hello world" > hello.txt
+ [root@localhost sdb1]# cat hello.txt
+ hello world
+ [root@localhost sdb1]# cd ..
+
+ 2.卸载/dev/sdb1分区并查找是否已经卸载 
+ [root@localhost mnt]# umount /dev/sdb1
+ [root@localhost mnt]# df -h
+ 文件系统 容量 已用 可用 已用% 挂载点
+ /dev/mapper/cl-root 17G 3.5G 14G 21% /
+ devtmpfs 473M 0 473M 0% /dev
+ tmpfs 489M 84K 489M 1% /dev/shm
+ tmpfs 489M 7.0M 482M 2% /run
+ tmpfs 489M 0 489M 0% /sys/fs/cgroup
+ /dev/sr0 4.1G 4.1G 0 100% /mnt/test
+ /dev/sda1 1014M 155M 860M 16% /boot
+ tmpfs 98M 16K 98M 1% /run/user/42
+ tmpfs 98M 0 98M 0% /run/user/0
+
+ 3.删除/dev/sdb1分区 并检查是否删除
+ [root@localhost mnt]# parted /dev/sdb
+ GNU Parted 3.1
+ 使用 /dev/sdb
+ Welcome to GNU Parted! Type 'help' to view a list of
+ commands.
+ (parted) p 
+ Model: VMware, VMware Virtual S (scsi)
+ Disk /dev/sdb: 10.7GB
+ Sector size (logical/physical): 512B/512B
+ Partition Table: gpt
+ Disk Flags: 
+
+ Number Start End Size File system Name 标志
+ 1 17.4kB 1000MB 1000MB xfs primary
+ 2 1000MB 2000MB 999MB primary
+
+ (parted) rm 1 
+ (parted) q 
+ 信息: You may need to update /etc/fstab.
+
+ [root@localhost mnt]# ll /dev/sd
+ sda sda1 sda2 sdb sdb2 
+
+1. 找回分区 前提需要知道分区表 
+   [root@localhost mnt]# parted /dev/sdb
+    GNU Parted 3.1
+    使用 /dev/sdb
+    Welcome to GNU Parted! Type 'help' to view a list of
+    commands.
+    (parted) p 
+    Model: VMware, VMware Virtual S (scsi)
+    Disk /dev/sdb: 10.7GB
+    Sector size (logical/physical): 512B/512B
+    Partition Table: gpt
+    Disk Flags: 
+
+ Number Start End Size File system Name 标志
+ 2 1000MB 2000MB 999MB primary
+
+ (parte(parted) rescue 0 1G
+ 信息: A xfs primary partition was found at 17.4kB ->
+ 1000MB. Do you want to add it to the partition
+ table?
+ 是/Yes/否/No/放弃/Cancel? Y
+ (parted) q
+ 信息: You may need to update /etc/fstab.
+
+ 5.将找回的分区挂载 查找数据是否找回
+ [root@localhost mnt]# mount /dev/sdb1 /mnt/sdb1
+ [root@localhost mnt]# cd /mnt/sdb1
+ [root@localhost sdb1]# ls
+ hello.txt
+ [root@localhost sdb1]# cat hello.txt 
+ hello world
+
+ 新添加的硬盘直接使用parted是不能分区的
+ 解决：parted /dev/sdc mklabel gpt //设置分区表类型
+
+ 
+```
+
+#### 文件系统
+
+```shell
+文件系统：
+ 磁盘上组织文件的方法，成为文件系统。
+ 文件系统是对存储空间的分配和管理，负责文件的存储并对存入的文件进行保护和检索的系统
+ 数据在磁盘或分区的存储形式，用来管理文件存储的结构，把整个的硬盘分区按照文件系统的规格分为一个个等大小的块block。
+
+ 1.linux的文件系统：ext2 ext3 ext4 xfs windows ：FAT16 FAT32 NTFS 
+
+ 文件系统结构：
+ super block：超级块，不同的文件系统不相同的，记录该文件系统的整体信息，包括inode/block总量，使用量，剩余量以及文件的格式及相关的信息等等。超级块坏了，分区不能使用
+ inode(i节点、索引节点)：记录文件的属性（文件的大小、权限、时间、i节点的编号），但是不记录文件名。一个文件占用一个inode，同时i节点要记录文件数据所在的block编号
+ 文件名存在目录中
+ inode的数量和你能够创建文件的数量有关
+ 如果两个或两个文件以上的i节点相同，说明他们是相同的文件
+ block(数据块):实际记录文件的内容的，一个文件可能占用多个block。
+ 2.文件存储形式
+##  inode1 inode2 inode3 inode4 inode5 
+ block1 block2 block3 block4 block5
+ block6 block7 block8 block9 block10
+ 文件名存在目录里的
+ 3.文件是如何被找到的？
+ /etc/passwd
+# ls -id /
+ 64 /
+# ls -id /etc
+ 268435521 /etc
+# ls -i /etc/passwd
+ 269924133 /etc/passwd
+##  / /etc /etc/passwd
+##  inode i节点 64 268435521 269924133
+ block 数据块 etc 268435521 passwd 269924133 passwd的内容
+##  / 内容 etc的内容
+ 查找系统支持的文件系统类型，.后面的都是文件系统类型
+# mkfs. 按两下tab，出来备选列
+ mkfs.btrfs mkfs.fat
+ mkfs.cramfs mkfs.minix
+ mkfs.ext2 mkfs.msdos
+ mkfs.ext3 mkfs.vfat
+ mkfs.ext4 mkfs.xfs
+ Linux 支持的文件系统类型：minix, ext,
+ ext2, xia, msdos, umsdos, vfat, proc, nfs,
+ iso9660, hpfs, sysv, smb, ncpfs
+ 制作文件系统的命令 
+# mkfs.xfs 分区名
+ 创建文件系统的选项
+ -b ：格式化时指定块的大小 默认4096 
+ ================================================ 
+ Superblock 沒有Superblock ，就沒有filesystem
+ • block 与 inode 的总量；
+ • 未使用与已使用的 inode / block 数量；
+ • block 与 inode 的大小 (block 为 1, 2, 4K，inode 为 128bytes 或 256bytes)；
+ • filesystem 的挂载时间、最近一次写入数据的时间、最近一次检查 (fsck) 的时间等文件系统相关信息；
+ • 每个block group 都可能含有 superblock，这样可以进行用于 superblock 的修复；
+
+ inode table: 存储文件的元数据
+ • 文件的权限(read/write/excute)；
+ • 文件的属主/属组(owner/group)；
+ • 文件的大小；
+ • 文件的(ctime)；
+ • 文件的(atime)；
+ • 文件的(mtime)；
+ • 记录文件内容所在的block number (pointer)； 
+```
+
+####  软链接和硬链接
+
+```shell
+软链接：也称为符号链接 
+ 1.类似于windows快捷方式
+ 2.产生新的inode
+ 3.可以跨文件系统创建
+ 4.删除源文件后链接文件无效
+
+ 创建软链接
+ 网卡配置文件
+ /etc/sysconfig/network-scripts/ifcfg-ens33 
+
+ 给网卡配置文件做软链接，链接到/etc/ens33
+
+ ln -s 链接源 链接名 
+
+# ln -s /etc/sysconfig/network-scripts/ifcfg-ens33 /etc/ifcfg-ens33
+
+# ll /etc/ifcfg-ens33
+
+ lrwxrwxrwx. 1 root root 42 7月 5 22:19 /etc/ifcfg-ens33 -> /etc/sysconfig/network-scripts/ifcfg-ens33
+
+ 写绝对路径
+# ls -li /etc/ifcfg-ens33 /etc/sysconfig/network-scripts/ifcfg-ens33
+ 18317160 lrwxrwxrwx. 1 root root 42 7月 5 22:19 /etc/ifcfg-ens33 -> /etc/sysconfig/network-scripts/ifcfg-ens33
+ 2399912 -rw-r--r--. 1 root root 74 7月 4 19:09 /etc/sysconfig/network-scripts/ifcfg-ens33
+ 硬链接
+ 1.对主要数据文件备份 防止误删除
+ 2.不产生新的inode
+ 3.任意删除一个文件名,文件都不会损坏
+ 4.不可以对目录做硬链接
+ 5.不可以跨文件系统创建
+ ln 链接源 链接名
+# ln /etc/sysconfig/network-scripts/ifcfg-ens33 /opt/ifcfg-ens33
+# ll /opt/ifcfg-ens33
+ -rw-r--r--. 2 root root 74 7月 4 19:09 /opt/ifcfg-ens33
+# ls -il /opt/ifcfg-ens33 /etc/sysconfig/network-scripts/ifcfg-ens33
+ 2399912 -rw-r--r--. 2 root root 74 7月 4 19:09 /etc/sysconfig/network-scripts/ifcfg-ens33
+ 2399912 -rw-r--r--. 2 root root 74 7月 4 19:09 /opt/ifcfg-ens33
+# find / -inum 2399912 -exec ls -li {} \;
+ 2399912 -rw-r--r--. 2 root root 74 7月 4 19:09 /etc/sysconfig/network-scripts/ifcfg-ens33
+ 2399912 -rw-r--r--. 2 root root 74 7月 4 19:09 /opt/ifcfg-ens33
+
+
+```
+
+#### 挂载
+
+```shell
+挂载的目的：通过挂载点，得到访问设备的入口
+ 1.挂载的命令
+ mount
+
+# mount /dev/sdc1 /mnt/sdc1
+
+ 2.挂载的选项
+ mount [-t vfstype][-o option[,option]...] device dir
+ -t 指定文件系统类型 -o 指定挂载属性
+ -a ：依照配置文件/etc/fstab的数据将所有未挂载的分区磁盘都挂载
+ 镜像文件: iso9660 
+
+ 挂载属性：
+ ro 只读文件系统 read only
+ rw 可读写 read write
+ async 异步写入 
+ sync 同步写入
+ auto/noauto 是否支持开机挂载 
+ dev/nodev 是否支持设备文件
+ exec/noexec 是否允许分区上拥有可运行二进制文件 
+ suid/nosuid 是否允许分区上含有suid/sgid的文件格式
+ user/nouser 是否允许分区让任何使用者运行mount
+ remount 重新挂载已挂载的文件系统
+ _netdev 如果连的上就开机挂载，如果连不上就不挂载
+
+ defaults
+ Use default options: rw, suid, dev, exec,
+ auto, nouser, and async.
+
+ [root@localhost ~]# mount -o ro /dev/sdc1 /mnt/sdc1 //设置为只读文件系统
+ [root@localhost ~]# cd /mnt/sdc1 
+ [root@localhost sdc1]# touch a.txt
+ touch: 无法创建"a.txt": 只读文件系统
+ [root@localhost sdc1]# mount -o remount,rw /mnt/sdc1 //重新挂载修改属性为读写
+ [root@localhost sdc1]# touch a.txt
+ [root@localhost sdc1]# ls a.txt 
+ a.txt
+
+# vim /etc/fstab
+
+ 第1列：可以写设备文件名也可以使用设备的uuid uuid是唯一，建议使用uuid
+
+ 查看所有设备的uuid
+
+# blkid
+
+ /dev/sda1: UUID="28632ebb-0670-41c3-82cb-642c35dc6232" TYPE="xfs" 
+ /dev/sda2: UUID="Ac7k0N-2mx5-QIYu-1ToA-Qcqq-X5nN-bf3IKX" TYPE="LVM2_member" 
+ /dev/mapper/cl-root: UUID="1979fc25-33fa-416e-864a-c35f30fd8a51" TYPE="xfs" 
+ /dev/mapper/cl-swap: UUID="db0240f7-1a4e-4462-81fc-186f47abfb0d" TYPE="swap" 
+ /dev/loop0: UUID="2016-12-05-13-55-45-00" LABEL="CentOS 7 x86_64" TYPE="iso9660" PTTYPE="dos" 
+ [root@server ~]# blkid /dev/sda2
+ /dev/sda2: UUID="Ac7k0N-2mx5-QIYu-1ToA-Qcqq-X5nN-bf3IKX" TYPE="LVM2_member" 
+
+ 查看指定设备的uuid
+
+# blkid /dev/sda1
+
+ /dev/sda1: UUID="28632ebb-0670-41c3-82cb-642c35dc6232" TYPE="xfs" 
+
+ 开机挂载
+ 例:希望开机将/dev/sdb1挂载到/mnt/sdb1目录
+ 两种方法:
+
+1. fstab - 这种方法如果有错将导致系统启动失败
+   1).修改/etc/fstab,添加以下记录(不含绿色字):
+    /dev/sdb1 /mnt/sdb1 xfs defaults 0 0
+    设备名称 挂载点 文件系统类型 挂载属性 dump fsck
+    2).使用mount -a测试
+2. rc.local - 这个文件是开机过程中执行的一个脚本,不会影响系统启动
+   1).修改/etc/rc.d/rc.local,添加挂载命令
+
+# echo 'mount /dev/sdb1 /mnt/sdb1/' >> /etc/rc.local
+
+ 2).给此文件加上可执行权限
+
+# chmod +x /etc/rc.d/rc.local
+
+
+```
+
+#### 交换分区
+
+```shell
+制作交换分区
+ 方法两种:
+ 1.用分区实现
+ 2.用文件实现
+
+ 查看swap
+
+# free -m
+
+ total used free shared buff/cache available
+ Mem: 7856 592 5282 1176 1981 5828
+ Swap: 14335 0 14335
+
+# top
+
+ KiB Swap: 14680060 total, 14680060 free, 0 used. 5967972 avail Mem 
+
+# swapon -s
+
+ 文件名 类型 大小 已用 权限
+ /dev/dm-1 partition 14680060 0 -1
+
+# swapon -d
+
+ NAME TYPE SIZE USED PRIO
+ /dev/dm-1 partition 14G 0B -1
+
+ 第一种方法:用分区实现
+ 1.准备新分区 
+ /dev/sdb2
+
+ 2.格式化成swap分区
+
+# mkswap /dev/sdb2
+
+ 正在设置交换空间版本 1，大小 = 975868 KiB
+ 无标签，UUID=0393e1a0-bf52-48d5-9cb7-2fe3dbf2c99a
+
+ 3.激活swap分区
+
+# swapon /dev/sdb2
+
+ 4.查看swap分区
+
+# swapon -s
+
+ 文件名 类型 大小 已用 权限
+ /dev/dm-1 partition 2097148 0 -1
+ /dev/sdb2 partition 975868 0 -2
+
+ 5.挂载
+
+# vim /etc/fstab
+
+ /dev/sdb2 swap swap defaults 0 0 
+
+ 第二种方法:用文件实现
+ dd 复制文件，根据设置参数转换为文件命令
+ if: input file|device 从 file|device中读而不是标准输入。
+ of: output file|device 写到file|device里去而不是标准输出。
+ bs: blocksize 块的大小 
+ count: 块的数量
+
+ /dev/zero 无限0资源设备 
+ /dev/null 垃圾桶 黑洞设备文件 
+
+ 1.使用/dev/zero设备制作1G的/tmp/swap.txt文件 
+
+# dd if=/dev/zero of=/tmp/swap.txt bs=1M count=1024
+
+ 记录了1024+0 的读入
+ 记录了1024+0 的写出
+ 1073741824字节(1.1 GB)已复制，2.0213 秒，531 MB/秒
+
+# ll /tmp/swap.txt -h
+
+ -rw-r--r--. 1 root root 1.0G 7月 5 23:33 /tmp/swap.txt
+
+ 2.格式化成swap分区
+
+# mkswap /tmp/swap.txt
+
+ 正在设置交换空间版本 1，大小 = 1048572 KiB
+ 无标签，UUID=ca74fb34-8ba0-4ee8-b88e-53949c985c7f
+
+ 3.激活swap
+
+# swapon /tmp/swap.txt
+
+ swapon: /tmp/swap.txt：不安全的权限 0644，建议使用 0600。
+
+ 4.查看swap分区
+
+# swapon -d
+
+ NAME TYPE SIZE USED PRIO
+ /dev/sdb2 partition 953M 0B -1
+ /dev/dm-1 partition 2G 0B -2
+ /tmp/swap.txt file 1024M 0B -3
+
+ 5.挂载
+
+# vim /etc/fstab
+
+##  /tmp/swap.txt swap swap defaults 0 0 
+
+ 卸载swap 
+ 1.让swap无效 
+
+# swapoff /tmp/swap.txt
+
+# swapoff /dev/sdb2
+
+ 2.删除/etc/fstab配置文件内的设置
+
+ 3.删除交换文件
+
+# rm -rf /tmp/swap.txt
+```
+
+#### Quota（限额）
+
+```shell
+配额：quota
+ 什么是磁盘配额？
+ 限制磁盘资源的使用。
+
+ 限制原因就是资源不是无限的
+
+ 应用场景
+ 1.网络存储空间有限 网盘
+ 2.邮件服务器
+ 3.公司的文件共享服务器
+
+ 能限制谁？
+ 1.限制普通用户
+ 2.限制用户组
+ 注意：不能限制root用户
+ root用户对其他人的限制
+
+ 能够限制什么？
+ inode----限制用户创建文件的个数 
+ block----限制用户能够使用的磁盘空间的大小 
+
+ soft软限制：超过软限制只警告，不影响使用
+ hard硬限制：是不可逾越的限制
+ grace time 时间限制：宽限时间，当超过软限制，没有超过硬限制的时候，将启动倒计时，一般默认设置为7天，如果7天内都不进行任何磁盘管理操作，软限制将变成硬限制。
+
+ 设置配额的条件？
+ 需要内核支持quota功能
+
+# grep -i quota /boot/config-3.10.0-514.el7.x86_64
+
+ CONFIG_NETFILTER_XT_MATCH_QUOTA=m
+ CONFIG_XFS_QUOTA=y
+ CONFIG_QUOTA=y
+ CONFIG_QUOTA_NETLINK_INTERFACE=y
+ CONFIG_PRINT_QUOTA_WARNING=y
+
+# CONFIG_QUOTA_DEBUG is not set
+
+ CONFIG_QUOTA_TREE=y
+ CONFIG_QUOTACTL=y
+ CONFIG_QUOTACTL_COMPAT=y
+
+ 如何进行磁盘配额？
+ 前提是文件系统支持磁盘配额的属性uquota gquota
+ 1.将文件系统挂载到系统中的目录 
+
+# mount /dev/sdb1 /mnt/sdb1
+
+ 2.查看文件系统是否支持磁盘配额 
+
+# mount | grep sdb1
+
+ 3.让文件系统支持磁盘配额
+
+# umount /mnt/sdb1
+
+# mount -o uquota,gquota /dev/sdb1 /mnt/sdb1
+
+# mount | grep sdb1
+
+ 4.设置分区开机挂载
+
+# vim /etc/fstab
+
+ /dev/sdb1 /mnt/sdb1 xfs defaults,uquota,gquota 0 0 
+
+ 5.创建普通用户并设置密码
+
+# useradd quota1
+
+# useradd quota2
+
+# useradd quota3
+
+# echo "1" | passwd --stdin quota1
+
+ 6.查看磁盘配额的信息
+
+# xfs_quota -x -c “report -ubih” /mnt/sdb1
+
+ -x 专家模式 只有使用了-x后面才可以使用-c的指令
+ -c 后接指令
+ report 列出目前的quota项目
+ -i inode
+ -b block
+ -h 人性化显示
+ -u 只显示用户的配额
+ -g 只显示用户组的配额
+ limit 设置配额
+ state 显示状态 
+ timer 设置宽限时间 
+
+ 7.限制quota1用户只能在/mnt/sdb1目录内创建10个文件
+
+# xfs_quota -x -c 'limit -u isoft=7 ihard=10 quota1 ' /mnt/sdb1
+
+ limit -u 给用户设置配额
+ -g 给用户组设置配额
+ isoft inode的软限制
+ ihard inode的硬限制
+ bsoft block的软限制
+ bhard block的硬限制
+
+ 查看设置的配额
+
+# xfs_quota -x -c 'report -uinh ' /mnt/sdb1
+
+ User quota on /mnt/sdb1 (/dev/mapper/vg0-lv0)
+ Inodes 
+ User ID Used Soft Hard Warn/Grace 
+
+------
+
+ #0 6 0 0 00 [------]
+ #1001 0 7 10 00 [------]
+
+ 8.测试配额
+
+# chmod 777 /mnt/sdb1
+
+# chmod o+t /mnt/sdb1
+
+# ll -d /mnt/sdb1
+
+ drwxrwxrwt. 2 root root 58 7月 7 22:34 /mnt/sdb1
+
+# su - quota1
+
+ 上一次登录：五 7月 7 23:46:46 CST 2017pts/0 上
+ $ cd /mnt/sdb1 //一定要切换到做了配额的目录下在操作
+ $ ls
+ lvmsnap-test.txt passwd shadow
+ $ touch test{1..8}.txt
+ $ touch test{9,10}.txt
+ $ touch test11.txt //超过硬限制，不能够创建test11.txt文件
+
+#  touch: 无法创建"test11.txt": 超出磁盘限额
+
+ 磁盘配额除了可以限制用户,组外,还可以对目录做限制
+ 配置步骤:
+
+1. 开启项目配额 
+
+# mount -o usrquota,prjquota,grpquota /dev/sdb1 /mnt/sdb1/
+
+# mount |grep sdb1
+
+ 2.设置目录,项目名称及项目ID
+
+# echo 1:/mnt/sdb1 >> /etc/projects
+
+# echo aa:1 >> /etc/projid
+
+ 3.初始化项目
+
+# xfs_quota -x -c "project -s aa"
+
+# xfs_quota -x -c "report -pbih" /mnt/sdb1/
+
+ 4.对项目配置配额
+
+# xfs_quota -x -c "limit bsoft=100M bhard=200M -p aa" /mnt/sdb1/
+
+# xfs_quota -x -c "report -pbih" /mnt/sdb1/
+
+ 5.测试
+
+#  不管任何人在此项目目录创建文件都不能超过200M
+
+ 设置宽限时间
+ 格式: xfs_quota -x -c "timer [-bi][-g|-p|-u] value" /mnt/sdb1/
+ 2days
+ 1hours
+ 5minutes
+```
+
+#### 制作RAID
+
+```shell
+制作软raid
+准备5个分区 每个分区是200M
+ /dec/sdc1～/dev/sdc5
+
+ 制作raid5 
+ 语法：mdadm [mode] <raiddevice> [options] <compo‐
+ nent-devices>
+
+ -C, --create 创建阵列
+ -n, --raid-devices= 指定设备数量 后面跟上设备列表
+ -x, --spare-devices= 指定备盘
+ -l, --level= 指定raid的级别
+ -v, --verbose 显示创建过程
+ -D 查看raid的详细信息
+
+ 1）# mdadm -C /dev/md0 -l 5 -n 3 -x 1 /dev/sdc{1..4}
+ mdadm: Defaulting to version 1.2 metadata
+ mdadm: array /dev/md0 started.
+
+ 2）查看创建好的raid阵列 
+
+# mdadm -D /dev/md0
+
+# cat /proc/mdstat
+
+ Personalities : [raid6][raid5] [raid4] 
+ md0 : active raid5 sdc3[4] sdc4[3](S) sdc2[1] sdc1[0]
+ 972800 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3][UUU]
+
+ unused devices: <none>
+
+ 制作配置文件：将当前raid信息保存至配置文件，已便以后进行装配
+
+# mdadm -Ds > /etc/mdadm.conf
+
+# cat /etc/mdadm.conf
+
+ ARRAY /dev/md0 metadata=1.2 spares=1 name=localhost.localdomain:0 UUID=2c27b2c5:3d35cee8:be4398a6:25d2d9cd
+
+ 3）格式化制作文件系统
+
+# mkfs.xfs /dev/md0
+
+ 4）挂载
+
+# mkdir /md0
+
+# mount /dev/md0 /md0
+
+# df -h
+
+ 文件系统 容量 已用 可用 已用% 挂载点
+ /dev/mapper/cl-root 17G 4.3G 13G 26% /
+ devtmpfs 473M 0 473M 0% /dev
+ tmpfs 489M 84K 489M 1% /dev/shm
+ tmpfs 489M 7.1M 482M 2% /run
+ tmpfs 489M 0 489M 0% /sys/fs/cgroup
+ /dev/sda1 1014M 155M 860M 16% /boot
+ tmpfs 98M 16K 98M 1% /run/user/42
+ tmpfs 98M 0 98M 0% /run/user/0
+ /dev/md0 946M 33M 914M 4% /md0
+
+ 5）开机挂载
+
+# vim /etc/fstab
+
+ /dev/md0 /md0 xfs defaults 0 0
+
+ 测试：
+ 1.# cd /md0 
+ 2.# cp /etc/passwd /etc/group /etc/gshadow /etc/shadow /etc/login.defs .
+ 3.将阵列中的一个分区指定为坏的分区 /dev/sdc1
+
+# mdadm -f /dev/md0 /dev/sdc1
+
+ mdadm: set /dev/sdc1 faulty in /dev/md0
+ 4.查看数据是否完整
+ 5.查看raid阵列的信息
+ 6.热拔（删除）/dev/sdc1
+
+# mdadm -r /dev/md0 /dev/sdc1
+
+ mdadm: hot removed /dev/sdc1 from /dev/md0
+ 7.添加新设备到raid阵列
+
+# mdadm -a /dev/md0 /dev/sdc5
+
+ mdadm: added /dev/sdc5
+
+ 关闭raid（需要先卸载raid）
+
+# umount /dev/md0
+
+# mdadm -S /dev/md0
+
+ mdadm: stopped /dev/md0
+
+ 启动阵列（必须有原来raid阵列的配置文件 启动后在挂载使用）
+
+# mdadm -A /dev/md0
+
+ mdadm: /dev/md0 has been started with 3 drives and 1 spare.
+
+ 删除raid
+ 清理阵列
+ 1.先卸载
+ 2.停止阵列
+ 3.删除配置文件
+ 4.清除成员的元数据 mdadm --zero-superblock 成员设备
+硬raid       
+准备5个分区 每个分区是200M
+ /dec/sdc1～/dev/sdc5
+
+ 制作raid5 
+ 语法：mdadm [mode] <raiddevice> [options] <compo‐
+ nent-devices>
+
+ -C, --create 创建阵列
+ -n, --raid-devices= 指定设备数量 后面跟上设备列表
+ -x, --spare-devices= 指定备盘
+ -l, --level= 指定raid的级别
+ -v, --verbose 显示创建过程
+ -D 查看raid的详细信息
+
+ 1）# mdadm -C /dev/md0 -l 5 -n 3 -x 1 /dev/sdc{1..4}
+ mdadm: Defaulting to version 1.2 metadata
+ mdadm: array /dev/md0 started.
+
+ 2）查看创建好的raid阵列 
+
+# mdadm -D /dev/md0
+
+# cat /proc/mdstat
+
+ Personalities : [raid6][raid5] [raid4] 
+ md0 : active raid5 sdc3[4] sdc4[3](S) sdc2[1] sdc1[0]
+ 972800 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3][UUU]
+
+ unused devices: <none>
+
+ 制作配置文件：将当前raid信息保存至配置文件，已便以后进行装配
+
+# mdadm -Ds > /etc/mdadm.conf
+
+# cat /etc/mdadm.conf
+
+ ARRAY /dev/md0 metadata=1.2 spares=1 name=localhost.localdomain:0 UUID=2c27b2c5:3d35cee8:be4398a6:25d2d9cd
+
+ 3）格式化制作文件系统
+
+# mkfs.xfs /dev/md0
+
+ 4）挂载
+
+# mkdir /md0
+
+# mount /dev/md0 /md0
+
+# df -h
+
+ 文件系统 容量 已用 可用 已用% 挂载点
+ /dev/mapper/cl-root 17G 4.3G 13G 26% /
+ devtmpfs 473M 0 473M 0% /dev
+ tmpfs 489M 84K 489M 1% /dev/shm
+ tmpfs 489M 7.1M 482M 2% /run
+ tmpfs 489M 0 489M 0% /sys/fs/cgroup
+ /dev/sda1 1014M 155M 860M 16% /boot
+ tmpfs 98M 16K 98M 1% /run/user/42
+ tmpfs 98M 0 98M 0% /run/user/0
+ /dev/md0 946M 33M 914M 4% /md0
+
+ 5）开机挂载
+
+# vim /etc/fstab
+
+ /dev/md0 /md0 xfs defaults 0 0
+
+ 测试：
+ 1.# cd /md0 
+ 2.# cp /etc/passwd /etc/group /etc/gshadow /etc/shadow /etc/login.defs .
+ 3.将阵列中的一个分区指定为坏的分区 /dev/sdc1
+
+# mdadm -f /dev/md0 /dev/sdc1
+
+ mdadm: set /dev/sdc1 faulty in /dev/md0
+ 4.查看数据是否完整
+ 5.查看raid阵列的信息
+ 6.热拔（删除）/dev/sdc1
+
+# mdadm -r /dev/md0 /dev/sdc1
+
+ mdadm: hot removed /dev/sdc1 from /dev/md0
+ 7.添加新设备到raid阵列
+
+# mdadm -a /dev/md0 /dev/sdc5
+
+ mdadm: added /dev/sdc5
+
+ 关闭raid（需要先卸载raid）
+
+# umount /dev/md0
+
+# mdadm -S /dev/md0
+
+ mdadm: stopped /dev/md0
+
+ 启动阵列（必须有原来raid阵列的配置文件 启动后在挂载使用）
+
+# mdadm -A /dev/md0
+
+ mdadm: /dev/md0 has been started with 3 drives and 1 spare.
+
+ 删除raid
+ 清理阵列
+ 1.先卸载
+ 2.停止阵列
+ 3.删除配置文件
+ 4.清除成员的元数据 mdadm --zero-superblock 成员设备
+```
+
+#### LVM
+
+```shell
+lvm 逻辑卷管理
+ 磁盘空间的动态划分和管理
+
+ lvm能够实现分区的动态的拉伸和回缩
+
+ lvm的创建过程其实是一个先整合，再划分的过程。
+
+ 一、LVM的创建过程
+ 1）添加硬盘或者创建分区，通知内核
+ 2）创建物理卷 PV （pvcreate） 
+ 3）创建卷组 VG （vgcreate）
+ 4）创建逻辑卷 LV （lvcreate）
+ 5）创建文件系统 （mkfs.xfs）
+ 6）挂载使用 (mount autofs /etc/fstab)
+
+ 1)
+
+# parted /dev/sdd mklabel gpt
+
+# parted /dev/sdd mkpart primary 1 1G
+
+# parted /dev/sdd mkpart primary 1G 2G
+
+# parted /dev/sdd mkpart primary 2G 3G
+
+# parted /dev/sdd mkpart primary 3G 4G
+
+# ll /dev/sdd
+
+ sdd sdd1 sdd2 sdd3 sdd4 
+
+ 2)创建物理卷 
+
+# pvcreate /dev/sdd{1..4}
+
+ Physical volume "/dev/sdd1" successfully created.
+ Physical volume "/dev/sdd2" successfully created.
+ Physical volume "/dev/sdd3" successfully created.
+ Physical volume "/dev/sdd4" successfully created.
+
+ 2.1)查看物理卷
+
+# pvs
+
+ PV VG Fmt Attr PSize PFree 
+ /dev/sda2 cl lvm2 a-- 19.00g 0 
+ /dev/sdd1 lvm2 --- 953.00m 953.00m
+ /dev/sdd2 lvm2 --- 953.00m 953.00m
+ /dev/sdd3 lvm2 --- 954.00m 954.00m
+ /dev/sdd4 lvm2 --- 954.00m 954.00m
+
+# pvscan
+
+ PV /dev/sda2 VG cl lvm2 [19.00 GiB / 0 free]
+ PV /dev/sdd3 lvm2 [954.00 MiB]
+ PV /dev/sdd2 lvm2 [953.00 MiB]
+ PV /dev/sdd4 lvm2 [954.00 MiB]
+ PV /dev/sdd1 lvm2 [953.00 MiB]
+ Total: 5 [22.72 GiB] / in use: 1 [19.00 GiB] / in no VG: 4 [3.72 GiB]
+
+# pvdisplay
+
+ "/dev/sdd3" is a new physical volume of "954.00 MiB"
+ --- NEW Physical volume ---
+ PV Name /dev/sdd3
+ VG Name 
+ PV Size 954.00 MiB
+ Allocatable NO
+ PE Size 0 
+ Total PE 0
+ Free PE 0
+ Allocated PE 0
+ PV UUID kRYrRB-0BZm-Z2h1-tQxu-kDUC-FvQF-4YSZ5L
+ ...
+
+ 3）创建卷组
+ 语法：vgcreate [-s 大小] 卷组的名字 物理卷的设备路径
+
+# vgcreate -s 8M vg0 /dev/sdd{1..4}
+
+ Volume group "vg0" successfully created
+
+ -s 指定PE大小
+ PE（物理扩展单元） 大小（默认是4M）
+
+ 3.1）
+
+# vgs
+
+ VG #PV #LV #SN Attr VSize VFree
+ cl 1 2 0 wz--n- 19.00g 0 
+ vg0 4 0 0 wz--n- 3.72g 3.72g
+
+# vgscan
+
+ Reading volume groups from cache.
+ Found volume group "vg0" using metadata type lvm2
+ Found volume group "cl" using metadata type lvm2
+
+# vgdisplay
+
+ --- Volume group ---
+ VG Name vg0
+ System ID 
+ Format lvm2
+ Metadata Areas 4
+ Metadata Sequence No 1
+ VG Access read/write
+ VG Status resizable
+ MAX LV 0
+ Cur LV 0
+ Open LV 0
+ Max PV 0
+ Cur PV 4
+ Act PV 4
+ VG Size 3.72 GiB
+ PE Size 8.00 MiB
+ Total PE 476
+ Alloc PE / Size 0 / 0 
+ Free PE / Size 476 / 3.72 GiB
+ VG UUID PWOx9H-9eP0-vkdz-v31T-cHxO-C80x-4BAMfE
+
+ 4）创建逻辑卷 
+
+# lvcreate -n lv0 -L 1500M vg0
+
+ Rounding up size to full physical extent 1.47 GiB
+ Logical volume "lv0" created.
+
+ -n 指定lv的名字
+ -L 指定lv的大小
+ vg0 取vg0卷组的空间做lv
+
+# lvcreate -n lv0 -l 188 vg0
+
+ -l 指定使用了多少个PE
+ LE 逻辑扩展单元
+
+ 4.1) 
+ #lvs
+ #lvscan
+ #lvdisplay
+
+ 5）创建文件系统
+
+# mkfs.xfs /dev/vg0/lv0
+
+ 6）挂载
+
+# mkdir /lv0
+
+# mount /dev/vg0/lv0 /lv0/
+
+# vim /etc/fstab
+
+ /dev/vg0/lv0 /lv0 xfs defaults 0 0
+
+ 7）测试 
+
+# cd /lv0
+
+# cat > lvm-test.txt << EOF
+
+> ------
+>
+> > Hello JIM
+> > hi jim
+> >
+> > ## hello world
+> >
+> > EOF
+
+扩容
+xfs和ext4文件系统
+ 扩容的区别
+ 扩容文件系统的命令不一样
+ xfs 使用的命令是xfs_growfs
+ exte 使用的命令是resize2fs
+xfs
+lv扩容
+ 在线扩容
+ 第1种情况：卷组内有空闲空间，直接从卷组取空间
+ 1）对逻辑卷扩容
+
+# lvextend -L +500M /dev/vg0/lv0 +表示在原来的空间
+
+ 大小上加上多少空间大小
+ Rounding size to boundary between physical extents: 504.00 MiB.
+ Size of logical volume vg0/lv0 changed from 1.47 GiB (188 extents) to 1.96 GiB (251 extents).
+ Logical volume vg0/lv0 successfully resized.
+
+ 2）对文件系统扩容
+
+# xfs_growfs /dev/vg0/lv0
+
+ 第2种情况：卷组内没有空间
+ 1）创建新分区
+
+# parted /dev/sdd mkpart primary 4G 5G
+
+# ll /dev/sdd
+
+ sdd sdd1 sdd2 sdd3 sdd4 sdd5 
+
+ 2）创建物理卷
+
+# pvcreate /dev/sdd5
+
+ Physical volume "/dev/sdd5" successfully created.
+
+ 3）加入卷组 vg扩容
+
+# vgextend vg0 /dev/sdd5
+
+ Volume group "vg0" successfully extended
+
+ 4）对逻辑卷扩容 
+
+# lvextend -L 4500M /dev/vg0/lv0
+
+ Rounding size to boundary between physical extents: 4.40 GiB.
+ Size of logical volume vg0/lv0 changed from 1.96 GiB (251 extents) to 4.40 GiB (563 extents).
+ Logical volume vg0/lv0 successfully resized.
+
+ 5）对文件系统扩容
+
+# xfs_growfs /dev/vg0/lv0
+
+ext4
+创建lv0逻辑卷
+
+# lvcreate -n lv0 -L 2G vg0
+
+ 制作文件系统ext4
+
+# mkfs.ext4 /dev/vg0/lv0
+
+ 挂载
+
+# mount /dev/vg0/lv0 /lv0
+
+ 在逻辑卷中添加数据
+
+# cd /lv0
+
+# echo "ext4" >test.txt
+
+# cat test.txt
+
+ ext4
+
+ 扩容lv0
+
+# lvextend -L +1G /dev/vg0/lv0
+
+ Size of logical volume vg0/lv0 changed from 2.00 GiB (256 extents) to 3.00 GiB (384 extents).
+ Logical volume vg0/lv0 successfully resized.
+
+ 文件系统扩容 
+
+# resize2fs /dev/vg0/lv0
+
+缩容
+XFS不支持缩容
+
+ ext4支持缩容 
+ext4缩容 
+ lv缩容
+ 注意：
+ 1.风险大有可能造成数据的损坏
+ 2.确保缩减后的空间大小依然能存储原来的所有数据
+ 3.不要在线缩容
+ 4.在缩减之前强制检查文件系统
+
+ 现在要在创建一个逻辑卷lv1，lv1的大小要求为1G，卷组内没有空间，但逻辑卷lv0的空间过大，缩减lv0，给lv1
+
+ 给lv0缩减
+ 1）先卸载
+
+# umount /lv0
+
+ 2）强制检查文件系统
+
+# e2fsck -f /dev/vg0/lv0
+
+ 3）缩减文件系统
+
+# resize2fs /dev/vg0/lv0 1800M
+
+ 4）缩减逻辑卷
+
+# lvreduce -L 1800M /dev/vg0/lv0
+
+ 5）测试缩减逻辑卷后逻辑卷能否正常使用
+
+# mount /dev/vg0/lv0 /lv0
+
+# cd /lv0
+
+# cat
+
+ lost+found/ test.txt 
+
+# cat test.txt
+
+ ext4
+
+# df -h
+
+ 文件系统 容量 已用 可用 已用% 挂载点
+ /dev/mapper/cl-root 17G 4.3G 13G 26% /
+ devtmpfs 473M 0 473M 0% /dev
+ tmpfs 489M 84K 489M 1% /dev/shm
+ tmpfs 489M 7.1M 482M 2% /run
+ tmpfs 489M 0 489M 0% /sys/fs/cgroup
+ /dev/sda1 1014M 155M 860M 16% /boot
+ tmpfs 98M 16K 98M 1% /run/user/42
+ tmpfs 98M 0 98M 0% /run/user/0
+ /dev/mapper/vg0-lv0 1.7G 6.1M 1.6G 1% /lv0
+```
+
+#### 快照
+
+```shell
+快照的工作原理：
+ 保存数据某一刻的状态。快照刚建立的时候，大小是空的，快照是访问源数据的另一条路径。快照是在数据改变之前将数据原封不动的保存在快照空间里面。注意变化数据的源数据不能超过快照空间的大小，否则，快照将崩溃。
+
+ 写时复制
+
+ 实验：
+ 1.挂载lv0逻辑卷，在逻辑卷内写入数据
+
+# mount /dev/vg0/lv0 /lv0
+
+# cd /lv0
+
+# ls
+
+# cp /etc/passwd /etc/shadow .
+
+# echo "hello" > lvmsnap-test.txt
+
+# cat lvmsnap-test.txt
+
+ hello
+# ll
+ 总用量 12
+ -rw-r--r--. 1 root root 6 7月 7 22:34 lvmsnap-test.txt
+ -rw-r--r--. 1 root root 2229 7月 7 22:34 passwd
+ ----------. 1 root root 1248 7月 7 22:34 shadow
+ 2.给/dev/vg0/lv0逻辑卷做快照
+# lvcreate -n lv0.snap -s -L 800M /dev/vg0/lv0
+ Using default stripesize 64.00 KiB.
+ Logical volume "lv0.snap" created.
+ 3.改变lv0逻辑卷的数据
+# cp /etc/group .
+# rm passwd
+ rm：是否删除普通文件 "passwd"？y
+# ls
+ group lvmsnap-test.txt shadow
+# echo "world" >> lvmsnap-test.txt
+# cat lvmsnap-test.txt
+ hello
+ world
+ 4.恢复数据 会删除快照卷 恢复之前要卸载 
+# umount /dev/vg0/lv0
+# lvconvert --merge /dev/vg0/lv0.snap
+ Merging of volume vg0/lv0.snap started.
+ lv0: Merged: 100.00%
+ 5.挂载lv0逻辑卷查看数据是否恢复到拍快照的那一刻的状态 
+# mount /dev/vg0/lv0 /lv0
+# cd /lv0
+# ls
+ lvmsnap-test.txt passwd shadow
+# cat lvmsnap-test.txt
+ hello
+```
+
+# 计划任务
+
+#### 一次性计划任务
+
+```shell
+一次性计划任务   at,batch  
+周期性计划任务   crontab 
+补充     /etc/anacrontab  
+**计划任务中的输出会发送到用户的邮箱,可使用重定向来控制邮件的接收 一次性计划任务 - atd服务提供 
+at 功能: 设置,查询或删除一次性计划任务  语法: at [选项][时间]  选项: 
+-l     查询所有的一次性计划任务,普通用户只能查到自己的,等同于atq  -d 作业号     删除指定的作业,等同于atrm   
+时间格式: 
+HH:MM   具体的时刻,如果此时刻未过,则为今天;如果此时刻已过,则为明天  
+HH:MM mmddYY 具体到某一天的具体时刻,不能为已过去的日期 日期格式还可以mm/dd/YY  
+now + 2hours 2小时后,单位还可以为days/weeks/minutes/seconds...    
+设置: 
+at 时间             进行设置,^D结束设置访问控制(只针对普通用户): 
+/etc/at.deny  
+/etc/at.allow    只有deny             黑名单,出现在黑名单上的用户不能使用 
+两个文件都有         白名单,只有出现在allow文件中的用户可以使用  只有allow           同上 
+两个文件都没有     所有人都不能使用 
+batch 在系统平均负载允许(低于0.8)的时候执行    例:  [root@desk ~]# batch   at> touch /test/batch.txt  at> <EOT>  job 24 at Wed Dec 12 10:14:00 2018
+
+
+```
+
+#### 周期性计划任务
+
+```shell
+周期性计划任务
+crontab
+功能: 设置,查询或删除周期性计划任务
+语法: crontab 选项
+选项:
+-e 编辑计划任务
+-l 查看计划任务
+格式(man 5 crontab):
+分 时 日 月 周 命令(最好使用绝对路径)
+
+取值范围:
+分 0-59
+时 0-23
+日 1-31
+月 1-12
+周 0-7     0或7表示周日
+前五列数字的写法:
+- 表示从头到尾
+3-6 -表示范围,即从3到6四个数字
+3,5,9 ,表示集合,即3,5,9三个数字
+1-3,5,7-9 表示集合, 1,2,3,5,7,8,9这些数字
+0-7/2 /表示频率,即0,2,4,6这些数字. 如果前面的范围是从头到尾,可用*表示访问控制:
+/etc/cron.deny   
+/etc/cron.allow
+方法同at
+anacrontab
+计划任务的补充,定义了每天,每周,每月需要执行的任务的执行方法
+[root@desk ~]# tail -3 /etc/anacrontab
+
+#period in days   delay in minutes   job-identifier   command
+
+1   5   cron.daily     nice run-parts /etc/cron.daily       #每天要执行的任务
+
+7   25 cron.weekly     nice run-parts /etc/cron.weekly      #每周要执行的任务
+
+@monthly 45 cron.monthly       nice run-parts /etc/cron.monthly  #每月要执行的任务 
+```
+
+# 进程管理
+
+```shell
+Linux是一个多用户多任务的操作系统，系统上可以同时运行多个进程。   程序：程序是完成某些功能的代码的集合
+进程：是程序运行之后，在内存中的状态，运行的程序会产生一个或多个进程       
+如何产生一个进程？    
+1）执行程序或命令   
+2）计划任务   
+/proc目录下蓝色数字目录，都是进程号   生命周期
+
+就绪 : 当进程运行所需要的资源及环境加载完成后,即进入就绪状态,等待CPU执行 就绪-运行 : 当就绪的进程占用CPU，并在CPU上运行时,进入运行状态 运行-就绪 : 1.CPU时间片运行完而进程尚未执行完成；                   2.有更高优先级的进程要运行时被迫让出CPU;                   3.因中断被迫让出CPU 运行-阻塞 : 正在执行的进程因发生某等待事件而无法执行，则进程由执行状态变为阻塞状态，如发生了I/O请求 阻塞-就绪 : 进程所等待的事件已经完成，进入就绪队列1].z; 
+
+
+```
+
+#### 静态查看进程ps
+
+```shell
+1、ps：是监视系统进程的主要工具，显示的是瞬时的进程状况 
+ps -elf 
+ps aux  
+ps -axo 自定义显示结果,用","隔开多个选项  
+-e：显示所有进程
+-f：全格式显示 
+a：显示所有进程(包含其他用户的进程)  
+u：显示进程的拥有者 
+x：和a一起使用，显示所有进程(包含无控制终端的进程) TTY为?的进程
+
+进程的拥有者 进程号 父进程号 cpu使用的资源百分比 开始时间 运行进程的终端名字 进程运行的时间 命令
+ pts：伪终端、虚拟终端
+ tty1--tty6： 字符终端
+
+ 拥有者 进程号 占用cpu百分比 占用内存百分比 占用的虚拟内存的大小 驻留内存大小 终端 进程状态 开始时间 运行时间 命令
+ STAT：进程状态
+ R：该进程正在运行或就绪
+ S：休眠进程
+ Z：僵尸进程，实际上该进程已经终止，但是它的父进程却无法正常终止它，造成僵尸进程的状态
+ T：该进程正在跟踪或者已经停止
+ 2、pstree：以树形显示正在运行的进程
+ el7中systemd是所有进程的父进程
+ el6为init
+ 
+```
+
+#### 实时查看系统运行状态top
+
+```shell
+统计信息区(共五行):
+ 第一行: 当前系统时间 系统运行时间 , 当前登录用户数, 系统平均负载: 1分钟,5分钟,15分钟
+ 第二行: 任务(进程): 总数, 正在运行的, 休眠的, 停止的, 僵尸
+ 第三行: cpu状态(%): 用户空间, 内核空间, 改变过优先级的, 空闲的, IO等待的, 硬中断, 软中断, 虚拟机
+ 第四行: 内存状态(K): 总量, 空闲的, 使用中的, 缓存的
+ 第五行: swap状态(K): 总量, 空闲的, 使用中的, 缓冲的 
+ 
+ 进程信息区: 
+ PID — 进程id
+ USER — 进程所有者
+ PR — 进程优先级
+ NI — nice值。负值表示高优先级，正值表示低优先级
+ VIRT — 进程使用的虚拟内存总量，单位kb。VIRT=SWAP+RES
+ RES — 进程使用的、未被换出的物理内存大小，单位kb。RES=CODE+DATA
+ SHR — 共享内存大小，单位kb
+ S — 进程状态。D=不可中断的睡眠状态 R=运行 S=睡眠 T=跟踪/停止 Z=僵尸进程
+ Ss s进程的领导者，父进程
+ S< <优先级较高的进程
+ SN N优先级较低的进程
+ R+ +表示是前台的进程组
+ Sl 以线程的方式运行
+ %CPU — 上次更新到现在的CPU时间占用百分比
+ %MEM — 进程使用的物理内存百分比
+ TIME+ — 进程使用的CPU时间总计，单位1/100秒
+ COMMAND — 进程名称（命令名/命令行）
+ 
+ -------------------------------------------------------------------------------- 
+ 序号 列名 含义
+ a PID 进程id
+ b PPID 父进程id
+ c RUSER Real user name
+ d UID 进程所有者的用户id
+ e USER 进程所有者的用户名
+ f GROUP 进程所有者的组名
+ g TTY 启动进程的终端名。不是从终端启动的进程则显示为 ?
+ h PR 优先级
+ i NI nice值。负值表示高优先级，正值表示低优先级
+ j P 最后使用的CPU，仅在多CPU环境下有意义
+ k %CPU 上次更新到现在的CPU时间占用百分比
+ l TIME 进程使用的CPU时间总计，单位秒
+ m TIME+ 进程使用的CPU时间总计，单位1/100秒
+ n %MEM 进程使用的物理内存百分比
+ o VIRT 进程使用的虚拟内存总量，单位kb。VIRT=SWAP+RES
+ p SWAP 进程使用的虚拟内存中，被换出的大小，单位kb。
+ q RES 进程使用的、未被换出的物理内存大小，单位kb。RES=CODE+DATA
+ r CODE 可执行代码占用的物理内存大小，单位kb
+ s DATA 可执行代码以外的部分(数据段+栈)占用的物理内存大小，单位kb
+ t SHR 共享内存大小，单位kb
+ u nFLT 页面错误次数
+ v nDRT 最后一次写入到现在，被修改过的页面数。
+ w S 进程状态(D=不可中断的睡眠状态,R=运行,S=睡眠,T=跟踪/停止,Z=僵尸进程)
+ x COMMAND 命令名/命令行
+ y WCHAN 若该进程在睡眠，则显示睡眠中的系统函数名
+ z Flags 任务标志
+ ------------------------------------------------------------------------------------ 
+ top操作:
+ 1 -- 展开cpu信息
+ f -- 更改显示内容
+ M -- 根据驻留内存大小进行排序。 
+ P -- 根据CPU使用百分比大小进行排序
+ q -- 退出 
+ 
+ 
+ =====================================
+ watch命令
+ 功能: 每多少秒(默认为2秒)执行一次后面的命令
+ 语法: watch [选项] '命令'
+ 选项:
+ -n 指定命令执行间隔时间(秒)
+ 
+ 例: 每一秒执行一次ps aux
+ [root@desk ~]# watch -n1 'ps aux'
+
+```
+
+#### 进程的前后台调度
+
+```shell
+1、前台运行： 
+ # firefox 192.168.1.250
+ 会发现该程序一直占用终端，其他命令不能够再在这个终端运行
+ 2、后台运行
+ 1）命令执行的时候，直接将其放置于后台运行
+ # firefox 192.168.1.250 &
+ [1] 6222
+ 后台运行不会占用执行命令的终端，用户仍然可以使用这个终端做操作
+ 2）对于一个已经运行的命令，如何将其放置于后台 ctrl+z
+ # firefox 192.168.1.250
+ [1] Done firefox 192.168.1.250 
+ [2]+ Stopped firefox 192.168.1.250
+ ctrl+z将前台进程放置于后台，但是该进程在后台是停止的状态
+ # jobs //查看后台进程运行状态
+ [2]+ Stopped firefox 192.168.1.250
+ 查看后终止进程：kill %2
+ # bg 2 //激活后台进程
+ [2]+ firefox 192.168.1.250 &
+ # jobs
+ [2]+ Running firefox 192.168.1.250 &
+ 
+ bg 任务编号 ： 指定任务在后台运行
+ fg 任务编号 ： 将后台运行的命令变成前台运行
+ # fg 2
+ firefox 192.168.1.250
+ 
+ 注意：不管你是前台运行，还是后台运行，只要终端一关闭，进程就停止了。
+ 那么如何让一个命令或者程序脱离终端？
+ 使用nohup命令。
+ # nohup firefox 192.168.1.250 &
+ [1] 6537
+ # nohup: ignoring input and appending output to `nohup.out' //按回车
+
+```
+
+#### 进程的终止
+
+```shell
+如何终止一个进程呢?
+ 1. 前台正在执行的命令: ctrl+c
+ 2. kill,killall等命令 
+ kill -信号 pid
+ kill通过传递信号给进程来执行相应的操作.
+ 查看信号的列表
+ # kill -l
+ 常用的信号：
+ 1) SIGHUP：重置进程的配置，即不停止服务的情况下，重新读取配置文件
+ kill -1 PID 或者kill -HUP PID 
+ 2) SIGINT：中断(interrupt)，ctrl+c 
+ 9) SIGKILL：强制杀死进程 
+ 15) SIGTERM：正常终止进程,此信号为kill默认
+ 18) SIGCONT: 继续,和20相反,bg
+ 20) SIGTSTP：暂停,ctrl+z
+ pkill：按照进程的属性结束进程
+ 按照进程名字杀死进程
+ # pkill firefox 
+ 按照用户名杀死进程
+ # su - test
+ [test@clone1 ~]$ vim /etc/passwd
+ # pkill -U test  
+ killall：
+ killall 命令名字 //杀死全部的同名进程 
+ xkill：杀死图形化资源
+ 当执行了xkill之后，鼠标会变成“x”形，点到任何图形资源，就会终止该资源的运行
+```
+
+#### 进程的NICE值和进程的查看
+
+```shell
+谦让值：nice 
+ 作用：指定或者调整用户进程的nice值
+ nice值越高，该进程抢占资源的能力越弱
+ nice值越低，该进程抢占资源的能力越强
+ 范围：-20~19
+ 
+ 相关命令
+ nice -- 运行时直接设置nice值
+ 用法: nice -n 数字 command
+ 
+ renice -- 对于已经运行的,调整nice值
+ 用法: renice 数字 PID
+ 
+进程的查看
+ 静态查看: ps,pgrep
+ 动态查看: top
+ 
+ 查看进程PID: pgrep
+ 
+ ps,pstree,top,pgrep
+ bg,fg,kill,nice,renice
+ 
+ 
+```
+
+# 网络基础
+
+#### OSI七层模型
+
+```
+ISO(International Standardization Organization) 国际标准化组织 在1987年制定了OSI七层参考模型
+ OSI(Open System Interconnection) 开放系统互联
+ 
+ 应用层(Application layer)：用户接口、应用程序 HTTP、FTP、Telnet
+ 表示层(Presentation layer)：数据的表示、压缩和加密等 MP3、JPEG
+ 会话层(Session Layer)：允许不同机器上的用户之间建立会话关系 
+ 区分不同应用间的数据，负责建立、维护和管理会话连接 QQ、MAIL
+ 传输层(Transport Layer)：实现网络不同主机的进程间的数据通信，提供可靠或者不可靠的数据传输
+ TCP：Transmission Control Protocol 传输控制协议
+ 提供面向连接的可靠的数据传输、适合传输大数据、速度慢
+ UDP：User Datagram Protocol 用户数据报协议
+ 提供非面向连接的不可靠的数据传输、传输小数据、速度快
+ 
+ 网络层(Network Layer)：提供逻辑地址(IP地址)、选路、数据从源端到目的端的传输
+ 网络层的主要设备：路由器 router
+ 数据链路层(Data Link Layer)：将上层数据封装成帧，用MAC地址访问媒介，错误的检测和修正
+ 数据链路层分为两个子层：
+ MAC(Media Access Control)：负责MAC地址寻址并且提供介质访问控制方法
+ LLC(Logical Link Control)：为上层协议提供sap服务访问点并且为数据加上控制信息
+ 数据链路层主要设备：交换机 switch 
+ 物理层(Physical Layer)：提供设备之间的比特流传输 bit 0101001
+ 物理层的主要设备：集线器(HUB) 中继器 传输介质连接器
+
+```
+
+#### IP的组成
+
+```shell
+ip地址组成 : IP地址由4部分数字组成，每部分数字对应于8位二进制数字，各部分之间用小数点分开 这是点分2进制 如果换算为十进制我们称为点分十进制.每个ip地址由两部分组成网络地址(NetID)和主机地址(HostID).网络地址表示其属于互联网中的哪一个网络，而主机地址则表示其属于该网络中的哪一台主机.
+ 
+ ip地址的划分
+ ip地址划分为五类 为 A,B,C,D,E
+ A类地址:范围从0-127，0是保留的并且表示所有IP地址，而127也是保留的地址，并且是用于测试环回用的。因此A类地址的范围其实是从1-126之间。
+ 　　如：10.0.0.1，第一段号码为网络号码，剩下的三段号码为本地计算机的号码。转换为2进制来说，一个A类IP地址由1字节的网络地址和3字节主机地址组成，网络地址的最高位必须是“0”， 地址范围从0.0.0.1 到126.0.0.0。可用的A类网络有126个，每个网络能容纳1亿多个主机（2的24次方的-2主机数目）。
+ 以子网掩码来进行区别：：255.0.0.0
+ 127.0.0.0到127.255.255.255是保留地址，用做循环测试用的
+ 
+ B类地址：范围从128-191，如172.168.1.1，第一和第二段号码为网络号码，剩下的2段号码为本地计算机的号码。转换为2进制来说，一个B类IP地址由2个字节的网络地址和2个字节的主机地址组成，网络地址的最高位必须是“10”，地址范围从128.0.0.0到191.255.255.255。可用的B类网络有16382个，每个网络能容纳6万多个主机 。(2的16次方-2)
+ 以子网掩码来进行区别：255.255.0.0
+ 169.254.0.0到169.254.255.255是保留地址。如果你的IP地址是自动获取IP地址，而你在网络上又没有找到可用的DHCP服务器，这时你将会从169.254.0.0到169.254.255.255中临时获得一个IP地址。
+ 
+ C类地址：范围从192-223，如192.168.1.1，第一，第二，第三段号码为网络号码，剩下的最后一段号码为本地计算机的号码。转换为2进制来说，一个C类IP地址由3字节的网络地址和1字节的主机地址组成，网络地址的最高位必须是“110”。范围从192.0.0.0到223.255.255.255。C类网络可达209万余个，每个网络能容纳254个主机。(2的7次方-2)
+ 以子网掩码来进行区别： 255.255.255.0
+ 
+ D类地址：范围从224-239，D类IP地址第一个字节以“1110”开始，它是一个专门保留的地址。它并不指向特定的网络，目前这一类地址被用在多点广播（Multicast）中。多点广播地址用来一次寻址一组计算机，它标识共享同一协议的一组计算机。
+ 224.0.0.0-239.255.255.255 组播地址
+ 
+ E类地址：范围从240-254，以“11110”开始，为将来使用保留。 全零（"0．0．0．0"）地址对应于当前主机。全"1"的IP地址（"255．255．255．255"）是当前子网的广播地 址。
+ 240.0.0.0-255.255.255.254 保留地址
+ 
+ 
+ 子网掩码
+ 就是为了区分ip地址的中的网络号和主机号的
+ 
+ 
+ 私有地址
+ 所谓的私有地址就是在互联网上不使用，而被用在局域网络中的地址
+ 在A类地址中，10.0.0.0到10.255.255.255是私有地址
+ 在B类地址中，172.16.0.0到172.31.255.255是私有地址。
+ 在C类地址中，192.168.0.0到192.168.255.255是私有地址。
+ 
+ 
+ 十进制转二进制
+ 1.除2取余，然后倒序排序，高位补零
+ 192
+ 11000000
+ 
+ 42
+ 00101010
+ 
+ 12
+ 00001100
+ 
+ 二进制转十进制
+ 2^7 2^6 2^5 2^4 2^3 2^2 2^1 2^0
+ 128 64 32 16 8 4 2 1
+ 
+ 00001100
+ 0x2^7+0x2^6+0x2^5+0x2^4+1x2^3+1x2^2+0x2^1+0x2^0=12
+ 
+ 11001100
+ 128+64+8+4=204
+ 
+ 10101010
+ 128+32+8+2=170 
+```
+
+#### 配置IP
+
+```shell
+防火墙:
+ 查看状态: # systemctl status firewalld //el6: # /etc/init.d/iptables status
+ 立即关闭: # systemctl stop firewalld //el6: # /etc/init.d/iptables stop
+ 开机不启动: # systemctl disable firewalld //el6: # chkconfig iptables off
+ 
+ SELINUX: 
+ 查看状态: # getenforce //enforcing:拦截 permissive:提醒不拦截 disabled:禁用
+ 立即关闭: # setenforce 0 //将状态改为permissive
+ 开机不启动: # vim /etc/selinux/config // SELINUX=disabled 
+ 
+ 一、查看网络的信息
+ IP、网关、DNS、主机名
+ IP:
+ # ifconfig //查看IP、掩码、MAC...
+ # ifconfig enp3s0 //只显示enp3s0的信息 
+ # ip a
+ 
+ 网关:
+ # route -n 
+ 
+ DNS:
+ 查看:
+ # cat /etc/resolv.conf
+ 修改:
+ 1.直接修改resolv.conf文件
+ 2.修改网卡配置文件,添加DNS1=XXX,重启网卡生效
+ 主机名:
+ # hostname
+ 修改:
+ 马上生效: hostname 主机名 #下一次开机会失效, 6,7都一样
+ 开机生效: 
+ el6: 修改/etc/sysconfig/network,将HOSTNAME的值改成想要的主机名
+ el7: 将主机名写入/etc/hostname
+ 
+ 二、常见网络接口
+ enp3s0 以太网接口 eth0,eth1
+ wlan0 无线接口
+ lo 本地回环接口
+ virbr0 桥接接口 
+ vmnet1 vmware提供的
+ vmnet8 vmware提供的
+ 
+ 
+```
+
+#### 修改网络信息
+
+```shell
+network 服务
+ 静态配置ip地址
+ 1.全局网络配置文件(ip/掩码/默认网关)
+ # cd /etc/sysconfig/network-scripts/
+ # vim ifcfg-enp3s0
+ TYPE=Ethernet //网络类型 以太网
+ BOOTPROTO=none //协议 none static 静态 dhcp 动态
+ DEVICE=enp3s0 //设备名,一定要正确
+ ONBOOT=yes //是否激活
+ IPADDR=192.168.1.249 //IP地址
+ PREFIX=24 //掩码
+ NETMASK=255.255.255.0 //掩码
+ UUID=63aa2036-8665-f54d-9a92-c3035bad03f7 //网卡的uuid
+ HWADDR=00:50:56:c0:00:08 //MAC地址
+ GATEWAY=192.168.1.1 //默认网关
+ DNS1=202.106.0.20 //DNS服务器1
+ DNS2=8.8.8.8 //DNS服务器2
+ 
+ 2.重新启动网络服务
+ # systemctl restart network 
+ # ifdown enp3s0 ; ifup enp3s0 
+ 
+ 动态（通过dhcp服务器分配）
+ 1.全局网络配置文件(ip/掩码/默认网关)
+ # cd /etc/sysconfig/network-scripts/
+ # vim ifcfg-enp3s0
+ BOOTPROTO=dhcp
+ DEVICE=enp3s0
+ ONBOOT=yes
+ 
+ 2.重新启动网络服务
+ # systemctl restart network 
+ 
+ 扩展：为一个网卡绑定多个ip
+ # cd /etc/sysconfig/network-scripts/
+ # vim ifcfg-enp3s0
+ BOOTPROTO=none
+ DEVICE=enp3s0
+ ONBOOT=yes
+ IPADDR1=192.168.1.250
+ IPADDR2=192.168.1.253
+ 
+ # systemctl restart network
+ 
+ # ip a
+ 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+ link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+ inet 127.0.0.1/8 scope host lo
+ valid_lft forever preferred_lft forever
+ inet6 ::1/128 scope host 
+ valid_lft forever preferred_lft forever
+ 2: enp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+ link/ether f8:32:e4:86:ae:3a brd ff:ff:ff:ff:ff:ff
+ inet 192.168.1.250/24 brd 192.168.1.255 scope global enp3s0
+ valid_lft forever preferred_lft forever
+ inet 192.168.1.253/24 brd 192.168.1.255 scope global secondary enp3s0
+ valid_lft forever preferred_lft forever
+ inet6 fe80::fa32:e4ff:fe86:ae3a/64 scope link 
+ valid_lft forever preferred_lft forever
+ 
+ 临时配置ip地址 重启电脑或者网络服务将不生效了
+ # ifconfig enp3s0 192.168.1.252
+ 
+ 四、其他一些管理工具
+ # mii-tool enp3s0 //查看物理连接，看是否出现link ok
+ enp3s0: negotiated 100baseTx-FD flow-control, link ok
+ 
+ # ifdown enp3s0 //停用指定的网卡设备
+ # ifup enp3s0 //启用指定的网卡设备 
+ 
+ # dhclient //动态获取ip地址
+ 
+ 网络问题：
+ mii-tool enp3s0
+ 网卡指示灯
+ ip地址
+ ping
+ 网络配置文件
+ 重启网卡(测试是否ip冲突)
+
+```
+
+# 日志
+
+```
+日志：
+ 将系统中发生的事情，按照发生时间的先后顺序，分门别类的记载到不同的文件中称为记录日志，文件就是日志文件。
+ 什么时候？什么主机？什么人？做了什么事？
+ 
+ 日志的用途：
+ 1）解决系统方面错误
+ 2）解决网络方面的问题
+ 3）记录重要的历史事件
+ 4）解决安全方面的问题 
+ 
+ 日志的种类
+ 1、系统自带的应用日志 /var/log/messages /var/log/secure
+ 2、文件系统日志 ext3/ext4/xfs 
+ 3、应用程序自带日志 ssh、http等服务都有相应的日志
+ 
+ Linux系统日志默认存放位置 /var/log
+ 
+ Linux常见日志文件
+ messages 最重要的系统日志，几乎所有的系统错误信息都会记录在此 ****
+ cron 计划任务相关的日志
+ secure 安全相关的日志(需要输入用户名密码的软件，比如ssh、su等)
+ dmesg 内核检测过程中产生的各种信息，硬件检测信息
+ lastlog 所有账户最近一次登录系统的相关信息 lastlog
+ boot.log 记录系统启动信息
+ wtmp 记录的是正确登录的人的信息，可以用last来查看
+ btmp 登录失败日志lastb
+ 
+ 服务自己管理日志
+ httpd web服务相关日志 apache #access_log error_log 访问和错误日志信息
+ samba samba服务日志
+ xferlog vsftpd服务日志 
+ 
+ 日志服务的后台进程 daemon
+ rsyslog.service
+ 
+ 
+ 日志格式基本说明
+ # tail -0f /var/log/secure
+ Aug 3 12:13:25 server150 useradd[30177]: new group: name=test, GID=500
+ Aug 3 12:13:25 server150 useradd[30177]: new user: name=test, UID=500, GID=500, home=/home/test, shell=/bin/bash
+ Aug 3 12:13:30 server150 su: pam_unix(su-l:session): session opened for user test by root(uid=0)
+ Aug 3 12:14:03 server150 su: pam_unix(su-l:auth): authentication failure; logname=root uid=500 euid=0 tty=pts/5 ruser=test rhost= user=root
+ 说明：
+ Aug 3 12:14:03 ：事件发生的时间
+ server150：记录主机名
+ su:触发事件的应用程序
+ pam_unix(su-l:auth): authentication failure; ：事件的说明
+日志配置
+1、日志服务的配置文件
+ # vim /etc/rsyslog.conf
+ #### MODULES #### #模块相关
+ $ModLoad imuxsock #启用本地日志支持 
+ $ModLoad imklog #启用内核相关日志
+ $ModLoad immark #对日志打标记
+ 
+ # Provides UDP syslog reception #使用UDP协议接收远端的日志
+ #$ModLoad imudp #加载udp模块
+ #$UDPServerRun 514 #服务器监听在514端口
+ 
+ #### GLOBAL DIRECTIVES #### #全局配置部分
+ # Include all config files in /etc/rsyslog.d/
+ $IncludeConfig /etc/rsyslog.d/*.conf #包含/etc/rsyslog.d/目录下所有以.conf结尾的配置文件
+ 
+ *.info;mail.none;authpriv.none;cron.none /var/log/messages
+ authpriv.* /var/log/secure
+ mail.* -/var/log/maillog
+ cron.* /var/log/cron
+ *.emerg *
+ uucp,news.crit /var/log/spooler
+ local7.* /var/log/boot.log
+ 服务或者设备.日志的级别 日志记录到哪个文件
+ 
+ local0~local7：自定义的服务名
+ 
+ 2、配置格式: 
+ 服务或者设备.日志的级别 动作
+ 1）服务名称
+ authpriv(auth)：用户授权相关的，认证等 ssh、login、su等
+ cron：和计划任务相关的服务
+ mail：和邮件相关的
+ news：新闻相关的 uucp
+ kern：和内核相关的
+ lpr：打印机相关的
+ syslog：和rsyslogd进程相关的
+ local0~local7：自定义服务名称
+ 2）日志的级别：级别越高、日志越少
+ （1）none：不记录日志
+ （2）debug：调试信息
+ （3）info：一般的通知信息
+ （4）notice：提醒信息，比info稍微重要点
+ （5）warning（warn）：警告信息，可能有问题
+ （6）error)：错误信息
+ （7）critical(crit)：比较严重的错误
+ （8）alert：警报信息，需要立即行动
+ （9）emerg(panic)：紧急(恐慌)，系统可能已经不可用了
+ 3）服务名称.日志等级的表示
+ . —— mail.warning 表示记录mail服务，warning及其以上级别的日志 
+ .= —— mail.=warning 表示记录mail服务warning级别日志
+ .! —— mail.!warning 表示除了warning级别以外的，其他级别的所有日志都记录
+ .none —— 表示不记录
+ * —— 表示所有
+ *. —— 表示所有服务
+ .* —— 表示所有日志级别
+ *.* —— 所有服务的所有级别的日志
+ 4) 动作
+ /file --------- 将日志同步记录到某文件
+ -/file --------- 异步记录
+ * ----------- 通知所有在线用户 ,也可以写具体的用户名
+ @@remote_host:port ------------- 通过TCP发送到远程服务器. 一个@:UDP
+ 
+ 小实验
+ # vim /etc/rsyslog.conf 在第46行添加如下行：
+ authpriv.* /usr/local/secure #自己规定一个日志文件
+ # systemctl restart rsyslog
+ 标签一：
+ # tail -0f /usr/local/secure
+ 
+ 标签二：
+ # su - test
+ $ su - root
+ Password: 
+ su: incorrect password
+ 看标签一的日志变化。
+ # tail -0f /usr/local/secure 
+ Aug 3 12:41:47 server150 su: pam_unix(su-l:session): session closed for user test
+ Aug 3 12:41:51 server150 su: pam_unix(su-l:session): session opened for user test by root(uid=0)
+ Aug 3 12:41:55 server150 su: pam_unix(su-l:auth): authentication failure; logname=root uid=500 euid=0 tty=pts/5 ruser=test rhost= user=root
+ 
+ 
+ 为了防止别人修改我的日志，如何做？
+ # chattr +a /var/log/secure
+```
+
+#### 搭建中央日志服务器
+
+```shell
+实验目的: 将客户端上的日志(安全相关)发送到中央日志服务器上
+ 客户端: 192.168.10.1
+ 中央日志服务器: 192.168.10.123
+ 
+ 环境:
+ 关闭防火墙,selinux
+ 
+ 中央日志服务器:
+ # vim /etc/rsyslog.conf
+ # Provides TCP syslog reception
+ $ModLoad imtcp
+ $InputTCPServerRun 514 
+ # systemctl restart rsyslog
+ 
+ 客户端:
+ # vim /etc/rsyslog.conf
+ authpriv.* @@192.168.10.123:514 #@@: 通过TCP协议发送
+ #@: 通过UDP协议发送
+ # systemctl restart rsyslog
+ 
+ 测试:
+ 在中央日志服务器上监控日志文件:
+ # tail -0f /var/log/secure
+ Aug 8 11:54:25 desk su: pam_unix(su-l:session): session opened for user tom by root(uid=0)
+ Aug 8 11:54:32 desk su: pam_unix(su-l:session): session closed for user tom
+ 
+ 开另一个终端,在服务器器上操作: 日志会记录到中央日志服务器上
+ # su - tom
+```
+
+#### 日志轮转
+
+```shell
+日志轮转
+日志的轮替、日志的轮转
+ 为什么要轮转？
+ 1）防止日志文件过大
+ 2）定期清除日志
+ 
+ 日志轮转的配置文件
+ # vim /etc/logrotate.conf
+ # grep -v ^# /etc/logrotate.conf | grep -v ^$
+ weekly #轮转的周期，一周一轮转
+ rotate 4 #保留几个旧的日志文件，类似于备份
+ create #旧日志轮转后是否创建新的空白日志
+ dateext #使用日期作为旧日志的后缀
+ include /etc/logrotate.d #包含该路径下的所有配置文件
+ /var/log/wtmp { #针对特定的日志进行定制设置
+ monthly #轮滚周期，一个月
+ create 0664 root utmp #创建新的日志文件 权限664 所有者root 所属组utmp
+ minsize 1M #轮滚的最小大小是1M
+ rotate 1 
+ }
+ /var/log/btmp {
+ missingok #丢了也没关系
+ monthly
+ create 0600 root utmp
+ rotate 1
+ }
+ 
+ 
+ 小实验：
+ 1、修改配置文件，添加一行自己定义的内容，重启服务
+ # vim /etc/rsyslog.conf
+ authpriv.* /usr/local/secure
+ # systemctl restart rsyslog
+ 2、自己编写轮转配置文件
+ # vim /etc/logrotate.d/secure
+ /usr/local/secure {
+ missingok
+ notifempty
+ daily
+ create
+ rotate 4 
+ compress
+ }
+ 
+ 3、手动轮转日志文件
+ # logrotate -vf /etc/logrotate.d/secure
+ # cd /usr/local
+ # ls secure*
+ secure secure.1.gz
+ 
+ 
+ 相关的参数 功能
+ compress 通过gzip压缩转储以后的日志
+ nocompress 不需要压缩时，用这个参数
+ copytruncate 用于还在打开中的日志文件，把当前日志备份并截断
+ nocopytruncate 备份日志文件但是不截断
+ create mode owner group 转储文件，使用指定的文件模式创建新的日志文件
+ nocreate 不建立新的日志文件
+ delaycompress 和compress 一起使用时，转储的日志文件到下一次转储时才压缩
+ nodelaycompress 覆盖delaycompress 选项，转储同时压缩。
+ errors address 专储时的错误信息发送到指定的Email 地址
+ ifempty 即使是空文件也转储，这个是logrotate 的缺省选项。
+ notifempty 如果是空文件的话，不转储
+ mail address 把转储的日志文件发送到指定的E-mail 地址
+ nomail 转储时不发送日志文件
+ olddir directory 转储后的日志文件放入指定的目录，必须和当前日志文件在同一个文件系统
+ noolddir 转储后的日志文件和当前日志文件放在同一个目录下
+ prerotate/endscript 在转储以前需要执行的命令，这两个关键字必须单独成行
+ postrotate/endscript 在转储以后需要执行的命令，这两个关键字必须单独成行
+ daily 指定转储周期为每天
+ weekly 指定转储周期为每周
+ monthly 指定转储周期为每月
+ rotate count 指定日志文件删除之前转储的次数，0 指没有备份，5 指保留5 个备份
+ tabootext [+] list 让logrotate 不转储指定扩展名的文件，缺省的扩展名是：.rpm-orig, .rpmsave, v, 和~
+ size size 当日志文件到达指定的大小时才转储，Size 可以指定bytes (缺省)以及KB (sizek)或者MB
+ 
+```
+
+# 启动流程
+
+```shell
+启动流程
+    centos启动过程分为两个阶段: 引导阶段和启动阶段
+
+引导过程:
+EL6: POST—> BOOTLOADER—>KERNEL + INITRD—>ROOTFS—>INIT
+EL7: POST—> BOOTLOADER—>KERNEL + INITRD—>ROOTFS—>SYSTEMD
+    
+1.POST:加电自检 -> 关键硬件检测,选择启动顺序
+    当开机按下电源按钮后，计算机开始加电，主板上的BIOS或UEFI基本输入输出程序开始对硬件进行检查，检查内存，CPU等等吧，当检测到错误的时候机器会中断或者启动不了。
+    当自检通过后，接着就要选择引导介质或方式，是通过光盘启动，硬盘启动，网络启动，还是U盘启动，这些也是在BIOS中设定的，所以设定的第一启动项是哪个就从那个开始引导。
+
+2.Bootloader：引导加载器 -> 引导装载内核
+    确定引导介质后便开始从介质中装载引导程序,这个阶段又分为三个过程:
+    Stage1：加载MBR中的引导记录,即前 446 字节。由于引导记录必须非常的小，它不可能非常智能，且不能理解文件系统结构。因此阶段 1 的唯一功能就是定位并加载阶段 1.5 的代码。
+    Stage1.5：识别stage2所在的分区上的文件系统. 阶段 1.5 的代码位于引导记录与设备第一个分区之间的位置. 该空间有一些通用的文件系统驱动程序，如 EXT,FAT,NTFS 等。阶段 2 的文件存放在 /boot目录下。
+    Stage2：阶段 2 的主要功能是定位和加载 Linux 内核到内存中，并转移控制权到内核。内核的相关文件位于 /boot 目录下，这些内核文件可以通过其文件名进行识别，其文件名均带有前缀 vmlinuz。
+    grub程序会根据/boot/grub2/grub.conf文件查找Kernel的信息，然后开始加载Kernel程序，当Kernel程序被检测并在加载到内存中，grub就将控制权交接给了Kernel程序。
+
+3.KERNEL + INITRD—>ROOTFS 
+    内核(kernel)是Linux系统最主要的程序，实际上，kernel的文件很小，只保留了最基本的模块，并以压缩的文件形式存储在硬盘中，当grub将kernel读进内存，内存开始解压缩kernel文件。
+    然后kernel开始初始化，探测可识别的硬件设备，加载硬件驱动程序，以只读方式挂载根文件系统(rootfs)，当根文件系统被挂载后，开始装载第一个进程init/systemd
+-------------------------------------------------------------------------------------------------------------
+    内核，是一个操作系统的核心。它负责管理系统的进程、内存、设备驱动程序、文件和网络系统，决定着系统的性能和稳定性。     “内核”指的是一个提供硬件抽象层、磁盘及文件系统控制、多任务等功能的系统软件。一个内核不是一套完整的操作系统。
+------------------------------------------------------------------------------------------------------------
+    initrd(Initial RAM Disk)，它在stage2这个步骤就被拷贝到了内存中，这个文件是在安装系统时产生的，是一个临时的根文件系统(rootfs)。因为kernel为了精简，只保留了最基本的模块，因此，kernel上并没有各种硬件的驱动程序，也就无法识rootfs所在的设备，故产生了initrd这个文件，该文件装载了必要的驱动模块，当kernel启动时，可以从initrd文件中装载驱动模块，直到挂载真正的rootfs，然后将initrd从内存中移除。
+------------------------------------------------------------------------------------------------------------
+init：运行用户空间的第一个应用程序
+init:
+   Centos 5: SysV init    配置文件：/etc/inittab
+   Centos 6: Upstart      配置文件：/etc/inittab;/etc/init/*.conf(主要）
+   Centos 7: systemd    配置文件：/etc/systemd/system;/usr/lib/systemd/system
+        至此，内核空间就已经启动完毕，内核启动完成接着开始启动用户态启动过程。systemd是个守护进程，pid号为1,后面所有启动的服务或进程都是systemd的子进程及子进程的子进程。
+
+启动过程:
+EL6: /etc/inittab -> /etc/rc.d/rc.sysinit -> /etc/rc#.d/S* -> /etc/rc.d/rc.local -> /bin/login
+
+1./etc/inittab
+    运行级别
+2./etc/rc.d/rc.sysinit
+    激活udev和selinux；
+    根据/etc/sysctl.conf文件，来设定内核参数；
+    设定系统时钟；
+    装载硬盘映射；
+    启用交换分区；
+    设置主机名；
+    根文件系统检测，并以读写方式重新挂载根文件系统；
+    激活RAID和LVM设备；
+    启用磁盘配额；
+    根据/etc/fstab，检查并挂载其他文件系统；
+    清理过期的锁和PID文件
+3./etc/rc#.d/S*
+    启动需要开机启动的服务
+4./etc/rc.d/rc.local
+    执行用户自定义脚本
+5./bin/login
+    用户登录
+
+EL7: 
+1.执行initrd.target
+    包括挂载/etc/fstab文件中的系统,挂载后,切换到根目录(chroot)
+2.执行默认target配置
+    centos7表面是有“运行级别”这个概念，实际上是为了兼容以前的系统，每个所谓的“运行级别”都有对应的软连接指向，默认的启动级别时/etc/systemd/system/default.target,根据它的指向可以找到系统要进入哪个模式 
+    模式：
+        /lib/systemd/system/runlevel0.target -> poweroff.target
+        /lib/systemd/system/runlevel1.target -> rescue.target
+        /lib/systemd/system/runlevel2.target -> multi-user.target
+        /lib/systemd/system/runlevel3.target -> multi-user.target
+        /lib/systemd/system/runlevel4.target -> multi-user.target
+        /lib/systemd/system/runlevel5.target -> graphical.target
+        /lib/systemd/system/runlevel6.target -> reboot.target
+3.执行sysinit.target
+4.启动multi-user.target下的本机与服务器服务
+5.执行multi-user.target下的/etc/rc.d/rc.local
+6.执行multi-user.target下的getty.target及登录服务
+7.执行graphical需要的服务(如果默认target是图形的话)
+
+===============================================================
+systemd介绍:
+核心概念：unit
+配置文件进行标识和配置，文件中主要包含了系统服务，监听socket，保存的系统快照以及其它与init相关的信息，保存至：
+/usr/lib/systemd/system
+/run/systemd/system
+/etc/systemd/system
+
+unit的类型
+Service unit：文件扩展名为.service 无需执行权限，用于定义系统服务
+Target unit：文件扩展名为.target,用于模拟实现“运行级别”
+Device unit：文件扩展名为.device,用于定义内核识别的设备
+Mount unit：文件扩展名为.mount,定义文件系统挂载点
+Socket unit：文件扩展名为.socket,用于标识进程间通信用的socket文件
+Snapshot unit：文件扩展名为.snapshot,管理系统快照
+Swap unit：文件扩展名为.swap,用于标识swap设备
+Automount unit：文件扩展名为.automount,文件系统的自动挂载点
+Path unit：文件扩展名为.path,用于定义文件系统中的一个文件或目录
+
+管理系统服务
+******EL7******                                        ******EL6******
+启动：systemctl start name.service                /etc/init.d/name  start
+停止：systemctl stop name .service               /etc/init.d/name  stop
+重启：systemctl restart name.service             /etc/init.d/name  restart
+状态：systemctl status name.service              /etc/init.d/name  status
+重载：systemctl reload name.service
+开机自启动：systemctl enable name.service      chkconfig  name  on
+开机不启动：systemctl disable name.service      chkconfig  name  off
+查看所有服务开机自启动状态：systemctl list-unit-files --type service  chkconfig --list
+查看某服务是否开机自启：systemctl is-enabled name.service
+查看服务的依赖关系：systemctl list-dependencies name.service
+禁止设定为开机自启：systemctl mask name.service
+取消禁止设定为开机自启：systemctl unmask name.service
+
+```
+
+#### free命令
+
+```shell
+free命令
+free 命令显示系统内存的使用情况，包括物理内存、交换内存(swap)和内核缓冲区内存。
+如果加上 -h 选项，输出的结果会友好很多:
+
+有时我们需要持续的观察内存的状况，此时可以使用 -s 选项并指定间隔的秒数：
+# free -h -s 3
+此命令每隔 3 秒输出一次内存的使用情况，直到你按下 ctrl + c。
+
+解释一下输出的内容：
+Mem 行(第二行)是内存的使用情况。
+Swap 行(第三行)是交换空间的使用情况。
+total 列显示系统总的可用物理内存和交换空间大小。
+used 列显示已经被使用的物理内存和交换空间。
+free 列显示还有多少物理内存和交换空间可用使用。
+shared 列显示被共享使用的物理内存大小。
+buff/cache 列显示被 buffer 和 cache 使用的物理内存大小。
+available 列显示还可以被应用程序使用的物理内存大小。
+
+只有在理解了一些基本概念之后，上面的输出才能帮助我们了解系统的内存状况。
+Buff/Cache
+    • A buffer is something that has yet to be "written" to disk. 
+    • A cache is something that has been "read" from the disk and stored for later use.
+    也就是说buffer是用于存放要输出到disk（块设备）的数据的，而cache是存放从disk上读出的数据。这二者是为了提高IO性能的
+Cache(缓存): 
+    从CPU角度考虑，是为了提高cpu和内存之间的数据交换速度而设计的
+    从内存读取与磁盘读取角度考虑，cache可以理解为操作系统为了更高的读取效率，更多的使用内存来缓存可能被再次访问的数据。
+    cache经常被用在磁盘的I/O请求上，如果有多个进程都要访问某个文件，于是该文件便被做成cache以方便下次被访问，这样可提高系统性能。
+Buffer(缓冲): 
+    是为了提高内存和硬盘（或其他I/O设备）之间的数据交换的速度而设计的
+    缓冲（buffers）是根据磁盘的读写设计的，把分散的写操作集中进行，减少磁盘碎片和硬盘的反复寻道，从而提高系统性能。
+    linux有一个守护进程定期清空缓冲内容（即写入磁盘），也可以通过sync命令手动清空缓冲。
+
+free 与 available
+    free 是真正尚未被使用的物理内存数量。available 是从应用程序的角度看到的可用内存数量。
+    Linux 内核为了提升磁盘操作的性能，会消耗一部分内存去缓存磁盘数据，就是我们介绍的 buffer 和 cache。
+    所以对于内核来说，buffer 和 cache 都属于已经被使用的内存。
+    当应用程序需要内存时，如果没有足够的 free 内存可以用，内核就会从 buffer 和 cache 中回收内存来满足应用程序的请求。
+    所以从应用程序的角度来说，available = free + buffer + cache。
+    请注意，这只是一个很理想的计算方式，实际中的数据往往有较大的误差。
+
+交换空间(swap space)
+    swap space 是磁盘上的一块区域，可以是一个分区，也可以是一个文件。
+    当系统物理内存吃紧时，Linux 会将内存中不常访问的数据保存到 swap 上，这样系统就有更多的物理内存为各个进程服务;
+    而当系统需要访问 swap 上存储的内容时，再将 swap 上的数据加载到内存中，这就是常说的换出和换入。
+    交换空间可以在一定程度上缓解内存不足的情况，但是它需要读写磁盘数据，所以性能不是很高。
+
+    现在的机器一般都不太缺内存，如果系统默认还是使用了 swap 是不是会拖累系统的性能？理论上是的，但实际上可能性并不是很大。
+    内核提供了一个叫做 swappiness 的参数，用于配置需要将内存中不常用的数据移到 swap 中去的紧迫程度。
+    当swappiness为0的时候表示最大限度使用物理内存，然后才是 swap空间;
+    当swappines为100的时候，则表示积极的使用swap分区，并且把内存上的数据及时的交换到swap空间里面。
+    
+    在CentOS、Red Hat、ubuntu等系统中，swappiness的默认值都为60  
+    如果我们觉着内存充足，可以在 /etc/sysctl.conf 文件中设置 swappiness：
+    vm.swappiness=10
+    如果系统的内存不足，则需要根据物理内存的大小来设置交换空间的大小。
+```
+
+
+
+# 服务
+
+```shell
+el7                                                                  el6 
+启动：systemctl start name.service             /etc/init.d/name    start
+停止：systemctl stop name .service             /etc/init.d/name    stop
+重启：systemctl restart name.service           /etc/init.d/name    restart
+状态：systemctl status name.service            /etc/init.d/name    status
+开机自启动：systemctl enable name.service      chkconfig   name  on 
+开机不启动：systemctl disable name.service      chkconfig   name  off
+查看所有服务开机自启动状态：systemctl list-unit-files --type service      chkconfig   ssh：安全shell连接  加密的远程连接  软件：openssh        
+ssh无密码连接、scp远程拷贝、远程管理远程控制  
+文件服务器 
+nfs：unix/linux和linux之间的资源共享 
+vsftpd：ftp文件传输协议   
+apache：web服务 
+服务器端：提供服务的  
+客户端：使用服务 
+c/s  client  server        
+服务：给用户提供某些资源，响应用户的请求
+服务的特点：daemon     后台、持续不间断运行     
+查看当前系统有哪些服务    
+# systemctl list-unit-files       
+学习服务的要求    
+1）服务的名字、全称    
+2）服务的功能  
+3）可有其他同类产品    
+4）端口和使用协议  
+5）配置文件和日志文件   
+6)  el6,el7中如何启动和关闭       
+记录各个服务所对应的端口号    
+/etc/services     
+配置服务的准备工作:
+1.已关闭firewalld 
+2.已关闭selinux       
+3.配置好yum源          
+4.配置好固定的ip地址         
+5.配置好主机名             ===================================== 
+/etc/hosts  本地解析        
+```
+
+
+
+### ntp
+
+~~~shell
+NTP:  Network Time Protocol
+
+协议端口:
+tcp/123
+udp/123
+
+主配置文件: /etc/ntp.conf
+
+服务器:192.168.10.11
+客户端:192.168.10.12
+
+服务器端:
+1.安装软件
+    # yum install ntp -y
+2.配置
+    # vim /etc/ntp.conf
+          server 127.127.1.0          #添加上这行,将本机作为本地时间服务器
+3.启动服务
+    # systemctl start ntpd          #启动服务
+    # systemctl enable ntpd      #开机启动
+ 4.查看服务运行情况
+    # ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+    ==========================================================
+    *LOCAL(0)        .LOCL.           5 l   35   64    7    0.000    0.000   0.000
+
+ 客户端:
+ 1.安装软件
+    # yum install ntpdate -y  
+  2.同步时间
+    # ntpdate 192.168.10.11
+    
+
+```
+要实现自动同步,可结合计划任务来实现
+```
+
+=============================================
+chrony    
+软件名:chrony                        #服务器和客户端都安装
+服务名:chronyd
+配置文件: /etc/chrony.conf
+
+服务器配置:
+[root@server ~]# vim /etc/chrony.conf
+    # Allow NTP client access from local network.
+    allow 192.168.132.0/24                                 #允许哪些客户端同步时间
+    
+[root@server ~]# systemctl start chronyd          #启动服务
+[root@server ~]# systemctl enable chronyd       #设置为开机启动
+[root@server ~]# chronyc sources                     #查看服务器资源状态
+
+
+客户端:
+[root@client ~]# vim /etc/chrony.conf
+server 192.168.132.11           #从设置这个服务器同步时间
+[root@client ~]# systemctl start chronyd          #启动服务
+[root@client ~]# systemctl enable chronyd       #设置为开机启动:
+
+~~~
+
+
+
+### ssh
+
+```shell
+shd服务         
+服务的软件包 openssh-server
+服务名称: sshd
+
+ssh ---Secure SHell 安全shell连接
+
+功能：实现加密方式的远程连接
+
+ssh远程连接的软件(客户端软件)
+    linux：openssh-clients
+    windows：xmanager Xshell putty SecureCrt
+    
+默认端口及协议
+    tcp/udp 22
+    
+环境：
+server 192.168.1.251    server.qf.com
+client   192.168.1.250   client.qf.com   
+    
+一般情况下，安装操作系统时默认就安装了ssh。
+一、查看软件包是否安装
+
+# rpm -qa | grep openssh
+
+openssh-server-6.6.1p1-31.el7.x86_64   #服务器端软件包
+openssh-clients-6.6.1p1-31.el7.x86_64   #客户端软件包
+
+二、服务器端的配置文件 
+
+# vim /etc/ssh/sshd_config
+
+ 17 #Port 22                               #默认端口22
+ 18 #AddressFamily any            #支持任意地址簇（ipv4/ipv6）
+ 19 #ListenAddress 0.0.0.0        #监听在任何ipv4地址上
+ 20 #ListenAddress ::                 #监听在任何ipv6地址上
+ 23 #Protocol 2                           #协议版本
+ 43 SyslogFacility AUTHPRIV       #定义日志的对象
+ 44 #LogLevel INFO                    #定义日志的级别
+ 48 #LoginGraceTime 2m           #连接2分钟不输入密码就断开
+ 49 #PermitRootLogin yes           #允许管理员root登陆
+ 50 #StrictModes yes                   #用严格模式
+ 51 #MaxAuthTries 6                    #最大尝试6次
+ 52 #MaxSessions 10                   #允许最大会话10个
+ 78 #PermitEmptyPasswords no  #密码为空不能登陆
+ 79 PasswordAuthentication yes  #是否采用密码认证
+115 X11Forwarding yes                #开启x11转发协议
+127 #ClientAliveCountMax 3        #客户端连接服务器输入密码尝试的次数
+129 #UseDNS yes                          #采用dns解析
+130 #PidFile /var/run/sshd.pid       #pid文件位置
+
+查看网络连接状况:
+[root@server .ssh]# netstat -tuanp |grep sshd
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      32057/sshd          
+
+-a  ﻿(all)显示所有选项
+-t  tcp协议
+-u udp协议
+-l  listening
+-n 以数字方式显示,不解析
+-p 进程名
+
+[root@server .ssh]# lsof  -i:22 
+有返回内容表示服务处于监听状态
+
+------
+
+UseDNS yes 默认启用dns查询  解析dns导致连接服务器有延时  将此值改为no就可以去掉延时 
+
+指纹保存在客户端上 /root/.ssh/known_hosts
+不启用指纹  将客户端的配置文件中 /etc/ssh/ssh_config
+StrictHostKeyChecking no
+
+     
+```
+
+#### ssh的基本使用
+
+```
+ssh的基本使用
+守护进程：sshd 
+    # systemctl start sshd
+    # systemctl restart sshd
+    # systemctl status sshd    查看服务的状态
+
+远程登陆
+指定用户身份的远程登陆
+不登陆远程执行命令 
+远程拷贝
+
+1、远程登陆
+    [root@localhost ~]# ssh 192.168.1.250
+    The authenticity of host '192.168.1.250 (192.168.1.250)' can't be established.
+    ECDSA key fingerprint is 34:e5:01:71:33:ef:76:42:12:da:aa:f9:d2:d8:d3:96.
+    Are you sure you want to continue connecting (yes/no)? yes    #表示是第一次连接该主机，会问你是否保存指纹信息
+    Warning: Permanently added '192.168.1.250' (ECDSA) to the list of known hosts.
+    root@192.168.1.250's password:   #需要输入远程主机的密码
+     
+    
+
+​```
+1）退出远程登陆
+[root@server ~]# exit
+​```
+
+​```
+2）已知主机列表文件------指纹存放的文件
+[root@localhost ~]# cd /root/.ssh/
+[root@localhost .ssh]# ls
+known_hosts
+文件是~/.ssh/known_hosts
+
+如果遇到以下错误的话：是由于指纹信息对不上导致的
+[root@localhost .ssh]# ssh 192.168.1.250
+key_from_blob: remaining bytes in key blob 108
+key_read: type mismatch: encoding error
+key_from_blob: remaining bytes in key blob 108
+key_read: type mismatch: encoding error
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!                      @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ECDSA key sent by the remote host is
+62:4c:4d:13:e9:a2:7d:cc:a8:0a:43:0d:12:9c:c0:ae.
+Please contact your system administrator.
+Add correct host key in /root/.ssh/known_hosts to get rid of this message.
+Offending ECDSA key in /root/.ssh/known_hosts:2
+ECDSA host key for 192.168.1.250 has changed and you have requested strict checking.
+Host key verification failed.
+
+如何解决上述错误：（二选一即可）
+    a）删除known_hosts文件中与该ip相对应的行
+    b）清空known_hosts文件
+    [root@localhost .ssh]# > known_hosts
+​```
+
+2、指定用户身份登陆
+    前提：远程主机上需要存在该用户
+    1）在远程主机上添加一个用户，并设置密码----192.168.1.250
+    [root@server ~]# useradd jim
+    [root@server ~]# echo "jim" | passwd --stdin jim
+    更改用户 jim 的密码 。
+    passwd：所有的身份验证令牌已经成功更新。
+    2）连接-------192.168.1.250
+    [root@localhost ~]# ssh jim@192.168.1.250
+        jim@192.168.1.250's password:jim 
+        Last login: Fri Jun 30 14:43:07 2017
+    [jim@server ~]$ exit
+    登出
+    Connection to 192.168.1.250 closed.
+
+3、不登陆远程执行命令 
+    [root@localhost ~]# date ; ssh 192.168.1.250 date
+    2017年 07月 12日 星期三 13:01:26 CST
+    [root@192.168.1.250's password: 
+    2017年 07月 12日 星期三 11:36:25 CST
+    [root@localhost ~]# ssh 192.168.1.250 reboot
+    
+4、图形化ssh连接 -X
+    # ssh 192.168.1.250 xeyes   #打不开
+    root@192.168.1.250's password: 
+    Error: Can't open display:
+    
+
+​```
+[root@localhost ~]# ssh -X 192.168.1.250 xeyes 
+root@192.168.1.250's password: 
+能够打开远程主机上xeyes程序
+​```
+
+5、远程拷贝  
+    scp   [-r]   源   目的
+    1）本地文件拷贝给远程主机   上传
+    [root@localhost ~]# echo 192.168.1.251 > /tmp/test.txt
+    [root@localhost ~]# cat /tmp/test.txt
+    192.168.1.251
+    [root@localhost ~]# scp  /tmp/test.txt   192.168.1.250:/root/desktop/
+    root@192.168.1.250's password: 
+    test.txt       100%   14     0.0KB/s   00:00
+    
+
+​```
+2）远程主机文件拷贝到本地  下载
+[root@localhost ~]# scp  192.168.1.250:/root/desktop/dianming.sh    /tmp
+root@192.168.1.250's password: 
+dianming 100%  150     0.2KB/s   00:00    
+[root@localhost ~]# ls /tmp/dianming.sh 
+/tmp/dianming.sh
+
+常用选项：
+    -r  拷贝目录
+    -P port：指定端口,非22端口时必须要接此选项指定端口
+    
+更改端口设置
+[root@server ~]# vim /etc/ssh/sshd_config 
+Port 2000
+[root@server ~]# systemctl reload sshd
+[root@server ~]# netstat -tulnp | grep sshd
+tcp        0      0 0.0.0.0:2000              0.0.0.0:*               LISTEN      27227/sshd          
+tcp6       0      0 :::2000                 :::*                    LISTEN      27227/sshd
+
+指定端口登陆
+[root@localhost ~]# ssh -p 2000  192.168.1.250
+​```
+
+
+```
+
+####  基于秘钥的连接
+
+~~~shell
+基于密钥的连接：实现的是不输入密码登陆远程主机
+        是相对于用户来说的，不需要输入密码的
+        
+ssh采用的是基于公钥和私钥的加密技术进行自动化认证。
+
+如果客户端连接服务器无密码。客户端上需要生成一对密钥，公钥传给服务器，那么服务器收到公钥，客户端连接服务器就不需要密码。
+
+客户端配置
+1.生成密钥
+[root@localhost ~]# ssh-keygen      
+
+```
+密钥位置
+[root@localhost ~]# cd /root/.ssh/
+[root@localhost .ssh]# ls
+id_rsa  id_rsa.pub  known_hosts
+
+id_rsa  私钥
+id_rsa.pub  公钥
+known_hosts  已知主机,存指纹的文件
+```
+
+2.发送公钥给服务器
+    [root@localhost .ssh]# ssh-copy-id -i 192.168.1.250 
+
+3.测试客户端连接服务器不需要密码
+    [root@localhost .ssh]# ssh 192.168.1.250
+    Last login: Wed Jul 12 14:29:27 2017 from 192.168.1.251
+    [root@server ~]# exit
+    登出
+    Connection to 192.168.1.250 closed.
+
+服务器会将客户端的公钥保存在authorized_keys 文件中
+    [root@server ~]# cd /root/.ssh/
+    [root@server .ssh]# ls
+    authorized_keys  known_hosts
+
+常见错误：
+1.ssh连接出错
+    检测是否有ip地址
+    检测服务器和客户端是否能ping通
+    检测网卡连接方法  
+    
+2.做双机互信。连接仍然还有密码
+    服务端
+    # 清空此authorized_keys文件内容
+
+```
+客户端
+# ssh-add  密钥传送失败用此命令
+# cd /root/.ssh
+# rm -rf id*
+# 重新做密钥重新发送        
+```
+
+3.指纹验证不正确
+    删除known_hosts文件中对应的ip的指纹
+        
+~~~
+
+#### 访问控制
+
+```shell
+凡是支持tcpwrapper的都可以使用以下两个文件做访问控制: 
+/etc/hosts.allow 
+/etc/hosts.deny 
+# ldd `which sshd`|grep wrap 	
+libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f598bc08000) 
+先看allow,如果有,直接放行; 
+如果没有,再看deny,如果有,则拒绝,如果没有,则放行 
+例: 只允许192.168.1.250连接
+# cat /etc/hosts.allow  
+sshd:192.168.1.250      
+# cat /etc/hosts.deny     sshd:*               
+# *表示所有. 还可以写网段,如:192.168.1.0/24 
+```
+
+
+
+#### nfs网络文件系统
+
+```shell
+NFS -------Network File System  网络文件系统
+samba ---- cifs
+
+数据落地层
+
+功能
+    unix/linux和linux之间文件共享
+
+优点：是局域网共享中速度最快的
+缺点：不支持跨平台
+
+需要注意的问题:
+1.需要依赖rpcbind
+2.权限问题
+3.对于已经在运行的nfs服务器,不要restart,用reload
+
+什么是网络文件系统？
+    网络文件系统是一种将远程主机上的目录经过网络挂载到客户端本地系统的一种机制。
+        
+环境：
+server 192.168.1.252    test1.uplook.com
+client   192.168.1.251   client.uplook.com       
+
+一、查看软件包是否安装
+
+# rpm -qa | grep nfs
+
+nfs-utils-1.3.0-0.33.el7.x86_64  主程序包
+
+# rpm -qa | grep rpcbind
+
+rpcbind-0.2.0-38.el7.x86_64  提供rpc协议 用来通信
+
+# yum install  nfs-utils  rpcbind -y
+
+服务器端：
+二、服务端配置要共享的资源
+例：服务器共享/test目录，将/dev/sdb1分区挂载在此目录 
+[root@test1 ~]# parted /dev/sdb mklabel gpt 
+[root@test1 ~]# parted /dev/sdb mkpart primary 1 3G 
+[root@test1 ~]# ll /dev/sd
+sda   sda1  sda2  sdb   sdb1
+[root@test1 ~]# mkfs.xfs /dev/sdb1
+[root@test1 ~]# mkdir /test
+[root@test1 ~]# vim /etc/fstab 
+/dev/sdb1 /test xfs defaults 0 0
+[root@test1 ~]# mount -a
+[root@test1 ~]# cd /test
+[root@test1 test]# echo "nfs test" > test.txt
+
+三、配置共享/test目录
+    1）配置以只读方式共享
+    [root@test1 ~]# vim /etc/exports
+    # man 5 exports
+    共享资源   共享给谁(共享的属性)
+    /test  192.168.1.251(ro)
+    
+四、启动服务
+    [root@test1 ~]# systemctl start nfs        #el6要先启rpcbind
+
+五、查看共享资源
+    [root@test1 ~]# showmount -e 192.168.1.252
+    Export list for 192.168.1.252:
+    /test 192.168.1.251
+
+客户端：
+六、查看共享资源                                       #el6要先启动rpcbind才能使用
+    [root@client ~]# showmount -e 192.168.1.252
+    Export list for 192.168.1.252:
+    /test 192.168.1.251
+
+七、挂载
+    语法：mount.nfs 服务器地址:服务器共享的目录  本地的挂载点
+    [root@client ~]# mount.nfs 192.168.1.252:/test /opt
+    [root@client ~]# vim /etc/fstab               #可选: 开机挂载
+    192.168.1.252:/test  /opt  nfs defaults  0 0
+    
+八、查看是否挂载
+[root@client ~]# df -h
+文件系统             容量  已用  可用 已用% 挂载点
+/dev/mapper/cl-root   17G  3.5G   14G   21% /
+devtmpfs             473M     0  473M    0% /dev
+tmpfs                489M  144K  489M    1% /dev/shm
+tmpfs                489M  7.0M  482M    2% /run
+tmpfs                489M     0  489M    0% /sys/fs/cgroup
+/dev/sda1           1014M  155M  860M   16% /boot
+tmpfs                 98M   16K   98M    1% /run/user/0
+/dev/sr0             4.1G  4.1G     0  100% /run/media/root/CentOS 7 x86_64
+192.168.1.252:/test  2.8G   33M  2.8G    2% /opt
+
+九、测试
+[root@client ~]# cd /opt
+[root@client opt]# ls
+[root@client opt]# mkdir a
+mkdir: 无法创建目录"a": 只读文件系统
+[root@client opt]# cat test.txt 
+nfs test
+```
+
+#### nfs配置/etc/exports
+
+```shell
+vim /etc/exports   
+共享资源   共享给谁(共享的属性) 
+# man 5 exports      
+共享资源：服务器的目录    
+共享给谁：多个主机 之间有空格隔开    
+192.168.1.251 某台主机    
+192.168.1.0/24        
+192.168.1.0/255.255.255.0    
+today.uplook.com 主机名    
+*.uplook.com  匹配uplook.com的所有主机    
+*       表示任意        
+共享的属性：文件系统的属性    
+ro             只读     
+rw            可读写      
+async       异步      
+sync         同步      
+secure      小于1024端口连接   
+insecure   大于1024端口连接    
+root_squash          把客户端使用root操作的文件的uid和gid映射为匿名用户（nfsnobody）         no_root_squash    不映射，以管理员root身份操作    
+all_squash      把所有用户创建文件的uid和gid都映射为匿名用户 （nfsnobody）     
+```
+
+#### 用户端权限
+
+```
+1.文件系统级别: 服务器共享的属性  
+ro: 只读   
+rw: 读写    
+2.基本UGO权限   
+默认情况下,客户端上的root用户会被映射为nfsnobody用户     如果服务器上的nfsnobody用户对共享目录有写权限,客户端的root用户才有写权限 
+解决客户端写权限问题:  
+1).在服务器上给共享目录加上写权限给nfsnobody,目录内的文件也同样需要授权给nfsnobody  
+2).在共享时加上no_root_squash属性     
+
+
+
+```
+
+### 搭建vsftpd
+
+```shell
+服务器端：
+
+   一、查看软件包是否安装
+
+ [root@test1 ~]# rpm -qa | grep vsftpd
+ [root@test1 ~]# yum install vsftpd -y
+
+查看软件安装产生的文件
+[root@test1 ~]# rpm -ql vsftpd
+/etc/vsftpd    配置文件的目录
+/etc/vsftpd/ftpusers    访问控制
+/etc/vsftpd/user_list    访问控制
+/etc/vsftpd/vsftpd.conf  配置文件
+/var/ftp    匿名用户的家目录
+/var/ftp/pub  默认上传下载的目录
+
+默认提供下载功能
+二、启动服务
+[root@test1 ~]# systemctl start vsftpd
+[root@test1 ~]# systemctl status vsftpd
+
+[root@test1 ~]# netstat -tulnp | grep ftp
+tcp6       0      0 :::21                   :::*                    LISTEN      4317/vsftpd    
+
+三、提供可被下载的文件
+[root@test1 ~]# ll /var/ftp/pub/
+总用量 4
+-rw-r--r-- 1 root root 601 7月  13 19:16 name.txt
+```
+
+#### vsftpd配置文件说明
+
+~~~shell
+# vim /etc/vsftpd/vsftpd.conf
+
+----------------匿名用户----------------------------------
+anonymous_enable=YES        允许匿名用户访问ftp
+#anon_upload_enable=YES    允许匿名用户上传文件
+#anon_mkdir_write_enable=YES   允许匿名用户创建目录
+ anon_other_write_enable=YES    允许匿名用户删除文件
+
+ 当匿名用户上传文件的时候可以改变其上传文件的所有者   
+#chown_uploads=YES
+#chown_username=whoever
+
+anon_umask=077  匿名用户上传文件的umask  
+设置为077 创建文件的默认权限是600 创建目录的的默认权限是700
+
+------------------全局配置-----------------------------------
+进入目录的时候有消息提示
+dirmessage_enable=YES
+如果想切换远程目录的时候有消息提示需要在该目录下创建一个.message文件
+例：[root@test1 pub]# vim .message
+------welcome to ftp----------
+------please do not upload unkown file
+
+日志设置
+xferlog_enable=YES    启用日志
+#xferlog_file=/var/log/xferlog   日志文件的位置
+xferlog_std_format=YES   #启动，日志将写成xferlog标准格式
+
+connect_from_port_20=YES         主动模式数据端口
+pasv_min_port=8001                    被动模式数据最小端口
+pasv_max_port=8010                   被动模式数据最大端口
+空间会话时间  连接后600秒无操作退出
+#idle_session_timeout=600
+
+数据连接超时  限制下载过大的文件  下载文件的时间不能超过120秒
+#data_connection_timeout=120
+
+修改默认的安全的用户  之前的安全用户ftp
+#nopriv_user=ftpsecure
+
+禁用异步传输
+#async_abor_enable=YES
+
+定义登陆ftp的横幅
+#ftpd_banner=Welcome to blah FTP service.
+
+-----------------本地用户----------------------------------
+local_enable=YES   允许本地用户访问ftp
+write_enable=YES  允许本地用户上传文件
+local_umask=022   本地用户上传文件的umask
+
+所有人能切换
+#chroot_local_user=YES    不开启禁锢功能
+#chroot_list_enable=YES   不启用禁锢列表
+#chroot_list_file=/etc/vsftpd/chroot_list  列表文件所在位置
+
+所有人不能切换
+chroot_local_user=YES   开启禁锢功能
+allow_writeable_chroot=YES
+
+黑名单  所有在列表文件内的用户不能切换
+chroot_local_user=NO    
+chroot_list_enable=YES    启用禁锢列表
+chroot_list_file=/etc/vsftpd/chroot_list  列表文件 在此文件中的用户禁锢
+allow_writeable_chroot=YES
+
+白名单  只有在列表文件内的用户可以切换
+chroot_local_user=YES   
+chroot_list_enable=YES  
+chroot_list_file=/etc/vsftpd/chroot_list  列表文件 在文件中的用户可以目录
+allow_writeable_chroot=YES
+
+# vim /etc/vsftpd/chroot_list
+
+user1
+
+-----------访问控制-(针对本地用户)-------------------------------------
+1.支持pam认证
+pam_service_name=vsftpd  pam认证的名字
+
+黑名单  在清单的用户不允许访问ftp服务（优先级高）
+
+# vim /etc/vsftpd/ftpusers
+
+user1
+
+2.所有在/etc/vsftpd/user_list文件内的用户是否允许访问ftp服务
+
+白名单   在清单内的用户可以访问
+userlist_enable=YES   是否启用文件控制
+userlist_deny=NO  文件内的用户是否能访问ftp
+
+黑名单  在清单内的用户不可以访问
+userlist_enable=YES
+userlist_deny=YES
+
+# vim  /etc/vsftpd/user_list
+
+user1
+
+3.
+tcp_wrappers=YES  
+
+可以使用tcp_wrappers做访问控制（针对匿名用户）
+[root@test1 ~]# which vsftpd
+/usr/sbin/vsftpd
+
+[root@test1 ~]# ldd /usr/sbin/vsftpd | grep libwr
+	libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f82b16e3000)
+
+# vim /etc/hosts.deny   拒绝
+
+# vim /etc/hosts.deny   拒绝
+
+```
+vsftpd:192.168.1.251
+```
+
+  服务的进程名:主机名/ip地址/network/域名   
+
+/etc/hosts.allow   允许
+
+-----------------------用户限制 资源访问----------------
+   anon_max_rate=0   #限制匿名用户最大传输速率，单位是字节 默认无限制    
+   local_max_rate=0    #限制本地用户最大传输速率，单位是字节 默认无限制    
+   max_clients=2000   #限制并发客户端连接数    
+   max_per_ip=50       #限制同一个ip地址的并发连接数 
+
+
+
+
+~~~
+
+#### 客户端的使用
+
+```shell
+客户端：     一.图形化      浏览网络-->ftp://192.168.1.252            二.使用客户端软件      lftp      安装软件包     
+[root@client ~]# yum install lftp -y    
+[root@client ~]# lftp  --help 
+用法: lftp [OPTS] <site>  
+[root@client ~]# lftp 192.168.1.252 
+lftp 192.168.1.252:~> ? 
+help [<cmd>]      
+!<shell-command>#本地命令    
+ls [<args>]       #查看远程文件列表     
+cd <rdir>             #切换远程目录         
+cat [-b] <files>    #查看远程文件内容      
+more <files>        #查看远程文件内容              
+mkdir [-p] <dirs>   #在远程服务器上创建目录           
+get [OPTS] <rfile> [-o <lfile>]   #下载单个文件    
+mget [OPTS] <files>  #批量下载              
+put [OPTS] <lfile> [-o <rfile>]   #上传    
+mput [OPTS] <files>     #批量上传                
+mirror [OPTS][remote [local]]   #上传下载目录        
+rm [-r][-f] <files>   #删除文件或目录      
+rmdir [-f] <dirs>    #删除目录     
+mrm <files>           #批量删除文件        
+exit [<code>|bg]   #退出    
+客户端下载文件到本地的当前工作目录   
+lftp 192.168.1.252:/pub> get name.txt   
+601 bytes transferred         
+客户端下载文件到本地的指定的工作目录    
+lftp 192.168.1.252:/pub> get name.txt -o /opt   
+601 bytes transferred    
+客户端上载文件到服务器的pub目录-->/var/ftp/pub  
+lftp 192.168.1.252:/pub> put /root/a.txt    
+5 bytes transferred       
+客户端上载文件到服务器的指定目录-->/var/ftp/pub/soft/  
+lftp 192.168.1.252:/pub> put /root/a.txt -o /pub/soft/   
+5 bytes transferred   
+客户端在服务器上创建目录   
+lftp 192.168.1.252:/pub> mkdir soft  
+mkdir 成功, 建立 `soft'     
+客户端在服务器上删除文件目录   
+lftp 192.168.1.252:/pub> rm -rf soft    
+rm ok, 2 files removed  i
+```
+
+#### 本地用户操作
+
+1. ```shell
+   普通用户不需要做什么设置，使用在服务器端的用户
+   
+   服务器：
+   1.提供普通用户
+   #useradd  user1
+   
+   2.为用户设置密码
+   
+   # echo 1 | passwd --stdin user1
+   
+   客户端
+   用法: lftp [OPTS] <site>
+   -u <user>[,<pass>]  使用指定的用户名/口令进行验证
+   
+   [root@client ~]# lftp -u user1,1 192.168.1.252
+   
+   # lftp user1@192.168.1.252:~>   
+   
+   对本地用户做个性化设置:
+   
+   1. 修改主配置文件,添加如下行:
+      user_config_dir=/etc/vsftpd/user_conf     #设置用户个性化设置目录
+   2. 在个性化设置目录内创建与用户同名的文件
+          # mkdir  /etc/vsftpd/user_conf
+          # cd  /etc/vsftpd/user_conf
+          # vim  jim                                 #对用户jim做个性化设置
+               local_umask=066
+   3. 重启服务
+   4. 测试:  其他用户上传文件,权限为644,,jim用户上传文件,权限为600
+   ```
+
+
+
+#### 使用FTP共享YUM源
+
+```shell
+Server:
+[root@yangs ~]# mkdir /var/ftp/{centos6u8,centos7u3}
+[root@yangs ~]# mount -o loop /home/centos7u3.iso /var/ftp/centos7u3
+[root@yangs ~]# echo “mount -o loop /home/centos7u3.iso /var/ftp/centos7u3”  >> /etc/rc.local
+[root@yangs ~]# chmod +x /etc/rc.d/rc.local
+
+Client:
+[root@tianyun ~]# vim /etc/yum.repos.d/centos7.repo 
+[centos7u3]
+name=centos7u3
+baseurl=ftp://10.18.40.100/centos7u3
+gpgcheck=0
+```
+
+
+
+#### 布署一个ftp服务器,要求匿名用户能够上传普通文件
+
+```shell
+
+
+yum install vsftpd
+
+# vim /etc/vsftpd/vsftpd.conf
+
+anon_upload_enable=YES     #允许用户上传文件
+systemctl restart vsftpd
+mkdir share
+chmod 777 share
+客户端可以将文件上传到share
+```
+
+### 搭建apache
+
+```
+1.安装软件包
+[root@www ~]# yum install httpd -y
+
+[root@www ~]# rpm -ql httpd
+/etc/httpd   配置文件目录
+/etc/httpd/conf   主配置文件目录
+/etc/httpd/conf.d  辅助配置文件目录
+/etc/httpd/conf.d/README        
+/etc/httpd/conf.d/autoindex.conf
+/etc/httpd/conf.d/userdir.conf
+/etc/httpd/conf.d/welcome.conf   
+/etc/httpd/conf/httpd.conf   主配置文件
+/etc/httpd/logs      日志目录
+/etc/httpd/modules   模块目录
+/etc/httpd/run   运行时的进程文件路径
+/usr/sbin/httpd   
+/usr/share/doc/httpd-2.4.6   帮助文档
+/usr/share/doc/httpd-2.4.6/httpd-default.conf
+/usr/share/doc/httpd-2.4.6/httpd-vhosts.conf
+/var/www/html    主文档目录,默认网页发布目录      
+/var/log/httpd     日志
+
+192.168.1.250/a.html
+
+url   统一资源定位符   协议://主机/路径
+
+2.启动服务
+[root@www ~]# systemctl start httpd
+
+客户端访问
+http://192.168.1.252
+
+-----------------------------搭建基本web站点---------------
+[root@www ~]# cd /var/www/html/
+[root@www html]# echo "hello uplooking" > index.html
+
+客户端：
+[root@client ~]# firefox http://192.168.1.252  &f
+
+
+```
+
+
+
+#### apache设置个人主页
+
+```
+# vim /etc/httpd/conf.d/userdir.conf
+18 UserDir enable 
+26 UserDir public_html
+[root@server conf]# setfacl -m u:apache:rx /home/tom1
+[root@server conf]# echo test gerenzhuye > /home/tom1/public_html/index.html
+[root@server conf]# systemctl restart httpd.service 
+客户端访问：
+http://192.168.127.5/~tom1/
+```
+
+#### apache个人主页设置验证
+
+```shell
+# vim /etc/httpd/conf.d/userdir.conf
+<IfModule mod_userdir.c>
+18 UserDir enable 
+26 UserDir public_html
+</IfModule>
+
+<Directory "/home/*/public_html">
+   AllowOverride AuthConfig
+   Authtype Basic
+   AuthName "name&passwd"
+   Authuserfile "/home/tom1/public_html/.htpasswd"
+   Require valid-user
+</Directory>
+
+[root@server conf]# setfacl -m u:apache:rx /home/tom1
+[root@server conf]# echo test gerenzhuye > /home/tom1/public_html/index.html
+[root@server conf]# htpasswd -c /home/tom1/public_html/.htpasswd tom1
+New password: 
+Re-type new password: 
+Adding password for user tom1
+[root@server conf]# httpd -t
+Syntax OK
+[root@server conf]# systemctl restart httpd.service 
+客户端访问：
+http://192.168.127.5/~tom1/
+需要输入所设置的用户名和密码才能访问
+
+```
+
+#### apache设置用户验证
+
+```shell
+[root@server html]# vim /etc/httpd/conf/httpd.conf
+<Directory "/var/www/html">
+   AllowOverride AuthConfig
+   Authtype Basic
+   AuthName "name&passwd"
+   Authuserfile "/var/www/html/.htpasswd"  #安全考虑，所有以.ht开头进行模式匹配不能进行访问
+   Require valid-user
+</Directory>
+:wq
+[root@server html]# httpd -t
+Syntax OK
+[root@server html]# systemctl restart httpd
+创建两个可登录用户：http1
+[root@server html]# htpasswd -c /var/www/html/.htpasswd http1 //第一次添加使用 -c
+New password: 
+Re-type new password: 
+Adding password for user http1
+[root@server html]# htpasswd  /var/www/html/.htpasswd http2 //第二次添加不能使用 -c
+New password: 
+Re-type new password: 
+Adding password for user http2
+
+```
+
+![1545374828722](C:\Users\ADMINI~1\AppData\Local\Temp\1545374828722.png)
+
+
+
+客户端需要验证用户名和密码才能连接
+
+#### apache搭建基于域名虚拟主机
+
+```shell
+服务器配置
+#cp /usr/share/doc/httpd-2.4.6/httpd-vhosts.conf   /etc/httpd/conf.d/
+vim /etc/httpd/conf.d/httpd-vhosts.conf 
+<directory "/webs">
+Require all granted
+</directory>
+<VirtualHost *:80>
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web1"
+    ServerName www.web1.com
+    ServerAlias web1
+    ErrorLog "/var/log/httpd/web1-error_log"
+    CustomLog "/var/log/httpd/web1-access_log" common        #访问日志的路径与格式
+</VirtualHost>
+<VirtualHost *:80>
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web2"
+    ServerName www.web2.com
+    ServerAlias web2
+    ErrorLog "/var/log/httpd/web2-error_log"
+    CustomLog "/var/log/httpd/web2-access_log" common         #访问日志的路径与格式
+</VirtualHost>
+[root@server ~]# mkdir -p /webs/web{1,2} #创建虚拟主机家目录
+[root@server ~]# httpd -t      #重启服务前一定要检查语法
+Syntax OK                      #显示语法正确  
+[root@server ~]# echo web1 >/webs/web1/index.html   #将需要显示的页面放进去
+[root@server ~]# echo web2 >/webs/web2/index.html   #将需要显示的页面放进去
+[root@server ~]# systemctl restart httpd            #重启服务
+
+
+客户端配置域名解析
+vim /etc/hosts
+192.168.127.5 www.web1.com www.web2.com    #设置域名解析
+
+[root@client ~]# curl www.web1.com         #测试是否连接成功
+web1
+[root@client ~]# curl www.web2.com         #测试是否连接成功
+web2
+
+
+```
+
+#### apache基于端口的虚拟主机
+
+```shell
+#cp /usr/share/doc/httpd-2.4.6/httpd-vhosts.conf   /etc/httpd/conf.d/
+vim /etc/httpd/conf.d/httpd-vhosts.conf 
+Listen 90                                 #添加监听在90端口
+<directory "/webs">
+Require all granted
+</directory>
+<VirtualHost *:80>                       #默认监听的80端口
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web1"
+    ServerName www.web1.com
+    ServerAlias web1
+    ErrorLog "/var/log/httpd/web1-error_log"
+    CustomLog "/var/log/httpd/web1-access_log" common#访问日志的路径与格式
+</VirtualHost>
+<VirtualHost *:90>                      #通过90端口可以访问web2      
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web2"
+    ServerName www.web2.com
+    ServerAlias web2
+    ErrorLog "/var/log/httpd/web2-error_log"
+    CustomLog "/var/log/httpd/web2-access_log" common         #访问日志的路径与格式
+</VirtualHost>
+[root@server ~]# mkdir -p /webs/web{1,2} //创建虚拟主机家目录
+[root@server ~]# httpd -t      #重启服务前一定要检查语法
+Syntax OK                      #显示语法正确  
+[root@server ~]# echo web1 >/webs/web1/index.html  #将需要显示的页面放进去
+[root@server ~]# echo web2 >/webs/web2/index.html  #将需要显示的页面放进去
+[root@server ~]# systemctl restart httpd           #重启服务
+
+客户端访问时必须指定端口
+[root@client ~]# curl 192.168.127.5:90    #指定90端口访问
+web2
+[root@client ~]# curl 192.168.127.5      #不指定则访问默认端口
+web1
+
+
+```
+
+#### apache基于IP的虚拟主机
+
+```shell
+#cp /usr/share/doc/httpd-2.4.6/httpd-vhosts.conf   /etc/httpd/conf.d/
+vim /etc/httpd/conf.d/httpd-vhosts.conf 
+<directory "/webs">
+Require all granted
+</directory>
+<VirtualHost 192.168.127.5:80>                        #通过指定IP可以访问web1
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web1"
+    ServerName www.web1.com
+    ServerAlias web1
+    ErrorLog "/var/log/httpd/web1-error_log"
+    CustomLog "/var/log/httpd/web1-access_log" common   #访问日志的路径与格式
+</VirtualHost>
+<VirtualHost 192.168.127.139:80>                      #通过指定IP可以访问web2      
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/webs/web2"
+    ServerName www.web2.com
+    ServerAlias web2
+    ErrorLog "/var/log/httpd/web2-error_log"
+    CustomLog "/var/log/httpd/web2-access_log" common         #访问日志的路径与格式 
+</VirtualHost>
+[root@server ~]# mkdir -p /webs/web{1,2} //创建虚拟主机家目录
+[root@server ~]# httpd -t      #重启服务前一定要检查语法
+Syntax OK                      #显示语法正确  
+[root@server ~]# echo web1 >/webs/web1/index.html  #将需要显示的页面放进去
+[root@server ~]# echo web2 >/webs/web2/index.html  #将需要显示的页面放进去
+[root@server ~]# systemctl restart httpd           #重启服务
+
+客户端访问时必须指定端口
+[root@client ~]# curl 192.168.127.5      #指定IP访问虚拟主机
+web1
+[root@client ~]# curl 192.168.127.139     #指定IP访问虚拟主机
+web2
+```
+
+### dns服务
+
+#### dns简介
+
+```shell
+DNS——Domain Name Server(域名服务器)或者Domain Name System(域名系统) 
+功能：将域名解析为IP地址，基本解决IP地址难于记忆的问题。也可以将IP地址解析为域名。 
+什么时候用？     只要上网就会使用dns。  
+udp      tcp 
+dns历史：     1983年出现    
+历史发展过程：       
+1）网络规模比较小，不需要解析，直接记IP就ok了      
+2）在dns出现之前，/etc/hosts   
+linux：/etc/hosts      
+windows: C:\WINDOWS\system32\drivers\etc\hosts  
+3）规模大的时候，出现了专业的dns服务器    
+域名：     是由一连串用点(.)分隔的字符串组成的，标识计算机在网络中的电子方位的。    
+域名例子： baidu.com.                 
+sina.com.                    
+www.baidu.com. 
+FQDN(Fully Qualified Domain Name) 全质量域名/完全域名，实际上指的是主机名的全路径，从全质量域名可以看出一台主机在域名树中的位置。
+1、根域服务器：是整个互联网域名解析系统中级别最高的域名服务器。
+    主根域服务器A：在美国
+    12台辅根域服务器：B-M
+ 
+    顶级域：.com.
+    二级域：.uqf.com
+    主机地址：www.qf.com.
+
+2、dns服务器的分类
+    主DNS服务器、从DNS服务器、转发DNS服务器
+    
+3、域名的查询方式
+    递归查询：
+        一般客户机和本地DNS服务器之间的查询属于递归查询。递归查询当客户端向本地dns服务器发出查询请求的时候，本地DNS服务器本身不能解析的话，会找别人查到结果，将查询结果返回给客户端。如果未查到结果就直接返回给客户端没找到。
+            简单来说：递归查询，本地DNS服务器一定会给客户端明确的结果。
+    迭代查询：
+        一般DNS服务器之间的查询属于迭代查询。当dns服务器(dns1)采用迭代查询时，dns1会请求根域服务器，根域服务器会返回给dns1另一个dns服务器(dns2)的地址，然后dns1就回去请求dns2，依此类推，直到找到结果。在本地缓存一份，再将结果返回给客户端。
+            简单来说：就是迭代查询需要dns服务器自己跑腿，一级一级向别人询问，直到找到结果。
+
+4.域名解析详细过程
+    1)、在浏览器中输入www.163.com域名，操作系统会先检查自己本地的hosts文件是否有这个网址映射关系，如果有，就先调用这个IP地址映射，完成域名解析。 
+    2)、如果hosts里没有这个域名的映射，则查找本地DNS解析器缓存，是否有这个网址映射关系，如果有，直接返回，完成域名解析。 
+    3)、如果hosts与本地DNS解析器缓存都没有相应的网址映射关系，首先会找TCP/ip参数中设置的首选DNS服务器，在此我们叫它本地DNS服务器，此服务器收到查询时，如果要查询的域名，包含在本地配置区域资源中，则返回解析结果给客户机，完成域名解析，此解析具有权威性。 
+    4)、如果要查询的域名，不由本地DNS服务器区域解析，但该服务器已缓存了此网址映射关系，则调用这个IP地址映射，完成域名解析，此解析不具有权威性。 
+    5)、如果本地DNS服务器本地区域文件与缓存解析都失效，则根据本地DNS服务器的设置（是否设置转发器）进行查询，如果未用转发模式，本地DNS就把请求发至13台根DNS，根DNS服务器收到请求后会判断这个域名(.com)是谁来授权管理，并会返回一个负责该顶级域名服务器的一个IP。本地DNS服务器收到IP信息后，将会联系负责.com域的这台服务器。这台负责.com域的服务器收到请求后，如果自己无法解析，它就会找一个管理.com域的下一级DNS服务器地址(163.com)给本地DNS服务器。当本地DNS服务器收到这个地址后，就会找163.com域服务器，重复上面的动作，进行查询，直至找到www.163.com主机。 
+    6)、如果用的是转发模式，此DNS服务器就会把请求转发至上一级DNS服务器，由上一级服务器进行解析，上一级服务器如果不能解析，或找根DNS或把转请求转至上上级，以此循环。不管是本地DNS服务器用是是转发，还是根提示，最后都是把结果返回给本地DNS服务器，由此DNS服务器再返回给客户机。
+
+SOA
+NS
+A
+PTR
+CNAME
+
+DNS服务器清缓存:
+    # rndc  flush
+    
+```
+
+#### 安装配置简
+
+~~~shell
+1、软件安装  
+    # yum install bind  -y
+##         bind：服务器端软件
+```
+    bind-chroot：牢笼软件
+    主: /var/named/chroot/etc/named.conf
+     zone:  /var/named/chroot/var/named/
+```
+2、配置文件    
+   主配置文件：/etc/named.conf
+   区配置文件在：/var/named/    
+ 配置文件模板所在位置：
+    /usr/share/doc/bind-9.8.2/sample
+3、使用的协议及端口
+    tcp 53：主要用于主从同步，需要的是可靠的数据传输
+    udp 53：主要用于客户端查询域名
+    
+4、配置文件简介
+    # grep -v ^\/ /etc/named.conf  | grep -v ^$
+    options {                                              #全局选项配置
+	    listen-on port 53 { 127.0.0.1; };    #监听套接字 
+	    listen-on-v6 port 53 { ::1; };         
+	    directory 	"/var/named";                 #存放区域配置文件的目录
+	    dump-file 	"/var/named/data/cache_dump.db";          #缓存备份文件
+        statistics-file "/var/named/data/named_stats.txt";        #状态文件
+        memstatistics-file "/var/named/data/named_mem_stats.txt";      #内存状态文件
+	    allow-query     { localhost; };         #允许哪些客户端进行查询，可写成any，172.16.0.0/16等形式	             
+	    recursion yes;                                  #允许递归查询
+	    dnssec-enable yes;                          #启用dns安全策略
+	    dnssec-validation yes;                    #启用dns的valid安全策略
+	    bindkeys-file "/etc/named.iscdlv.key";         #密钥文件
+	    managed-keys-directory "/var/named/dynamic";     #管理密钥的目录
+	    pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";     #会话密钥文件
+    };    
+
+logging {                                            #和日志等相关的
+        channel default_debug {
+                file "data/named.run";       #日志路径
+                severity dynamic;               #动态
+        };
+};
+
+zone "." IN {                                       #域设置
+    type hint;                                        #域类型:根域
+    file "named.ca";                             #域文件名称
+};
+include "/etc/named.rfc1912.zones";   #包含的子配置文件
+include "/etc/named.root.key";             #包含的密钥文件
+~~~
+
+#### 正向解析
+
+```shell
+正向解析：由域名到IP
+反向解析：由IP到域名
+1 安装软件
+    # yum install bind -y
+2 修改主配置文件
+    # vim /etc/named.conf
+        options {
+           listen-on port 53 { any; };
+           allow-query     { any; };
+        };
+        zone "qf.com" IN {
+           type master;
+           file "qf.com.zone";
+        };
+3 编写区配置文件
+    # cd /var/named/
+    # cp -p named.localhost   qf.com.zone   
+    # vim qf.com.zone
+        $TTL 1D                                                                            
+        @       IN SOA  @ root.163.com  (                                                   2017020701；serial                                           1D      ; refresh                                           1H      ; retry                                           1W      ; expire
+                                3H )    ; minimum
+	                NS	dns.qf.com.
+        www	A	    6.6.6.12
+        bbs	    A	    6.6.6.13
+        dns      A      6.6.6.11
+    
+资源记录:
+NS - 用来指定操作的DNS服务器主机名称，NS记录是不允许用主机IP地址来表示的
+SOA - 标记权威记录的开始
+A - IPV4正向解析记录
+AAAA - IPV6正向解析记录
+MX - 邮件服务器主机记录
+CNAME - 别名
+PTR - 反向解析记录
+
+主机名.      A            IPv4 的 IP 位址
+主机名.      AAAA     IPv6 的 IP 位址
+IP位址       PTR        主机名+域名
+别名          CNAME   主机名
+例:
+    www IN A 122.128.109.86
+    news IN AAAA CDCD:910A:2222:5498:8475:1FF1:3900:2027
+    86     IN PTR www.uplook.net.
+    ftp    IN CNAME www
+
+4 检查文件是否有语法错误
+    # named-checkconf
+    # named-checkzone  qf.com   /var/named/qf.com.zone
+5 启动服务
+    # systemctl start named
+6 本机验证
+    # nslookup www.qf.com
+        Server:		127.0.0.1                  #dns服务器的IP
+        Address:	127.0.0.1#53  
+        Name:	www.qf.com  
+        Address: 6.6.6.12     
+7 客户端验证
+    # vim  /etc/resolv.conf
+        nameserver 6.6.6.11             #指定dns服务器
+    # nslookup www.qf.com
+        Server:		6.6.6.11
+        Address:	6.6.6.11#53
+    Name:	www.qf.com
+    Address: 6.6.6.12
+问题:
+如果启动服务卡在Generating /etc/rndc.key:      
+解决办法:手动生成/etc/rndc.key 文件
+#        # rndc-confgen -r /dev/urandom -a      
+需要注意的地方:
+主配置文件:
+    监听套接字,默认ip为127.0.0.1,会导致其他人无法访问DNS服务器
+    allow-query
+域文件:
+    zone 文件的权限,复制的时候使用带权限复制
+    NS记录,一定要写全质量域名(以.结尾)
+    如果NS是所解析的域内的一台主机,一定要有对应的解析记录
+    
+    正向解析实验：
+背景: 公司域名为niux.com,要求每位员工电脑主机名格式为:姓名.域名
+      如员工张三,主机名为zhangsan.niux.com,ip为192.168.100.101(IP自己分配)
+需求: 员工之间通信要用主机名通信
+给出你的解决方案
+服务器IP:192.168.127.5
+客户端：192.168.127.6
+vim /etc/named.conf
+options {
+        listen-on port 53 { any; };     
+        directory       "/var/named";
+        allow-query     { any; };
+            };
+zone "niux.com" IN {
+        type master;
+        file "niux.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+vim /var/named/niux.com.zone
+     NS      dns.niux.com.
+zhangsan        A       192.168.127.7
+lisi     A       192.168.127.6
+aaa     A       192.168.127.3
+http    A       192.168.127.61
+检查文件是否有语法错误
+    # named-checkconf
+    # named-checkzone  qf.com   /var/named/qf.com.zone
+启动服务
+    # systemctl start named
+本机验证
+    # nslookup zhangsan.niux.com
+        Server:		127.0.0.1         #dns服务器的IP
+        Address:	127.0.0.1#53  
+        Name:	zhangsan.niux.com  
+        Address:  192.168.127.7    
+客户端验证
+    # vim  /etc/resolv.conf
+         search qf.com      #可以直接使用主机名
+        nameserver 192.168.127.5        #指定dns服务器
+    [root@client ~]# nslookup zhangsan
+     Server:		192.168.127.5
+     Address:	192.168.127.5#53
+
+     Name:	zhangsan.niux.com
+     Address: 192.168.127.7
+[root@client ~]# nslookup zhangsan.niux.com
+     Server:		192.168.127.5
+     Address:	192.168.127.5#53
+
+     Name:	zhangsan.niux.com
+     Address: 192.168.127.7
+
+```
+
+#### 反向解析
+
+~~~shell
+用的地方比较少
+    无人值守安装：dns正向解析+反向解析，分配主机名
+    邮件服务器：过滤垃圾邮件
+    
+1、修改主配置文件
+2、创建反向解析的配置文件
+3、重启服务
+4、验证
+
+01 修改主配置文件
+    # vim /etc/named.conf    
+        添加如下行
+        zone "1.168.192.in-addr.arpa" IN {
+        type master;
+        file "192.168.1.zone";
+        };
+02 创建区配置文件
+    # cd /var/named/
+    # cp -p qf.com.zone 192.168.1.zone
+                  NS      dns.qf.com.
+        12      PTR     www.qf.com.
+        13      PTR     mail.qf.com.
+03 重启服务
+    # systemctl restart named  
+04 验证
+    # nslookup 192.168.1.12
+        Server:		127.0.0.1
+        Address:	127.0.0.1#53
+
+```
+    12.1.168.192.in-addr.arpa	name = www.qf.com.
+
+# nslookup 192.168.1.13
+    Server:		127.0.0.1
+    Address:	127.0.0.1#53
+
+    13.1.168.192.in-addr.arpa	name = mail.qf.com.   
+
+```
+=========================================================
+
+# vim /etc/named.conf
+
+zone "10.in-addr.arpa" IN {
+    type master;
+    file "10.zone";
+};
+
+# vim 10.zone
+
+                    NS   desk.qf.com.
+13.12.11    PTR  www.163.com.
+
+# nslookup 10.11.12.13
+
+Server:		10.10.10.10
+Address:	10.10.10.10#53
+
+13.12.11.10.in-addr.arpa	name = www.163.com
+  客户端：  
+  vim /etc/resolv.conf
+    search qf.com   直接使用主机名
+    
+   反向解析实验
+#vim /etc/named.conf
+zone "127.168.192.in-addr.arpa" IN {
+        type master;
+        file "192.168.127.zone";
+};
+# cp -p named.localhost 192.168.127.zone
+#vim 192.168.127.zone 
+        NS      dns.niux.com.
+61      PTR     http.niux.com.
+#systemctl restart named
+#nslookup 192.168.127.61
+# nslookup 192.168.127.61
+Server:		127.0.0.1
+Address:	127.0.0.1#53
+61.127.168.192.in-addr.arpa	name = http.niux.com.
+
+~~~
+
+#### 智能地址解析VIEW视图
+
+```shell
+应用场景:
+     比如我们知道国内两家网络运营商，电信用户访问电信的服务器的时候比较快，但是访问网通的就会比较慢，同理网通的用户访问电信的也比较慢，怎么办???解决方案就是DNS VIEW，通过判断不同的运营商IP来把它解析到不同的服务器上，这就是VIEW的一个典型应用，也是目前国内比较流行的一种应用：智能DNS
+   
+服务器中有两个不同网段的IP(两个网卡)           用于测试的客户端
+IP1:192.168.127.5                   IP1:192.168.127.6
+IP2:10.3.144.177                    IP2:10.3.144.179
+服务器配置：
+vim /etc/named.conf
+acl cmcc { 192.168.127.0/24; };#来自192.168.127网段指向cmcc
+acl unic { 10.3.144.0/24; };#100.3.144.0网段指向unic
+view "yidong"{    
+match-clients{ cmcc; }; #判断如果是cmcc里面的网段，则使用这块范围的域
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "qf.com" IN {       #qf.com域
+        type master;
+        file "192.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+
+view "liantong"{ 
+match-clients{ unic; };#判断如果是cmcc里面的网段，则使用这块范围的域
+recursion yes;    #recursion(循环)
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "qf.com" IN {   #qf.com域
+        type master;
+        file "10.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+
+view "others"{        
+match-clients{ any; };  #不属于上面acl记录中的所有IP指向这里
+recursion yes;
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "baidu.com" IN {
+        type master;
+        file "10.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+#vim /var/named/192.com.zone
+        NS    dns.qf.com.
+dns     A       192.168.127.5
+www     A       192.168.127.10
+# vim /var/named/10.com.zone
+       NS    dns.qf.com.
+dns     A       192.168.127.5
+www     A       192.168.127.20
+
+客户端192.168.127.6
+# vim /etc/resolv.conf 
+nameserver 192.168.127.5      #指定服务器其中一个同网段IP
+[root@client ~]# nslookup www.qf.com    #访问同一个域
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+Name:	www.qf.com
+Address: 192.168.127.10             #得到不同的IP地址
+客户端10.3.144.179   
+# vim /etc/resolv.conf 
+nameserver 10.3.144.177        #指定服务器其中一个同网段IP
+[root@web1 ~]# nslookup www.qf.com     #访问同一个域
+Server:		10.3.144.177
+Address:	10.3.144.177#53
+
+Name:	www.qf.com
+Address: 192.168.127.20           #得到不同的IP地址
+
+
+
+
+
+```
+
+#### 转发dns服务器
+
+```shell
+
+场合：
+   比如说你不能直接访问外网的dns服务器，但是公司里有一个人他可以访问外网的dns，那么你可以通过他转发请求。
+   
+实验环境：两台dns服务器,一个客户端
+    1）192.168.10.10    真正的dns服务器，拥有全部的解析 以baidu.com正向解析为例
+    2）192.168.10.14    转发dns服务器，没有主机的解析信息
+  
+一、配置真正的dns服务器
+         
+二、配置转发dns服务器    
+    1、安装软件
+        # yum install bind  -y
+    2、修改主配置文件
+        # vim /etc/named.conf
+            options {
+           forwarders { 192.168.10.10; };   #真正的dns服务器的IP，把请求转发给谁
+                forward first;
+          };
+    3、启动服务
+        # systemctl restart named
+
+-------------------------------------------------------
+forward first | only;
+forward指令用于设置DNS转发的工作方式：
+forward first设置优先使用forwarders DNS服务器做域名解析，如果查询不到再使用本地DNS服务器做域名解析。
+forward only设置只使用forwarders DNS服务器做域名解析，如果查询不到则返回DNS客户端查询失败。
+---------------------------------------------------------
+      
+三、客户端验证
+    将dns服务器指向转发dns服务器的IP
+    # cat /etc/resolv.conf
+        nameserver 192.168.10.14
+        
+    # nslookup www.baidu.com
+        Server:	192.168.10.14
+        Address:	192.168.10.14#53
+
+        Non-authoritative answer:
+        Name:	www.baidu.com
+        Address: 192.168.1.11
+    
+```
+
+#### 主从服务器
+
+```shell
+主服务器：
+vim /etc/named.conf
+zone "qf.com" IN {
+        type master;
+        file "qf.com";
+        notify yes;
+        also-notify{ 192.168.127.6; };
+        allow-transfer{ 192.168.127.6; };
+};
+
+vim /var/named/qf.com
+$TTL 1D
+@       IN SOA  @ rname.invalid. (
+                                        2018122501      ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS    dns.qf.com.
+     
+dns     A       192.168.127.5
+www     A       1.1.1.1
+        A       2.2.2.2
+new     CNAME   news
+
+- A       2.2.2.2
+  ~                                          
+  从服务器：
+  vim /etc/named.conf
+  zone "qf.com" IN {
+  type slave;
+  masters { 192.168.127.5 };
+  file "slaves/qf.com";
+  };
+  include "/etc/named.rfc1912.zones";
+
+# systemctl restart named
+
+[root@client slaves]# nslookup www.qf.com     #客户端测试测试
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+
+Name:	www.qf.com
+Address: 2.2.2.2
+Name:	www.qf.com
+Address: 1.1.1.1
+```
+
+#### 子域授权
+
+```shell
+子域：除了根域和顶级域以外的都称为子域
+为什么使用子域？
+    能够减轻父域的负担，且不受dns服务商的影响
+子域一般在公司内部使用。
+父域只需要解析自己的子域即可。
+子域完成的是子域中所有的主机的解析。
+实验环境
+    1）父域 qf.com        6.6.6.12
+    2）子域 wh.qf.com   6.6.6.11  
+                mail.wh.qf.com
+                www.wh.qf.com
+                
+1、父域配置
+    1）修改主配置文件
+        # vim /etc/named.conf
+            options {
+                listen-on port 53 { any; };
+                ...
+                directory       "/var/named";
+                ...
+                allow-query     { any; };  
+                ...             
+            };
+            ...
+            zone "qf.com" {
+                type master;
+                file "qf.com.zone";
+            };
+            
+
+ 2）创建区配置文件
+
+# cd /var/named/
+
+# cp -p named.localhost qf.com.zone
+
+# vim qf.com.zone
+
+        $TTL 3H
+        @   IN SOA  @ root.dns.qf.com. (
+                            2017020701  ; serial
+                            1D  ; refresh
+                            1H  ; retry
+                            1W  ; expire
+                            3H )    ; minimum
+                              NS  dns.qf.com.                #父域服务器
+        dns                 A    6.6.6.12                 #父域IP
+        wh                  NS  dns.wh.qf.com.           #子域服务器
+        dns.wh.qf.com.    A    6.6.6.11                 #子域IP
+        
+ 3）重启服务
+
+# systemctl restart named
+
+2、子域配置 
+    1）主配置文件
+        # vim /etc/named.conf
+            options {
+               directory "/var/named";
+            };
+            ...
+            zone "wh.qf.com" {
+               type master;
+               file "wh.qf.com.zone";
+            };
+            
+
+2）区配置文件
+
+# vim /var/named/wh.qf.com.zone
+
+        $TTL 3H
+        @	IN SOA	@ root.dns.wh.qf.com. (
+				            2016020702	; serial
+				            1D	; refresh
+				            1H	; retry
+				            1W	; expire
+				            3H )	; minimum
+                    NS  dns.wh.qf.com.
+        dns       A      6.6.6.11
+        www	    A	    6.6.6.13	                  
+        mail	    A	    6.6.6.14
+        
+3）重启服务
+
+# systemctl restart named
+
+3、验证 
+    客户端将dns服务器指向父域    
+        # cat /etc/resolv.conf 
+            nameserver 6.6.6.12
+        # nslookup www.wh.qf.com
+            Server:		6.6.6.12
+            Address:	6.6.6.12#53
+
+        Non-authoritative answer:
+        Name:	www.wh.qf.com
+        Address: 6.6.6.13
+       
+
+# nslookup mail.wh.qf.com
+
+        Server:		6.6.6.12
+        Address:	6.6.6.12#53
+
+        Non-authoritative answer:
+        Name:	mail.wh.qf.com
+Address: 6.6.6.14
+
+
+配置一个父域和2个子域实验：
+com.域IP        192.168.127.5
+qf.com.域IP     192.168.127.6
+qh.qf.com.域IP  192.168.127.60
+测试用客户端IP   192.168.127.61
+com.域配置
+[root@server named]# vim /etc/named.conf
+options {
+        listen-on port 53 { any; };
+ directory       "/var/named";
+allow-query     { any; };
+}
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "com" IN {     
+        type master;
+        file "com.zone";
+};
+include "/etc/named.rfc1912.zones";
+
+[root@server named]# vim /var/named/com.zone 
+$TTL 1D
+@       IN SOA  @ rname.invalid. (
+                                        2018122501      ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS    dns.com.
+dns     A       192.168.127.5     #解析自己
+www     A       1.1.1.7            #对应解析的主机和IP
+qf      NS      dns.qf.com.        #对子域授权
+dns.qf.com.     A       192.168.127.6  #所授权子域IP
+
+[root@server named]# systemctl restart named  
+#每完成一步都要测试
+[root@server named]# nslookup www.com 127.0.0.1  
+Server:		127.0.0.1
+Address:	127.0.0.1#53
+Name:	www.com
+Address: 1.1.1.1
+[root@server named]# nslookup www.com 192.168.127.5
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+Name:	www.com
+Address: 1.1.1.1
+
+qf.com.域配置
+[root@server named]# vim /etc/named.conf
+....
+zone "qf.com" IN {
+        type master;
+        file "qf.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+[root@server named]# vim /var/named/qf.com.zone 
+$TTL 1D
+@       IN SOA  @ rname.invalid. (
+                                        2018122501      ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS    dns.qf.com.
+dns     A       192.168.127.6
+www     A       2.2.2.2
+qh       NS     dns.qh.qf.com.   #授权的子域
+dns.qh.qf.com.  A       192.168.127.60  #子域IP
+[root@server named]# systemctl restart named
+#测试，直接指向父域
+[root@server named]# nslookup www.qf.com 192.168.127.5
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+
+Non-authoritative answer:#非权威应答
+Name:	www.qf.com
+Address: 2.2.2.2
+
+qh.qf.com.域配置
+[root@6server named]# vim /etc/named.conf 
+......
+zone "qh.qf.com" IN {
+        type master;
+        file "qh.qf.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+[root@6server named]# vim /var/named/qh.qf.com.zone 
+$TTL 3H
+@       IN SOA  @ rname.invalid. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS      dns.qh.qf.com.
+dns     A       192.168.127.60
+www     A       3.3.3.3
+#el6 启动方式
+[root@6server named]# /etc/init.d/named restart
+停止 named：.                                        [确定]
+启动 named：                                         [确定]
+
+#测试用的客户端：192.168.127.61
+#直接指向父域，可直接得到最后一级域的解析3.3.3.3，实验完成
+[root@6server ~]# nslookup www.qh.qf.com 192.168.127.5
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+
+Non-authoritative answer:
+Name:	www.qh.qf.com
+Address: 3.3.3.3   
+
+```
+
+#### 均衡负载
+
+```
+负载均衡：     
+load balance   
+将负载进行平衡，分摊到多个服务器上进行     
+www	A	6.6.6.12            
+A	6.6.6.13                     ......
+修改区配置文件    
+# vim /var/named/qf.com.zone       
+www	A	6.6.6.12         
+   A	6.6.6.13   
+   # systemctl restart named     
+   # nslookup www.qf.com       
+   Server:		127.0.0.1      
+   Address:	127.0.0.1#53   
+   Name:	www.qf.com    
+   Address: 6.6.6.12   
+   Name:	www.qf.com    
+   Address: 6.6.6.13  led = coord;
+```
+

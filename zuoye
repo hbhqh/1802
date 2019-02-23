@@ -1,0 +1,2453 @@
+#### 第一周
+
+第一天作业
+
+1.登录一台服务器后看到的提示符为: [lily@web1 tmp]$
+
+1).请问此服务器主机名是什么？
+答：web1
+2).当前目录的名称是什么?
+答：tmp
+3).执行cd /root命令能执行成功吗?为什么?
+答：不能，因为权限不够，普通用户只能访问自己的家目录，不能访问超级用户目录。
+4).当前登录的用户名是什么?
+答：lily
+5).先执行cd ~后,再执行pwd会是什么结果?
+答：执行cd ~后会回到用户的家目录，pwd会打印出/home/lily
+
+2.在Linux系统中,一切皆_文件____.
+
+3.如何查看/a目录下的隐藏文件?
+答：ls -a /a
+
+4.怎样快速将光标定位到行首?
+答 ：Ctrl+a
+
+5."./configure --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http-status-module",这个命令中，如何快速删除./configure后面所有的内容?
+答：Ctrl+a移动到行首，然后将光标置于./configure后面按Ctrl+k
+
+6.设置一个快捷键，按alt+c快速调出计算器程序
+答：找到应用程序里的系统工具 设置 键盘 自定义快捷键，点击+号，将完整的计算器命令添加进去，设置成Ctrl+c。
+
+7.简述Linux命令的选项有哪几种，分别有什么特点
+ 答：             []里面表示可有可无
+              ...  表示可以有多个选项
+            选项的格式：
+                以-开头的，后面一般跟一个字母或数字，多数情况下多个选项可以合并     -h
+                以--开头的，后面一般跟单词，不能合并         --all
+                没有-或--，直接是小写字母，多个选项可以合并    tar zxvf
+
+8.笔记上的路径题
+（1） cd /a/b/bb
+（2）cd ..
+     cd ..
+     cd aa
+(3)  cd aaa
+(4)  cd /a/b/c/d
+
+（5）cd ..
+     cd ..
+     cd cc
+
+第二天
+
+1.创建联级目录/a/b/c
+ 1）将/etc/passwd文件复制到c目录下
+答：cp -r /etc/passwd /a/b/c/passwd
+
+ 2）进入b目录，本题下面的操作不要切换目录
+答：cd /a/b
+
+ 3）将c目录下的passwd文件复制到当前目录，并重命名为pass
+答：cp -r /a/b/c/passwd pass
+
+ 4）以长格式的形式显示b目录本身的信息
+答：ls -ld /a/b
+
+ 5）在c目录下创建d1到d100这100个目录
+答：cd /a/b/c     mkdir d{1..100}
+改：mkdir c/d{1..100}
+
+ 6）将d100目录复制到b目录下，并重命名为d
+答：cp -r d100 /a/b/d
+
+ 7）将d99目录移动到d目录下
+答：mv /a/b/c/d99 /a/b/d
+
+ 8）删除c目录
+答：rm -rf /a/b/c
+2.查看useradd命令的帮助信息（只写出命令即可）
+答：man useradd         useradd --help
+3.查看当前系统的cpu,内存信息
+答：查看CPU：lscpu  cat /proc/cpuinfo,查看内存：top   free -m   cat /proc/meminfo 
+4.查看/分区的使用情况
+答：lsblk ,  df -h
+5.在不修改/root/anaconda-ks.cfg的情况下刷新一下该文件的时间
+答：touch /root/anaconda-ks.cfg
+6.显示pass文件的前8行
+答：head -8 pass
+7.显示pass文件的后2行
+答：tail -2 pass
+8.查看当前系统上登录了哪些用户
+答：who
+9.2分钟后重启服务器
+答：shutdown -r 2
+10.查看ifconfig命令的绝对路径
+答：which ifconfig
+11.判断一下echo命令的类型
+答：shell内嵌
+12.linux中文件类型有哪些，分别用什么字符表示？ 
+答：文件类型：ls -l
+    d： 目录
+    f： 普通文件
+    l： 软链接，符号链接
+    s： 套接字文件
+    b： 块设备
+    c： 字符设备
+    p： 管道文件
+
+第三天
+
+拷贝/etc/passwd文件到/tmp目录下,并重命名为pass,以下操作在/tmp/pass文件中进行 
+cat /etc/passwd >/tmp/pass
+
+1.复制文件中从第5行开始到第8行的内容，粘贴到最后一行下面 
+答：跳到第五行：      ：5gg
+    复制第五行：      ： 5,8y
+    跳到最后一行：   G
+    粘贴：           p
+2.删除文件的第16行
+    ：16d  
+3.删除文件的前10行
+  :1,10d
+4.将剩余文件的前5行剪切到第10行后面
+ 答：将前5行删除       :1,5d    
+     将光标跳到第十行  10gg 
+           粘贴         p
+5.将文件中的第5行到第8行中全部的s替换为SS
+ 答：       :5,8s/s/SS/g
+
+6.复制文件的全部内容粘贴到文件的最后一行
+答：   跳到第一行：   gg 
+       复制第一行到最后一行： yG
+       跳到最后一行： G
+       粘贴： p
+7.删除每行的第一个字符
+答：    gg  Ctrl+v进入可视块模式  向下箭头第一个字符全部选中，按d删除
+改：gg  ctrl+v+G  d或x
+8.将文件复原
+答：u，一直按u,直到文件回到最初状态
+9.只保留文件前10行内容
+答：11gg,dG
+
+10.在每行的行首插入@符
+答：Ctrl+v选中每行行首，按I，输入@，按两下esc
+11.使用s命令删除所有的:
+答：:%s/://g
+      不加空格，加空格是替换
+12.将/etc/hostname文件中的内容复制到第3行下
+ 答：  :3r /etc/hostname
+
+13.高亮显示所有的bin
+     /bin
+14.设置以后用vim打开所有的文件都显示行号(在命令行用一条命令设置)
+   set nu
+15.将最后一行的第一个单词剪切到最后
+   G
+删除单个单词   dw
+   跳到行尾  end
+      粘贴   p
+
+第四天
+
+1. 将/etc/passwd文件前20行内容复制到/tmp/pass文件中
+    head -20 /etc/passwd > /etc/pass
+
+2. 打印出/tmp/pass文件的第9行内容
+    head -9 /etc/pass |tail -1
+3. 带行号打印出/tmp/pass文件的第9行内容,注意行号应该是9
+    cat /etc/pass -n | head -9 |tail -1
+
+4. 带行号打印出/tmp/pass文件倒数第三行内容
+    cat -n /etc/pass |tail -3 |head -1
+
+5. 将/tmp/pass文件第5行到第12行内容带行号写入到/tmp/file.txt文件中
+
+cat -n /etc/pass |head -12 |tail -8 >/tmp/file.txt
+6. 将所有分区的使用情况信息记录到/tmp/diskinfo文件中,并带上记录的时间(时间用date命令)
+
+df-h > /tmp/diskinfo
+date > >/tmp/diskinfo 
+
+7. 以非交互式方式创建一个文件/etc/repos.d/local.repo,文件内容如下:
+    [localdisk]
+    name=centos7.3
+    baseurl=file:///mnt
+    enabled=1
+    gpgcheck=0
+    答：
+    cat > >/etc/yum.repos.d/local.repo <<tc
+    [localdisk]
+    name=centos7.3
+    baseurl=file:///mnt
+    enabled=1
+    gpgcheck=0
+    tc
+
+8. 执行命令ls /tmp/hostinfo,要求: 如果此文件存在,则不需要任何输出; 如果文件不存在,则提示报错信息.
+    ls /tmp/hostinfo >/etc/null
+
+9. 思考题:
+    bc是一个交互式计算器程序,如果利用bc非交互地进行算术运算?
+      1.echo 2+1|bc
+    2.echo 3+1 >w
+    bc <w
+
+  周末作业
+
+1. 在linux中，超级管理员的提示符是：    #      ；普通用户的提示符是：   $        。
+2. 如何快速清屏？
+    ctrl+l
+3. 执行ll  /test/,结果如下:
+    -rw-r--r-- 1 root root 0 Nov 23 23:16 a.txt
+    drwxr-xr-x 2 root root 6 Nov 23 23:16 b.txt
+    请问:
+    1). /test目录下有几个文件(不包含隐藏文件)?文件名是什么?
+    2个，a.txt    b.txt
+
+  2). 每个文件的类型分别是什么?
+a.txt是普通文件，b.txt是目录文件
+
+  3). 如果不想用ls命令直接看到b.txt,但又不能删除,可以怎样处理?
+mv /test/b.txt /test/.b.txt
+
+4. 在命令行中,怎样快速删除光标前面所有的字符?
+    Ctrl+u
+
+5. 写出下面命令的功能:
+
+  1). man man  查看man手册的帮助信息
+  2). cat  a.txt   查看a.txt的内容
+  3). cat > a.txt  输出重定向到a.txt
+  4). cat >> a.txt  输出追加重定向到a.txt
+  5). cat < a.txt   将a.txt的内容输入重定向到屏幕
+  6). cat --help    查看cat的帮助信息
+  7). echo --help   输出 --help
+6. 手动正常结束标准输入如何结束?
+    Ctrl+d正常结束
+    ctrl+c是强制结束
+7. 设置两小时后自动关机
+
+shutdown -h 120
+8. /test目录下原来有test1,test2...test10000这样10000个test文件,经过一段时间后部分文件已被删除,怎样快速查出哪些文件已被删除?
+    cat /test/test{1..10000} > /dev/null
+
+9. 查看系统是哪个发行版?
+    cat /etc/redhat-release
+
+10. 查看linux内核版本?
+    uname -r
+
+11. 简述GPL许可证与BSD许可证的特点
+    GPL：如果你修改了linux内核，并将其分发，你就必须放出你的修改的源代码
+    BSD：如果你修改了BSD内核或发行版，并且发布它，你根本不需要必须发布其源代码.你可以自由地对你的 BSD 代码做任何你想做的事情，你没有义务发布的你修改的源代码，当然你想发布也行.
+
+12. 写出你所知道的Linux发行版,至少5个
+    centos  ubuntu redhat debian opensuse
+
+13. 在vim编辑器中快速将前3行内容剪切到第11行上方
+    :1,3d  10gg p
+
+14. 在vim编辑器中从第8行开始,将后面内容中所有的cry换成smile
+    8,$s/cry/smile/g
+
+
+15. 在vim编辑器中将所有的sexy删除掉
+    :%s/sexy//g
+
+#### 第二周
+
+1
+
+1.创建用户user01,user02,nginx
+其中：
+（1）user01的家目录为/data;
+ useradd -d /data user01
+
+（2）user02的基本组为user01,uid为8080;
+useradd -g user01 -u8080 user02
+
+（3）nginx的shell为不可登陆shell,不创建家目录
+useradd -M -s /sbin/nologin nginx
+
+2.创建组IT，组成员有user01,user02,nginx
+groupadd IT
+gpasswd -M  user01,user02,nginx IT
+
+3.从IT组中删除成员nginx
+gpasswd -d nginx IT
+
+4.仅打印出nginx用户的uid
+id -u nginx
+
+5.打印出user01所有的组名
+id -G user01
+
+6.将IT组名称改为IT01
+groupmod -n IT01 IT 
+
+7.用非交互的方式给user01,user02设置密码123
+echo 123 |passwd --stdin user01 
+echo 123 |passwd --stdin user02
+
+
+8.切换并查看用户user01的信息
+su - user01
+id user01
+
+
+9.登录到user02账户，在家目录下创建目录~/a/b/c
+su - user02
+mkdir -pv ~/a/b/c
+
+
+10.用一条命令在c目录下创建一个文件pass，其内容为/etc/passwd文件的第五行到第八行，且有行号
+
+ cat -n /etc/passwd |head -8 |tail -4 > ~/a/b/c/pass
+
+11.进入b目录，使用相对路径的方式打印出pass 文件的倒数第二行内容 
+cat c/pass |tail -2 |head -1
+
+12.使用相对路径的方式将c目录下的pass文件复制到当前目录并重命名为pass02
+cp c/pass pass02
+
+13.使用相对路径的方式删除c目录
+rm -rf c
+
+2
+
+1.将cat命令拷贝到/tmp下
+
+which cat
+cp /usr/bin/cat /tmp/
+
+2.配置合适的权限让其他用户通过/tmp/cat命令可以查看tom家目录下的文件内容
+
+chown tom /tmp/cat
+chmod u=r /tmp/cat
+chmod u+s /tmp/cat
+
+
+
+3.配置共享目录/share,要求所有用户都可以在共享目录内创建文件,但不能修改或删除其他人的文件,并且所有用户创建的文件属组都是IT
+mkdir /share
+chmod 777 /share
+
+chmod o+t /share
+groupadd IT
+chown .IT /share
+
+chmod g+s /share
+
+
+4.执行以下命令时报错:
+
+rm -rf /info/
+
+rm: 无法删除"/info/zhaoliu": 不允许的操作 
+请问如何解决此问题?
+lsattr /info/
+chattr = /info/
+
+5.用hr用户创建一个文件a.txt,要求tom用户可以读写,其他用户没有任何权限
+touch /tmp/a.txt
+chmod 600 /tmp/a.txt
+
+setfacl -m u:tom:rw /tmp/a.txt
+
+3
+
+1.找出硬盘中所有大于2G且以 .img结尾的文件
+find / -size +2G -name *.img
+
+2.找出/etc目录中所有的以conf结尾的文件,并拷贝到/tmp/conf目录中(请提前做好快照)
+find /etc -name *conf -exec  echo {} > /etc/conf \;
+改：mkdir /tmp/conf
+find /etc -name *conf -exec  cp {}  /tmp/conf \;
+3.打印出/etc目录下所有的非软链接文件
+find /etc ! -type l
+
+4.删除系统中所有的a.txt文件,不区分大小写
+find  / -iname a.txt -exec rm -rf {} \;
+
+5.打印出系统中所有的空白文件,不要打印目录
+find /  -empty  ! -type d
+
+6.打印出jerry用户所有的普通文件
+find /  -user hq  -type f
+
+7.如果想让tom用户能够关机或重启,但不想告诉他root密码,怎么做?
+单独给tom用户设置权限，
+进入：visudo
+
+加入：hq     ALL=(ALL)    NOPASSWD:  /usr/sbin/reboot,/usr/sbin/shutdown
+
+
+8.总结su和sudo这两种方式提权的区别
+su需要频繁输入root密码，使安全性降低
+sudo可以给某个用户单独设置权限，相对安全一些
+
+9.希望tom用户登录后能使用hello命令,输出"hello tom".其他用户登录后不能使用,怎么做?
+在tom家目录下的./bashrc加入
+ alias hello='echo "hello tom"'
+
+10.手动方式生成一个用户natasha,不要用useradd或adduser命令,要求和使用命令方式创建的用户一样.请秀出你的操作.
+ 在/etc/passwd中加入一行： natasha:x:9000:9000::/home/natasha:/bin/bash
+ 在/etc/group中加入一行：natasha:x:9000:
+在/home目录下创建natasha目录：mkdir /home/natasha
+ 在/var/spool/mail/下创建邮箱 touch /var/spool/mail/natasha
+在/etc/gshadow 加入一行 
+将/etc/skel拷贝到/home/natasha
+
+4
+
+1.打印出所有用户的用户名,UID,GID,登录shell
+cut -d ":" -f3,4,7 /etc/passwd
+改：cut -d ":" -f1，3,4,7 /etc/passwd
+2.打印出/分区的使用百分比,纯数字.如:80%, 打印效果为:80
+df -h |grep "/$" |tr -d " "|cut -d"G" -f4|cut -d"%" -f1
+
+3.打印出ens33网卡的IP,只显示IP(ifconfig ens33)
+ifconfig  ens33 |grep "inet "|tr -s " "|cut -d " " -f3
+
+4.带行号打印出/etc/passwd文件的第35行到第45行,并按照UID从大到小排序 
+ cat -n /etc/passwd|head -45|tail -11|sort -n -t ":" -k3 -r
+
+5.打印出/etc/passwd文件中所有包含bash的行
+grep "bash" /etc/passwd
+
+6.打印出/etc/passwd文件中所有不含nologin的行
+cat /etc/passwd |grep -v "nologin"
+
+7.统计出/etc/passwd文件第二行的字符数(含换行符)
+head -2 /etc/passwd |tail -1|wc -c-
+
+8.统计出除root之外的所有可登录用户的个数
+grep  -v "nologin" /etc/passwd|grep -v "root"|wc -l
+改：grep "sh$" /etc/passwd |grep -v "root:" |wc -l
+
+9.打印/etc/rc.local文件内容,不打印空行
+sort /etc/rc.local|grep "#"|uniq -u
+改：cat /etc/rc.local |grep "^$" -v
+10.查询/etc/rc.local文件中空行的行号
+cat  /etc/rc.local |grep "^$" -n
+
+11.统计/etc目录下所有的软链接的个数(不包含子目录下的软链接)
+find /etc -type l|cut -d "/" -f3,4 |grep -v "/"|wc -l
+改：find  /etc -maxdepth 1 -type l|wc -l
+  ll /etc
+12.统计/etc目录下所有的软链接的个数(包含子目录下的)
+find  /etc  -type l |wc -l
+
+13.统计出所有用户每种shell的个数,按照从多到少的顺序打印出来
+
+ cut -d ":" -f7 /etc/passwd|sort -n |uniq -c |sort -n -k1 -r
+改：cut -d ":" -f7 /etc/passwd|sort -n |uniq -c |sort -n -r
+14.某目录的权限为drwxr-s---,请用八进制数字表示其权限. 若root用户在此目录下创建文件,其属主属组分别为?
+2750  属主为root,属组为目录的属组
+
+15.将系统中所有的a.txt文件的属主改为root,属组改为IT
+find / -name "a.txt" -exec chown root.IT {} \;
+
+16.希望创建用户家目录中默认有个文件Readme,可以如何实现?
+touch /etc/skel/Readme
+17.有一份名单name.list,记录着100个需要创建的用户名,如何快速创建?
+echo name{1..100} >name.txt
+cat name.txt |xargs -n1 useradd
+
+18.将/tmp/pass中所有的小写字母替换成大写字母
+cat /etc/pass |tr -t "a-z" "A-Z"
+
+19.查看cpu信息,将结果中所有的连续空格替换成一个空格
+lscpu|tr -s " "
+20.将/etc/passwd文件带行号输出(要求行号在行首)到标准输出的同时记录到/tmp/passwd.nu文件中
+cat -n /etc/passwd|tr -d " "|tee -a /tmp/passwd.nu
+
+#### 第三周
+
+1
+
+ 1.将/var/log目录下所有的以message开头的文件压缩保存到/backup/logs目录中,并命名为/message.tar.bz2
+（1）tar caf /backup/logs/message.tar.bz2 `locate "/var/log/message"`
+（2）tar caf /backup/logs/message.tar.bz2 `find /var/log -type f|grep message`
+（3）tar caf /backup/logs/message.tar.bz2 `ls /var/log |grep "message"`
+（4）tar caf /backup/logs/message.tar.bz2  /var/log/messages*
+
+2.现在未知文件abcd,不知道该如何处理,求助,如果是文本文件,请告诉我是什么内容,如果是其他文件,求告知
+file abcd 可以看出是一个zip压缩文件
+unzip abcd 解压出hehe文件
+file hehe  hehe是gzip压缩文件
+tar xf hehe 解压出tmp/a.txt
+cat tmp/a.txt   chongya
+
+3.输出以下内容(将x替换成自己电脑实际的内容):
+ 1).我的服务器ip地址是xx.xx.xx.xx
+echo "wo de fu wu qi ip di zhi shi `ifconfig ens33|grep "broadcast"|tr -s " "|cut -d " " -f3`
+
+ 2).我的服务器上有x个可登录用户
+echo wo de fu wu qi shang you `cat /etc/passwd|grep "sh$"|wc -l` ge ke deng lu yong hu
+ 3).ifconfig命令是由x软件安装的
+echo ifconfig minglin shi you $(rpm -qf `which ifconfig`) anzhuangde
+4.将/backup/logs/message.tar.bz2解压到/tmp目录
+tar -xf /backup/logs/message.tar.bz2 /tmp/
+5.查看安装mkdir命令的包还安装了哪些命令
+rpm -ql $(rpm -qf `which mkdir`)|grep "bin/"
+
+6.CentOS和Ubuntu有哪些不同?
+软件管理的方式不同
+Centos使用的是 rpm,yum
+Ubentu使用的是dpkg   deb apt-get
+
+2
+
+1.管道的作用?
+
+答：上一个命令的输出可以作为下一个命令的输入
+改：上一个命令的标准输出可以作为下一个命令的标准输入
+2.如何屏蔽程序的错误输出?
+
+ 2>/dev/null
+3.第三块磁盘(sata接口)的第四个逻辑分区名称为?
+sdc8
+
+
+4.umask为0234的情况下创建目录权限为多少?创建文件权限为多少?
+
+
+0543
+0442
+5. 安装某软时系统提示找不到png.h文件,请问如何处理?
+
+yum provides */png.h
+yum install libpng-devel -y
+6. 将/var/log目录下所有的文件压缩备份到/backup目录中,名称为XXX_logs.tar.gz,其中XXX为备份当天日期
+
+mkdir /backup
+tar caf /backup/`date +%F`_logs.tar.gz /var/log/*
+
+
+7. 通过什么命令可以查询出所有的用户与组管理配置文件?
+
+rpm -qc `rpm -fq /etc/passwd`
+
+8. 查找出epel源的阿里云镜像地址,并手动配置好.
+
+百度：阿里云开源镜像站
+     找到epel
+手动配置：
+mkdir epel.repo
+[epel]$
+name=aliyun epel$
+baseurl=https://mirrors.aliyun.com/epel/7/$
+enabled=1$
+gpgcheck=1$
+gpgkey=https://mirrors.aliyun.com/epel/RPM-GPG-KEY-EPEL-7$
+~                                                              
+9. 怎样保存通过网络源安装的软件包?
+
+修改配置文件vim /etc/yum.conf
+ keepcache=1
+
+10. 翻译:		
+    f  run  without any packages, update will update every currently installed package.  If one or  more  packages or  package  globs  are specified, Yum will only update	the listed packages.
+
+    果运行时没有任何包，update将更新当前安装的每个包。如果指定了一个或多个包或包全局，Yum将只更新列出的包。	
+    earch  is  used to find packages when you know something about the package but aren't  sure  of  it's  name.  By default  search  will  try searching just package names and summaries, but if that "fails"  it  will  then  try	descriptions and url.
+
+当你对包有所了解但不确定它的名称时，Search用于查找包。默认情况下，搜索将尝试只搜索包名和摘要，但如果“失败”，它将尝试描述和url。
+11. 把系统中所有的以.conf结尾的文件打包到/test/conf.tar归档文件中
+    tar cf /test/conf.tar `find / -name *.conf `
+
+3
+
+1.将/dev/sdb磁盘标签类型设置为gpt
+parted /dev/sdb mklabel gpt
+2.创建一个1G的分区sdb1并挂载到/mnt/sdb1
+parted /dev/sdb mkpart p 0 1G
+partprobe
+mkfs.xfs /dev/sdb1
+mkdir /mnt/sdb1
+mount /dev/sdb1 /mnt/sdb1
+3.查看所有已挂载的分区block使用情况
+df -h
+4.查看所有已挂载的分区inode使用情况
+df -i
+5.将/etc/passwd复制到/mnt/sdb1下并重命名为pass
+cp /etc/passwd /mnt/sdb1/pass
+6.在/mnt/sdb1下创建/mnt/sdb1/pass文件的硬链接文件hard.pass
+ln /mnt/sdb1/pass /mnt/sdb1/hard.pass
+7.在/mnt/sdb1下创建/etc/passwd文件的符号链接文件soft.pass
+ln -s /etc/passwd soft.pass
+
+8.比较一下hard.pass和soft.pass有什么不同    
+hard.pass指向的是inode,可以用来备份数据，不产生新的inode,不可以对目录做硬链接，不可以跨文件系统创建
+soft.pass指向的是文件的绝对路径，会产生新的inode,可以跨文件系统创建，删除源文件后链接无效
+
+9.hard.pass与/mnt/sdb1/pass为同一文件吗,为什么?
+是同一文件，因为都指向同一个inode
+10.soft.pass与/etc/passwd为同一文件吗,为什么?
+不是同一文件，inode不相同
+11.hard.pass与/etc/passwd为同一文件吗,为什么?
+不是同一文件，inode不同
+ls -i hard.pass 
+67 hard.pass
+ls -i /etc/passwd
+33769293 /etc/passwd
+
+
+12.不能对目录创建硬链接,故目录没有硬链接.这句话对吗?为什么?
+不对，因为可以有指向目录的硬链接
+13.列出当前系统所支持的所有文件系统
+mkfs.
+按tab键
+14.写出mbr的英文及中文名称,所在位置及组成
+Master Boot Record  主引导记录  MBR在第一个扇区，512字节
+15.翻译:
+The third field (fs_vfstype).
+第三个文件（文件系统）
+This field describes the type of the filesystem.Linux supports lots of
+这个文件描述文件系统，Linux支持许多文件系统类型
+ filesystem  types,such as adfs,affs,autofs,coda, coherent,cramfs,devpts,efs,
+
+比如adfs,affs,autofs,coda, coherent,cramfs,devpts,efs, ext2,ext3,hfs,hpfs,iso9660,jfs, minix,msdos,ncpfs,nfs,ntfs,proc,qnx4,reiserfs,
+romfs,smbfs, sysv,tmpfs,udf,ufs,umsdos和其他可能
+
+ ext2,ext3,hfs,hpfs,iso9660,jfs, minix,msdos,ncpfs,nfs,ntfs,proc,qnx4,reiserfs,
+romfs,smbfs, sysv,tmpfs,udf,ufs,umsdos,vfat,xenix,xfs,and possibly others. 
+For more details, see mount(8).
+16.剪切文件比复制文件快,这句话对吗?为什么?
+对，因为剪切只是修改路径，inode和block不改变，复制占用新的inode和block，速度慢
+
+4
+
+1.将/dev/sdb磁盘分区.要求:磁盘标签为MSDOS,主分区1个,逻辑分区2个,将第2个
+逻辑分区挂载到/mnt目录下使用.请写出完整过程.
+
+答：parted /dev/sdb mklabel msdos
+    parted /dev/sdb mkpart p 0 1G
+    parted /dev/sdb mkpart e 1G 3G -s
+    parted /dev/sdb mkpart l 1G 2G -s
+    parted /dev/sdb mkpart l 2G 3G -s
+    partprobe
+    mkfs.xfs /dev/sdb1
+    mkfs.xfs /dev/sdb5
+    mkfs.xfs /dev/sdb6
+    mount /dev/sdb6 /mnt
+
+2.使用命令将已挂载到/mnt的分区属性调整为ro,noexec
+
+mount -o remount,ro,noexec /dev/sdb6 /mnt
+3.配置开机挂载上述分区
+
+mkdir /sdb1 /sdb5 /sdb6
+vim /etc/fstab
+/dev/sdb1        /sdb1                   xfs          defaults    0 0$
+/dev/sdb5        /sdb5                   xfs          defaults    0 0$
+/dev/sdb6        /sdb6                   xfs          defaults    0 0$
+mount -a
+4.制作一个基于文件的交换分区,将其激活并设置为开机激活
+dd if=/dev/zero of=/swap1 bs=10M count=10
+mkswap /swap1
+swapon /swap1
+chmod 0600 /swap1
+mkdir swap2
+/swap1            /swap2                    swap       defaults 0 0 $
+
+5.简述交换分区的作用
+当内存不够用时，交换分区可以临时存放内存中休眠的程序
+
+5
+
+f*本作业中,如果感觉题目有错,请写出理由[奸笑]
+*换行符用"\n"表示,,制表符用"\t"表示,不含引号   转义符
+
+一.写出这些目录的作用：/bin,/sbin,/home,/root,/etc,/tmp,/proc,/dev
+/bin:存放的是系统的命令
+/sbin:存放的是管理的命令
+/home:普通用户的家目录
+/root：超级管理元的家目录
+/etc:配置文件目录
+/tmp:临时文件目录
+/proc:虚拟的文件系统
+/dev：设备文件目录
+二.写出这些符号的作用: 
+~ `` $ ^ ; && || * - {} | / < >
+~家目录
+``反引号，可以直接引用命令的输出结果
+$表示行尾   $?程序执行的返回码
+^表示行首
+；命令分隔符，可以一次写多个命令
+&& 表示与，两个条件需要同时满足
+|| 表示或，两个条件中至少有一个满足
+* 通配符 表示全部
+- 命令短选项                      a-z表示范围            cd - 返回上一次
+  {}大括号，表示里面的全部内容，如：{1,10}，{1..10},{}  集合
+  |管道，上一个命令的标准输出可以作为下一个命令的标准输入
+  /可以用来表示路径
+  <标准输入重定向
+>标准输出重定向
+
+三.vi编辑器中,如何将文中所有的old改为new?
+：%s/old/new/g
+
+四.删除当前目录及子目录下名称为a.txt的空白文件
+find ./ -empty -name "a.txt" -exec rm -rf {} \;
+
+五.将/etc/passwd文件复制到/tmp下,并重命名为pass.至少用三种方法来实现
+cp /etc/passwd /tmp/pass
+dd if=/etc/passwd of=/tmp/pass
+cat /etc/passwd >>/tmp/pass
+
+六.带行号打印出/etc/rc.local文件中的有效内容(非空行或注释内容)
+cat  /etc/rc.local |grep -v "^$"|cat -n
+
+
+七.将/etc/passwd文件中的前100个字符复制到/tmp/passwd文件中
+dd if=/etc/passwd of=/tmp/passwd bs=100 count=1
+
+八.统计出/etc/passwd文件第8行字符数(所有能看见的字符数量)
+ head -8 /etc/passwd|tail -1|tr -d "\n"|wc -c
+
+九.将/etc/passwd文件3到5行带行号打印出来,行号顶格写,且与正文中间隔一个空格,显示如下:
+ cat -n  /etc/passwd |head -5|tail -3|tr -d " " |tr -t "\t" " "
+
+
+3 daemon:x:2:2:daemon:/sbin:/sbin/nologin
+4 adm:x:3:4:adm:/var/adm:/sbin/nologin
+5 lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+
+十.centos系统中,第5块磁盘(scsi接口)的第2个逻辑分区名称是什么?
+sde6
+十一.rhel6中/分区默认的文件系统为  ext4   ; rhel7中/分区默认的文件系统为 xfs      .
+
+十二.在/boot分区中创建/etc/passwd文件的硬链接pass
+跨分区不能创建硬链接，硬链接是两个文件都指向同一个inode，跨分区创建指向的不是同一个inode
+
+
+十三.执行一条命令,结果如下:
+[root@master ~]# ls -l /etc/rc.local 
+lrwxrwxrwx. 1 root root 13 Jun  9 16:41 /etc/rc.local -> rc.d/rc.local
+以下说法对吗,为什么?
+1. 此文件是一个符号链接,指向的是此文件所在目录下的rc.d目录下的rc.local文件
+    对，l表示软连接 
+
+2. 此文件是可执行文件
+    对，此文件有x权限
+
+3. 使用cat命令查看这两个文件,显示内容一样,故这两个文件是同一文件
+    不对，两个文件的inode不同
+4. 这两个文件的大小一样
+    不对，/etc/rc.local相当于快捷方式/etc/rc.d/rc.local是源文件，大小不同
+5. 如果重命名其中一个文件,对另一个没有影响
+    /etc/rc.local重命名对/etc/rc.d/rc.local没有影响
+    /etc/rc.d/rc.local重命名对/etc/rc.local有影响，因为/etc/rc.local找不到它指向的路径
+6. 任何用户都可以修改此文件内容
+    不对，普通用户对/etc没有w权限
+    十四.关于权限,下列说法是否正确,为什么?
+    1.文件存放在目录中,故修改文件内容需要对目录有写权限
+    不对，需要对文件有w权限， 对目录有x权限
+    2.用户tom对文件a.txt的权限为rw-, 他可以将a.txt文件重命名为b.txt
+    不对，要看tom对a.txt上级目录有没有wx权限
+    十五.关于inode与block,下面说法是否正确,为什么?
+    1.inode又叫i节点,保存着文件的元数据信息,如文件的权限,属主属组,名称,大小,时间等信息,还有文件内容所在的块的指针.
+    不对，inode不包含名称
+
+2.inode相同的文件一定是同一文件.
+不对，对于同一个文件系统inode相同，就是同一个文件
+对于不同的文件系统，inode相同也不是同一个文件
+
+3.根据目前所学,有哪些原因会造成root用户创建文件失败?
+1.给目录加i权限
+chattr +i /
+2.挂载ro磁盘
+
+十六.根据以下文字,你能得出哪些结论?多选( E F  )
+[root@master ~]# ls -li /abc/a.txt
+17270375 -rw-r--r-- 0 root IT 1013 Oct 28 11:56 /abc/a.txt
+A. a.txt文件是一个普通文件,其inode号为17270375
+B. a.txt文件在/abc下
+C. 此文件的创建时间为10月28日11点56分
+D. IT组的所有成员可以看到此文件内容
+E. 所有人不能看到此文件内容
+F. 骗子,此文件根本不存在
+
+#### 第四周
+
+1
+
+1.有sdb,sdc,sdd,sde四块磁盘,现要求坏一块磁盘不影响磁盘上的数据的读写,并且空间能够动态扩展,请设计合适的组合方式并写出配置过程
+
+parted /dev/sdd mkpart p 0 50G
+pvcreate /dev/sdd1
+vgcreate vgr /dev/sdd1
+lvcreate -n lvr1 -L 5G vgr
+lvcreate -n lvr2 -L 5G vgr
+lvcreate -n lvr3 -L 5G vgr
+lvcreate -n lvr4 -L 5G vgr
+mkfs.xfs /dev/vgr/lvr1
+mkfs.xfs /dev/vgr/lvr2
+mkfs.xfs /dev/vgr/lvr3
+mkfs.xfs /dev/vgr/lvr4
+mdadm -C /dev/md/mdr -l 5 -n 3 -x 1 /dev/vgr/lvr{1..4}
+mkdir raid
+mount /dev/md/mdr /raid/
+mdadm -Ds  >  /etc/mdadm.conf
+  lvextend  -L +5G /dev/vgr/lvr1
+  lvextend  -L +5G /dev/vgr/lvr2
+  lvextend  -L +5G /dev/vgr/lvr3
+  lvextend  -L +5G /dev/vgr/lvr4a
+
+改：mdadm -C /dev/md5 -l 10 -n 4 /dev/sd{b..e}
+    pvcreate /dev/md5
+    vgcreate /dev/cg5 /dev/md5
+    lvcreate -n lv5 -L 3.99G vg5
+
+2.每周一凌晨3点半将/var/log下所有文件压缩保存到/backup/logs目录中,每次备份不要覆盖之前的备份文件
+30 03 * * 1 tar czf /backup/logs/`date +\%F`.tar.gz /var/log/*
+
+3.每天的8点到22点每两小时执行脚本/scripts/test.sh
+8-20/2 * * * * /scripts/test.sh
+改：0 8-20/2  * * * /scripts/test.sh
+4.5天后的下午4点将/root/a.txt内容追加到/tmp/b.txt文件中
+
+at now +5days   改：at 16:00 +5days
+
+at> cat /root/a.txt >> /tmp/b.txt
+
+5.每天凌晨12点发邮件给lily,内容是hi,lily,have a nice day
+59 23 * * * mail -s "lily" lily@ %%hi,lily,
+6.查出xeyes进程的pid
+ps aux |grep xeyes|tr -s " " |cut -d " " -f 2
+
+7.输出以下内容: 本机已开机XX小时XX分;目前登录用户人XX人
+ echo benjiyikaiji $(w|grep "load"|tr -s " "|cut -d " " -f 4)denglu yonghuyou $(w|grep "load"|tr -s " "|cut -d " " -f 5)ren
+
+8.每3秒输出当前时间,运行时间,登录用户数,系统平均负载,进程,类似如下:
+ watch -n3 'uptime;ps aux'
+
+18:28:03 up  9:23,  6 users,  load average: 0.00, 0.01, 0.05
+USER        PID %CPU %MEM    VSZ   RSS TTY	STAT START   TIME COMMAND
+root          1  0.0  0.1 125380  3908 ?        Ss   09:04   0:01 /usr/lib/systemd/systemd
+root          2  0.0  0.0      0     0 ?        S    09:04   0:00 [kthreadd]
+root          3  0.0  0.0      0     0 ?        S    09:04   0:05 [ksoftirqd/0]
+root          7  0.0  0.0      0     0 ?        S    09:04   0:00 [migration/0]
+root          8  0.0  0.0      0     0 ?        S    09:04   0:00 [rcu_bh]
+root          9  0.0  0.0      0     0 ?        R    09:04   0:02 [rcu_sched]
+root         10  0.0  0.0      0     0 ?        S    09:04   0:00 [watchdog/0]
+root         12  0.0  0.0      0     0 ?        S<   09:04   0:00 [khelper]
+root         13  0.0  0.0      0     0 ?        S    09:04   0:00 [kdevtm
+
+
+
+2
+
+1.将下列十进制数字转换成二进制:192,250,120
+11000000，11111010，0111102500
+2.结束xeyes进程,至少用三种方法
+kill `pgrep xeyes`
+pkill
+xkill  鼠标点击
+3.希望当前目录下的test.sh程序优先执行,可以怎样操作?
+nice -n -20 test.sh
+4.从下到上写出OSI七层模型
+物理层
+数据链路层
+网络层
+传输层
+会话层
+表示层
+应用层
+
+5.简述子网掩码的作用
+为了区分IP地址的网络号和主机号
+6.简述DNS的作用
+域名解析，能将域名转化成IP,而不用去记住能够被机器直接读取的IP地址
+7.翻译
+SELINUX= can take one of these three values:
+可以取这三个值中的一个
+
+enforcing - SELinux security policy is enforced.
+
+enforcing - SELinux 安全策略
+
+permissive - SELinux prints warnings instead of enforcing.
+
+permissive - SELinux打印警告但不强制执行
+
+disabled - No SELinux policy is loaded.
+
+disabled - No SELinux 不加载
+8.在rhel6中如何操作httpd服务开机自动启动
+chkconfig httpd on
+9.在rhel7中如何操作vsftpd服务开机自动启动
+systemctl enable vsftpd
+10.写出rhel6中的7种运行级别
+0 关机
+1 单用户模式
+2 多用户状态，没有NFS
+3 多用户模式
+4 系统未使用保留给用户
+5 图形界面
+6 系统重启
+11.关闭selinux并设置开机不启动
+setenforce 0
+vim /etc/selinux/config 
+
+SELINUX=disabled
+
+12.修改主机名为web1.qf.com,并保证下次开机主机名也一样,分别写出rhel6和rhel7中怎么操作
+rhel7:   hostname web1.qf.com    vim /etc/hostname   写入 web1.qf.com
+rhel6:   hostname web1.qf.com    vi /etc/sysconfig/network   HOSTNAME=web1.qf.com
+13.有同事发现QQ聊天正常,但网页打不开,请问如何解决
+可能是DNS出问题了
+设置一个可用的DNS
+
+3
+
+1.如何把abc.tar.gz解压到/data目录
+tar -xf abc.tar.gz -C /date
+2.请给linux服务器添加一个定时作业,每天的零点30分执行脚本/backup.sh
+crontab -e
+30 0 * * * /backup
+3.修改/data目录及其里面所有文件的权限为770,并且属于用户abc,组admin
+chmod 770 /date -R
+chown abc.admin /date -R
+4.如何查看磁盘的分区情况,怎样给分区/dev/sdb1格式化成ext4?
+lsblk
+mkfs.ext4 /dev/sdb1
+5.哪个命令用来显示系统中各个分区中inode的使用情况?
+df -i
+6.怎样从后台启动一个进程?
+jobs       查看作业号
+bg 作业号    启动
+7.在/data目录下找出大小超过100M的文件,并打印出它们的详细信息
+find /date -size +100M -exec ls -l {} \;
+8.简述程序和进程的区别
+进程是动态的，程序是静态的
+进程有生命周期，程序是指令的集合
+1个程序可以对应多个进程，但1个进程只能对应1个程序
+9.安装linux系统对硬盘进行分区时,必须有的两个分区是:
+boot    swap
+10.将/home/username目录做归档压缩,压缩后生成name.tar.gz文件,并将此文件保存到/tmp目录下
+tar -caf /tmp/name.tar.gz /home/username
+11.在12月每天凌晨1点到12点,每隔两小时执行一次/httpd.sh
+0 1-12/2 * 12 * /httpd.sh
+12.列出A类,B类,C类网络地址段
+A类0-127   实际可用 1-126
+B类128-191
+C类192-223
+13.LVM分区与传统分区相比,有什么好处?
+LVM支持动态扩容
+14.64位操作系统与32位操作系统的区别?
+32位操作系统最大支持4G内存
+64位操作系统支持128G内存
+15.在bash中如何得出上一次命令的退出状态?
+echo $?
+16.如何在centos6中取消sshd服务的开机自启动?
+chkconfig sshd off
+17.umask为027,创建一个普通文件的权限为多少?
+rw-r-----
+640
+18.怎样了解linux在当前目录下占用了多大空间?
+du -h
+19.怎样查看linux内核版本?
+uname -r
+20.将/etc/a下中除了b文件外的所有文件压缩打包放到/home/a下,名字为a.tar.bz2
+tar --exclude /etc/a/b -caf /home/a.tar.bz  /etc/a
+
+
+21.如何查看linux服务器的系统负载情况?
+top
+ps aux
+22.如何找出占用内存最多的5个进程?
+ps -aux | sort -k4nr |head -5
+23.在每月第一天备份并压缩/data目录所有内容,存放在/root/bak目录中,且文件名为如下形式:YYYYmmdd_data.tar.gz
+* * 1 * * tar -caf /root/bak/`date +\%F`_data.tar.gz /date
+
+
+24.系统平均负载的三个数值分别是什么?你认为它们的值为多少的情况下不太正常?
+1分钟，5分钟，15分钟
+超过0.8就不太正常
+25.简述raid0,raid1,raid5三种工作模式的原理及特点
+raid0 条带集，将数据分开存放到两个磁盘中，读写速度快，但是安全性较差，坏掉一块就无法继续使用
+raid1 镜像集，将数据同时存放到两块磁盘中，读写速度慢，但是安全性好，坏掉一块还可以继续使用
+raid5 可以通过校验码恢复数据，是raid0和raid1的折中方案，即考虑数据的安全性又考虑存储性能 ，最好使用4块磁盘，其中一块作为热备盘
+------------------------------------------以上摘自面试题-------------------------------------------
+26.请将/root/words.txt文件中的单词按照第一个字母顺序打印出来以便查找
+cat /root/words.txt|sort
+27.统计出/root/words.txt文件中以字母a开头的单词有多少个?
+cat /root/words.txt|grep ^a|wc -l
+28.配置将local2设备产生的info及以上级别的日志记录到/var/log/haproxy.log文件中
+#vim /etc/rsyslog.conf
+local2.info    /var/log/haproxy.log
+
+29.将以上日志每月轮转一次,旧的文件以压缩的方式存放,保留2份旧文件,轮转后创建的新日志文件权限为664,属主为root,属组为admin
+vim /etc/logrotate.d/local2 
+  1 /var/log/haproxy.log{$
+  2 missingok$
+  3 monthly$
+  4 create 0664 root huangqunhao$
+  5 rotate 2$
+  6 compress$
+ 手动轮转：logrotate -vf /etc/logrotate.d/local2 
+
+30.怎样保存通过网络yum源安装的rpm包?
+1)#vim /etc/yum.conf 
+保存的位置：             cachedir=/var/cache/yum/$basearch/$releasever
+1为设置保存，0为不保存： keepcache=1
+
+2)yum install xeyes --downloaddir=/home
+
+31.怎样找出一个进程的父进程?
+
+ps -ef |grep XXX
+
+32.怎样查看系统运行了多长时间?
+uptime
+w
+top
+33.简述内存中buff与cache的区别
+ cache是高速缓冲寄存器，处于CPU和主存之间，容量较小但是运行速度较快
+ Buff：缓冲区，用于存储速度不同步的设备或优先级不同的设备之间传输数据
+34.通知所有在线用户系统将于5分钟后重启
+#vim /etc/rsyslog.conf
+*.emerg   *
+#shutdown -r 5 
+35.简述swap分区的作用
+当物理内存使用足够的时候，系统是不占用swap区的，当物理内存不够用了，
+系统就会将部分处于睡眠状态的程序移至swap区，保证系统运行。
+
+#### 第五周
+
+
+
+1. 将sshd的端口改为22222,查看服务器是否正常监听,测试客户端连接
+    #vi /etc/ssh/sshd_config
+    Port 22222
+    systemctl status sshd
+    客户端使用默认端口22不能连接
+    客户端只有使用 -p 22222才能连接
+    ssh server -p 22222
+    加 ：net
+2. 使用natasha用户连接服务器
+    只有服务器上有natasha用户才能使用natasha连接
+    创建用户natasha
+    useradd natasha
+    echo "1"|passwd natasha --stdin
+    ssh natasha@server 
+
+3. 在服务器上添加一张网卡,将监听地址改为其中一张网卡的地址,用客户端测试连接
+    ifconfig ens33:0 192.168.127.139
+    #vi /etc/ssh/sshd_config 
+
+#ListenAddress 0.0.0.0
+ListenAddress 192.168.127.139
+客户端只能通过192.168.127.139连接
+ssh 192.168.127.139
+不能通过服务器上的其他网卡IP连接
+4. 将客户端上的/tmp/a.txt文件拷贝到服务器上/root下
+    scp client:/tmp/a.txt /root/
+5. 查看服务器的指纹信息
+    cat ~/.ssh/authorized_keys这是用来验证秘钥的
+    改：/root/.ssh/known_hosts
+6. 配置只能使用密钥登录服务器
+    客户端生成秘钥
+ssh-keygen
+
+向主机传秘钥
+
+ssh-copy-id 192.168.127.5
+
+服务器编辑：
+
+vi /etc/ssh/sshd_config
+
+To disable tunneled clear text passwords, change to no here!
+
+#PasswordAuthentication yes
+#PermitEmptyPasswords no
+PasswordAuthentication no
+
+7. 配置只有10.3.144.2可以通过SSH连接服务器
+    #echo sshd:10.3.144.2 >>/etc/hosts.allow   在/etc/hosts.allow里面的都放行
+echo sshd:* >>/etc/hosts.deny            除etc/hosts.allow里面的，都不放行
+
+8. 思考: ssh连不上一个服务器,可能原因有哪些?
+    1.没有网络
+    2.没有IP
+    3.服务器设置了访问控制
+    4.服务器设置了秘钥
+    5服务器不使用密码认证
+    6.服务器修改默认监听端口
+    7.不在服务器所监听的IPV4上
+    加：服务器没开机
+    先ping一下，
+9. 翻译:
+    ssh (SSH client) is a program for logging into a remote machine and for executing commands on a remote machine.
+
+ssh(SSH client) 是登录到远程计算机的程序并且用于在远程计算机上执行命令
+
+2
+
+1.nfs的全称,用途
+
+
+Network File System
+网络文件系统
+将服务器上的分区或目录共享出去，客户端能够挂载使用
+2.将本机的/var/www/html(权限755)目录共享给192.168.10.0/24这个网段内所有的主机使用,且每个客户端上的root用户都能够修改此目录的内容.
+
+
+vim /etc/exports
+/var/www/html 192.168.10.0/24(rw,no_root_squash)
+chmod 755 /var/www/html
+3.vsftpd的全称,用途,传输协议及端口号
+
+Very Secure FTP Daemon
+
+非常安全的ftp协议
+
+
+ftp服务器为客户端提供共享服务，可以应用在互联网中。
+使用tcp协议
+
+
+连接端口：21
+主动模式端口：20
+4.ftp中英文全称
+
+
+ File Transfer Protocol 
+文件传输协议
+5.描述一下ftp主动模式及被动模式
+
+
+
+ 主动模式首先客户端请求服务器的21端口，建立连接，并且会事先开启一个大于1024端口让服务器来连接，服务器得知客户端准备的端口后，用20号端口与客户端连接，创建数据通道时服务器处于主动连接客户端的状态固称为主动传输模式
+
+被动模式首先客户端请求服务器的21端口，建立连接，服务器接到请求后，开启一个大于1024的端口等待客户端来连接，创建数据通道时服务器处于被动连接客户端的状态固称为被动传输模式
+
+
+6.布署一个ftp服务器,要求匿名用户能够上传普通文件,如何配置?
+
+vim /etc/vsftpd/vsftpd.conf
+
+Uncomment this to allow the anonymous FTP user to upload files. This only
+
+has an effect if the above global write enable is activated. Also, you will
+
+obviously need to create a directory writable by the FTP user.
+
+When SELinux is enforcing check for SE bool allow_ftpd_anon_write, allow_ftpd_full_access
+
+anon_upload_enable=YES
+mkdir share
+chmod 777 share
+客户端可以将文件上传到share
+7.ftp配置中,dirlist_enable这个指令的作用是什么?如果不设置,其默认值是什么?
+
+
+If set to NO, all directory list commands will give permission denied.
+如果设置成NO,所有目录列表命令将没有权限
+
+  Default: YES
+8.ftp有哪几种类型的用户?
+
+
+
+本地用户：服务器上存在的用户
+匿名用户：匿名用户实际上有一个与之对应的系统用户 ftp这个用户默认是匿名用户所对应的用户  匿名用户映射为ftp
+虚拟用户
+9.怎样每秒刷新一下内存的使用情况?
+
+
+
+watch -n1 free -m
+10.翻译: The file /etc/exports contains a table of local physical file systems on an NFS server that are accessible to  NFS clients. Each line contains an export point and a whitespace-separated list of clients allowed to mount the file system at that point.
+
+
+
+这个文件/etc/exports包含NFS服务器上NFS客户机可以访问的本地物理文件系统表。每行包含一个导出点和一个以空格分隔的客户端列表，这些客户端允许在该点挂载文件系统。
+
+#### 第六周
+
+1
+
+背景: 公司域名为niux.com,要求每位员工电脑主机名格式为:姓名.域名
+      如员工张三,主机名为zhangsan.niux.com,ip为192.168.100.101(IP自己分配)
+需求: 员工之间通信要用主机名通信
+给出你的解决方案
+
+明天有提问
+
+
+将员工的名字和IP写到/var/named/niux.com.zone
+
+
+vim /etc/named.conf
+options {
+        listen-on port 53 { any; };
+        directory       "/var/named";
+        allow-query     { any; };
+
+};
+
+zone "niux.com" IN {
+        type master;
+        file "niux.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+
+
+vim /var/named/niux.com.zone
+
+  NS      dns.niux.com.
+
+zhangsan        A       192.168.127.7
+lisi     A       192.168.127.6
+aaa     A       192.168.127.3
+http    A       192.168.127.61
+~                                                                                                               
+~       
+
+2
+
+```
+1.配置DNS正向解析:
+来自10.0.0.0/8的客户访问www.qf.com解析出来的ip为1.1.1.1;
+来自172.16.0.0/16的客户访问www.qf.com解析出来的ip为2.2.2.2;
+其他的客户访问www.qf.com解析出来的ip为3.3.3.3.
+写出配置过程
+
+服务器中有两个不同网段的IP(两个网卡)           用于测试的客户端
+IP1:192.168.127.5                   IP1:192.168.127.6
+IP2:10.3.144.177                    IP2:10.3.144.179
+服务器配置：
+vim /etc/named.conf
+acl cmcc { 192.168.127.0/24; };#来自192.168.127.0/24网段指向cmcc
+acl unic { 10.3.144.0/24; };#10.3.144.0/24网段指向unic
+view "yidong"{    
+match-clients{ cmcc; }; #判断如果是cmcc里面的网段，则使用这块范围的域
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "qf.com" IN {        #qf.com域
+        type master;
+        file "10.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+
+view "liantong"{ 
+match-clients{ unic; };#判断如果是cmcc里面的网段，则使用这块范围的域
+recursion yes;    #recursion(循环)
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "qf.com" IN {   #qf.com域
+        type master;
+        file "172.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+
+view "other"{        
+match-clients{ any; };  #不属于上面acl记录中的所有IP指向这里
+recursion yes;
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+zone "qf.com" IN {
+        type master;
+        file "other.com.zone";
+};
+include "/etc/named.rfc1912.zones";
+};
+cp -p /var/named/named.empty /var/named/10.com.zone
+#vim /var/named/10.com.zone
+        NS    dns.qf.com.
+dns     A       192.168.127.5
+www     A       1.1.1.1
+
+cp -p /var/named/named.empty /var/named/172.com.zone
+
+# vim /var/named/172.com.zone
+
+​```
+   NS    dns.qf.com.
+​```
+
+dns     A       192.168.127.5
+www     A       2.2.2.2
+
+cp -p /var/named/named.empty /var/named/other.com.zone
+
+# vim /var/named/other.com.zone
+
+​```
+   NS    dns.qf.com.
+​```
+
+dns     A       192.168.127.5
+www     A       3.3.3.3
+
+
+
+客户端192.168.127.6
+
+# vim /etc/resolv.conf
+
+nameserver 192.168.127.5      #指定服务器其中一个同网段IP
+[root@client ~]# nslookup www.qf.com    #访问同一个域
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+Name:	www.qf.com
+Address: 1.1.1.1             #得到不同的IP地址
+
+客户端10.3.144.179   
+
+# vim /etc/resolv.conf
+
+nameserver 10.3.144.177        #指定服务器其中一个同网段IP
+[root@web1 ~]# nslookup www.qf.com     #访问同一个域
+Server:		10.3.144.177
+Address:	10.3.144.177#53
+
+Name:	www.qf.com
+Address: 2.2.2.2           #得到不同的IP地址
+
+不属于上面两个网段的则返回
+3.3.3.3
+
+2.配置DNS解析qf.com域:
+客户访问www.qf.com解析出的ip为1.1.1.1
+客户如果没有写主机名或写错主机名解析出的ip为1.1.1.1
+客户访问news.qf.com解析出的ip为2.2.2.2
+new.qf.com为news.qf.com的别名
+vim /etc/named.conf
+zone "qf.com" IN {
+        type master;
+        file "qf.com";
+};
+include "/etc/named.rfc1912.zones";
+
+vim /var/named.qf.com
+       NS    dns.qf.com.
+        A       2.2.2.2
+dns     A       192.168.127.5
+www     A       1.1.1.1
+
+- A       2.2.2.2
+  new     CNAME   news
+
+3.将题2中的服务器作为主服务器,配置一台从服务器
+主服务器：
+vim /etc/named.conf
+zone "qf.com" IN {
+        type master;
+        file "qf.com";
+        notify yes;
+        also-notify{ 192.168.127.6; };
+        allow-transfer{ 192.168.127.6; };
+};
+
+vim /var/named/qf.com
+$TTL 1D
+@       IN SOA  @ rname.invalid. (
+                                        2018122501      ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS    dns.qf.com.
+     
+dns     A       192.168.127.5
+www     A       1.1.1.1
+        A       2.2.2.2
+new     CNAME   news
+
+- A       2.2.2.2
+  ~                                          
+  从服务器：
+  vim /etc/named.conf
+  zone "qf.com" IN {
+  type slave;
+  masters { 192.168.127.5 };
+  file "slaves/qf.com";
+  };
+  include "/etc/named.rfc1912.zones";
+
+# systemctl restart named
+
+[root@client slaves]# nslookup www.qf.com     #客户端测试测试
+Server:		192.168.127.5
+Address:	192.168.127.5#53
+
+Name:	www.qf.com
+Address: 2.2.2.2
+Name:	www.qf.com
+Address: 1.1.1.1
+
+
+```
+
+3
+
+```shell
+1.172.16.0.0/20
+ 1).有多少个子网
+B类网络地址的默认子网掩码为255.255.0.0，16位
+所以有2的4次方个子网
+
+ 2).写出每个子网的网络号
+172.16.0.0
+172.16.16.0
+172.16.32.0
+...    48 ..
+`	64
+	80	
+	96
+	112
+	128
+	144
+	160
+	176
+	192
+	208
+	224
+	240
+ 3).写出每个子网的广播地址
+172.16.15.255
+172.16.31.255
+...	48
+	63
+	79
+	95
+	111
+	127
+	143
+	159
+	175
+	191
+	207
+	223
+	239
+	255
+
+ 4).每个子网包含多少个有效地址
+2的12次方-2
+4094
+
+2.当前主机ip为192.168.10.20,子网掩码为255.255.255.128,默认情况下能否ping通192.168.10.100和192.168.10.200?为什么?(默认情况即通信对象都存在且网络正常)
+192.168.10.20的网络号为：192.168.10.0
+192.168.10.100的网络号为:192.168.10.0
+192.168.10.200的网络号为：192.168.10.1
+所以可以ping通192.168.10.100，不能ping通192.168.10.200
+
+
+3.当前主机ip为10.0.0.10/8,默认情况下能否ping通10.100.100.10,为什么?
+能，他们处于同一网段
+
+4.将网关设置为192.168.10.1的命令怎么写?
+route add defualt gw 192.168.10.1
+
+5.写出集线器,网桥,交换机,路由器的特点
+集线器：集线器的英文称为“Hub”。“Hub”是“中心”的意思，集线器的主要功能是对接收到的信号进行再生整形放大，以扩大网络的传输距离，同时把所有节点集中在以它为中心的节点上。它工作于OSI(开放系统互联参考模型)参考模型第一层，即“物理层”。
+
+网桥：网桥也叫桥接器，是连接两个局域网的一种存储/转发设备，它能将一个大的LAN分割为多个网段，或将两个以上的LAN互联为一个逻辑LAN，使LAN上的所有用户都可访问服务器。
+
+交换机 ：交换机工作于OSI参考模型的第二层，即数据链路层。交换机内部的CPU会在每个端口成功连接时，通过将MAC地址和端口对应，形成一张MAC表。在今后的通讯中，发往该MAC地址的数据包将仅送往其对应的端口，而不是所有的端口。因此，交换机可用于划分数据链路层广播，即冲突域；但它不能划分网络层广播，即广播域
+
+
+路由器：路由器（Router）又称网关设备（Gateway）是用于连接多个逻辑上分开的网络，所谓逻辑网络是代表一个单独的网络或者一个子网。当数据从一个子网传输到另一个子网时，可通过路由器的路由功能来完成。因此，路由器具有判断网络地址和选择IP路径的功能，它能在多网络互联环境中，建立灵活的连接，可用完全不同的数据分组和介质访问方法连接各种子网，路由器只接受源站或其他路由器的信息，属网络层的一种互联设备。
+
+6.物理地址,逻辑地址,进程地址分别对应OSI七层参考模型中的哪一层?
+物理地址是第二层数据链路层
+逻辑地址是第三层网络层
+进程地址是第七层数据链路层
+7.ARP协议的作用
+将IP地址换成MAC地址
+
+8.ping命令使用的什么协议?
+ICMP
+
+9.curl命令直接接ip地址四层封包中的目标端口是多少?
+80
+
+10.A主机:192.168.10.10,和B主机:192.168.20.10通信时,封包情况大致如下:
+	data s-port d-port A-ip B-ip A-MAC B-MAC
+以上说法对吗?为什么?
+不对，A和B不是同一网段不能直接通信，最外层封包应该是路由MAC地址
+
+
+
+实验二：设计路由使得A和D通过两个路由器相通
+A:192.168.10.10
+B:192.168.10.11
+  192.168.20.11
+C:192.168.20.12
+  192.168.30.12
+D:192.168.30.13
+
+配置：
+A:route add -net 192.168.30.0/24 gw 192.168.10.11
+B:route add -net 192.168.30.0/24 gw 192.168.10.12
+C:route add -net 192.168.10.0/24 gw 192.168.20.12
+D:route add -net 192.168.10.0/24 gw 192.168.30.12
+
+A:ping 192.168.30.13
+D:ping 192.168.10.10
+
+
+
+```
+
+4
+
+```shell
+1.输出以下内容,XXX在不同环境下内容不相同.
+ 1).我的用户名是XXX,UID是XXX,家目录为XXX
+[wq@localhost ~]$ echo 我的用户名是 $(id |cut -d "(" -f2|cut -d ")" -f1 )， uid 是 `id |cut -d "=" -f2|cut -d "(" -f1`，家目录是 $(id |cut -d "(" -f2|cut -d ")" -f1 )
+我的用户名是 wq， uid 是 1000，家目录是 wq
+
+更简单的方法：查看用户名：id -un   查看uid：id -u  家目录：cd ~;pwd
+
+ 2).当前系统时间为XXXX年XX月XX日 XX:XX:XX
+[user10@localhost ~]$ echo 当前系统时间是 `date +%Y年%m月%d日\ %R:%S`
+当前系统时间是 2019年01月02日 01:29:43
+
+其他方法：echo 当前系统时间为$(date +"%x %T")
+ 3).我的系统逻辑CPU有XX个,当前可用系统内存XXM
+[root@localhost ~]# echo 我的系统逻辑CPU有`lscpu |grep "^CPU(s):"|cut -d ":" -f2`个,当前可用系统内存 `free -h|grep Mem|tr -s " "|cut -d " " -f4`
+我的系统逻辑CPU有 1个,当前可用系统内存 720M
+
+ 4).根分区中还有可用inodeXX个,可用空间XXG,占总空间的XX%
+[root@localhost ~]# echo 根分区中还有可用inode `df -i|grep cl-root|tr -s " "|cut -d " " -f2`个, 可用空间`df -h|grep cl-root|tr -s " "|cut -d " " -f4`，占总空间的`df -h|grep cl-root|tr -s " "|cut -d " " -f5`
+根分区中还有可用inode 8910848个, 可用空间16G，占总空间的8%
+改：占总空间需要修改 
+
+ 5).当前目录下有XX个文件,分别是XX,XX,..., (注意输出格式,要求一行输出,有多个文件的话用逗号分隔)
+[root@localhost /]# echo 当前目录下有 `ls |wc -l`个文件， 分别是`ls |tr -s "\n" "," |cut -d "[" -f1`
+当前目录下有 20个文件， 分别是bin,boot,dev,etc,home,lib,lib64,media,mnt,opt,proc,q,root,run,sbin,srv,sys,tmp,usr,var,
+改：[root@localhost ~]# echo 当前目录下有 `ls |wc -l`个文件， 分别是`ls |tr -s "\n" "," `
+当前目录下有 15个文件， 分别是1,10.3.144.179,2,3,4,5,6,7,8,9,anaconda-ks.cfg,dhcp,dhcp1,user,user0,
+
+
+更简单方法：ls -m|tr -d " "
+
+ 6).我当前所在目录的绝对路径为XXX,上一级目录的绝对路径为XXX
+[root@localhost httpd]# echo 我当前所在目录的绝对路径为 `pwd` 上一级目录的绝对路径为 `cd ..;pwd`
+我当前所在目录的绝对路径为 /etc/httpd 上一级目录的绝对路径为 /etc
+[root@localhost httpd]# 
+
+ 7).我<能|不能>看到/home/tom目录下的内容 (尖括号中的内容只能出现一个)
+[wq@localhost ~]$ ls /home/tom/ 2>/dev/null&& echo 我能看到/home/tom||echo 我不能看到/home/tom目录下的内容 
+我不能看到/home/tom目录下的内容
+
+ 8).可以用变量$?获取上一条命令的执行状态
+[wq@localhost ~]$ echo $?
+0
+改：题意是输出题目
+ 9).当前shell的父进程号是XXX
+[root@localhost httpd]# echo 当前shell的父进程是 $(ps -ef|grep `echo $$`|grep "\-bash"|tr -s " "|cut -d " " -f3|grep -v `echo $$`)
+当前shell的父进程是 1270
+
+
+ 10).httpd主配置文件中的空行共XXX行,他们的行号分别是XX,XX,..., (同样要输出在同一行)
+[root@localhost /]# echo httpd主配置文件中的空行共`grep "^$" /etc/httpd/conf/httpd.conf |wc -l`行，他们的行号分 别是 `grep -n "^$" /etc/httpd/conf/httpd.conf |tr -s ":\n" ","|cut -d "[" -f1`
+httpd主配置文件中的空行共37行，他们的行号分别是 20,32,43,57,68,80,87,96,106,113,120,129,145,152,158,166,174,183,190,198,203,212,219,227,238,248,250,260,267,285,295,298,308,317,326,337,349,
+
+
+
+2.写出以下操作命令
+ 1).如果系统中没有natasha用户,则创建出来并输出"用户natasha创建成功";如果有,则什么也不做.输出中不要引号
+[root@localhost /]# useradd natasha 2>/dev/null&&echo 用户`tail -1 /etc/passwd |cut -d ":" -f1`创建成功
+用户natasha创建成功
+
+ 2).从后台启动firefox,要求当前终端关闭后不影响firefox进程
+     nohup firefox &
+ 3).将时区修改为重庆
+ll /etc/localtime
+rm -rf /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Chongqing  /etc/localtime
+ 4).列出ls命令所依赖的库文件
+# ldd `which ls`
+ 5).1月份3天备份一次messages日志和secure日志(包括轮转过的),备份时间为凌晨3点,压缩保存到/backup/logs目录,备份时不要覆盖之前的备份
+[root@localhost backuplogs]# crontab -e
+0 03 */3 1 *  /usr/bin/find /var/log -name messages\* -o -name secure\* |/usr/bin/xargs  /usr/bin/tar -caf /backuplogs/`date +\%F`.tar.gz
+ 
+
+ 6).快速创建user01到user20这20个用户
+[root@localhost ~]# cat user|xargs -n1 useradd
+[root@localhost ~]# echo user0{1..9} user{10..20}>user
+
+简单方法：echo user0{1..9} user{10..20}|xargs -n 1 useradd
+ 7).配置user20用户可关机或重启系统
+[root@localhost ~]# export EDITOR=vim
+[root@localhost ~]# visudo
+## Allow root to run any commands anywhere 
+root    ALL=(ALL)       ALL
+user20   ALL=(ALL)     /usr/sbin/shutdown
+
+ 8).配置user10用户登录可使用ceping命令,此命令执行后输出测评网址stu.1000phone.net,其他用户不能使用此命令
+[user10@localhost ~]$ vim .bashrc 
+alias  ceping='echo stu.1000phone.net'
+
+ 9).快速删除以user开头的用户,除了user10以外
+root@localhost home]# grep ^user /etc/passwd|grep -v user10|cut -d ":" -f1 >11
+[root@localhost home]# cat 11|xargs -n1 userdel
+
+简单方法：grep ^user /etc/passwd|grep -v user10|cut -d ":" -f1 |xargs -n1 userdel
+
+ 10).删除系统中所有的名称为a.txt的普通文件
+ find / -name a.txt -type f -exec rm -rf {} \;
+
+3.写出192.168.10.36/28所在网络的网络号和广播地址
+0010 0100
+192.168.10.32网络号
+192.168.10.47广播地址
+
+4.写出以下术语的名称(提问重点区域)
+SSH, FTP, DHCP, ARP, HTTP, NTP, DNS, NFS
+ssh: 安全的shell连接
+ftp:文件传输协议
+DHCP：动态主机配置协议
+ARP：地址解析协议
+HTTP：超文本传输协议
+ NTP：网络时间协议
+DNS：域名系统
+ NFS：网络文件系统
+
+5.写出以下操作,6和7的系统都要写
+ 1).关闭防火墙,selinux(立即关闭,永久关闭)
+el7:systemctl stop firewalld
+ systemctl disable firewalld
+setenforce 0
+vim /etc/selinux/config     # SELINUX=disabled 
+el6
+/etc/init.d/iptables stop
+chkconfig   iptables  off
+vim /etc/selinux/config     # SELINUX=disabled
+ 2).启动httpd服务(立即启动,开机启动)
+systemctl start httpd
+systemctl enable httpd
+
+el6:/etc/init.d/httpd start
+chkconfig   httpd  on
+
+
+ 3).设置主机名为test.qf.com(立即生效,永久生效)
+el7:#hostname test.qf.com
+#hostname >/etc/hostname
+el6:vim /etc/sysconfig/network
+```
+
+#### 第七周SHELL
+
+1
+
+```
+1. 使用for循环将/test目录下所有文件重命名为"原文件名.bak"这样的名字
+
+[root@localhost scripts]# vim bak.sh
+1 #!/bin/bash
+  2 for i in /test/*
+  3 do
+  4     mv $i{,.bak}
+  5 done
+[root@localhost scripts]# ./bak.sh 
+[root@localhost scripts]# ls /test/
+q1.bak  q2.bak  q3.bak  q4.bak  q5.bak
+           
+2. 使用for循环将/test目录下所有后缀为.bak的文件的后缀去掉
+：
+vim /root/scripts/bak.sh 
+ 1 #!/bin/bash
+  2 for i in /test/*.bak
+  3 do
+  4 echo `basename $i .bak`
+  5 mv $i /test/`basename $i .bak`
+  6 done
+
+3. 使用for循环打印出所有用户的用户名,UID,输出格式为"xxx的uid为xxx".(输出中不要引号)
+vim disan.sh
+1 #!/bin/bash
+  2 for a in `cat /etc/passwd|cut -d":" -f1`
+  3 do
+  4 echo $a的uid是`id -u $a`
+  5 done
+
+```
+
+2
+
+```shell
+1.判断expect命令有没有安装,如果没有安装则安装此命令
+ #!/bin/bash
+  2 [ -x */expect ]&&exit 2>/dev/null
+  3 if expect 2>/dev/null
+  4 then
+  5 echo
+  6 else
+  7     echo "没有此命令，正在安装"
+  8     yum install expect -y &>/dev/null
+  9 fi
+
+
+2.使用for循环打印出/test目录下所有大于1024字节的普通文件
+
+ #!/bin/bash
+  2 for s in `find /root -type f -size +1024c`
+  3 do
+  4     echo $s
+  5 done
+
+其他方法：
+cd /test
+for i in *;do
+       ! [ -f $i ] && continue #如果不是普通文件，则跳过也可以这样写：[ ! -f $i ]
+	size=$(ls -l $i|tr -s " "|cut -d" " -f5)
+	if [ $size -gt 1024 ]
+	then
+		echo "$i"
+	fi
+
+3.输出100以内所有的7的整数倍的正整数
+1 #!/bin/bash
+  2 for i in {1..100}
+  3 do
+  4     if [ $[i%7] -eq 0 ]
+  5     then
+  6         echo $i
+  7     fi
+  8 done
+
+4.思考题:
+猜数字游戏:
+随机生成一个100以内的正整数,玩家来猜,一共6次机会
+如果玩家猜大/小了,则提示大/小了,同时告诉玩家还有几次机会.
+如果玩家在6次以内猜对了,则胜利;
+如果玩家输入的不是数字提示输入有误,视为浪费一次机会.
+如果玩家输入为空提示输入不能为空,视为浪费一次机会.
+如果超过6次还没猜对则失败,同时告知答案.
+
+
+```
+
+3
+
+```shell
+1.写一个脚本,运行时接参数mac则生成一个随机mac地址,接参数uuid则生成一个随机的uuid(不要使用uuidgen命令),接其他的或不接则提示只能接mac或uuid
+#!/bin/bash
+MAC(){
+    echo $RANDOM | md5sum | sed 's/../&:/g' | cut -c1-17
+}
+UUID(){
+ cat /proc/sys/kernel/random/uuid
+}
+[ "$1" == "mac" ]&& MAC 
+[ "$1" == "uuid" ]&& UUID
+[ "$1" != "mac" -a  "$1" != "uuid"  ] && echo "只能接Mac或uuid"
+[ ! -n "$1" ]&& echo "只能接mac或uuid"
+
+2.乱序输出1-10,不能重复
+  #!/bin/bash
+  for i in {1..1000}
+  do
+      echo "$RANDOM $i"
+  done|sort -n|cut -d" " -f2|xargs
+
+```
+
+4
+
+```shell
+1.交换奇数行的第一个字符和倒数第二个单词(纯字母)
+
+ sed -r -n 's/(.)(.*)(\<[a-zA-Z]+)([^a-zA-Z]+)([a-zA-Z]+)/\3\2\1\4\5/;1~2p' pass 
+
+ sed -r -n '1~2s/(.)(.*)(\<[a-zA-Z]+)([^a-zA-Z]+)([a-zA-Z]+)/\3\2\1\4\5/p' pass 
+2.删除第2行到第5行中所有的数字
+
+sed -n 's/[0-9]//g;2,5p' pass 
+改：
+sed -r '2,5s/[0-9]//g' pass 
+3.删除每行开头的所有空格
+
+sed 's/ \+//' pass 
+
+sed -r 's/ +//g' pass
+sed -r 's/[ ]+//' pass
+4.用制表符替换文件中出现的所有空格（多个连续的空格换成一个制表符\t）
+
+sed 's/ \+/[\t]/g' pass 
+
+sed -r 's/ +/\t/g' pass 
+
+5.打印2,5,8这样的行
+
+sed -n '2~3p' pass 
+
+6.只打印包含有adm的行的第一个单词(纯字母)和第三个单词(纯字母),用#分隔
+
+sed -r -n 's/(\<[a-zA-Z]+)(:)(\<[a-zA-Z])(:)([0-9]+)(:)([0-9]+)(:)([a-zA-Z]+)(.*)/\1#\9/;/adm/p' pass 
+
+7.将所有行行尾的.替换成!
+
+ sed  's/\.$/!/' pass 
+
+8.在第3行,第8行的倒数第一个字符和倒数第二个字符中插入@
+
+sed -n -r 's/(.*)(.)(.)/\2@\3/;3p;8p' pass   
+
+改：
+sed -r '3s/(.*)(.)(.)/\1\2@\3/;8s/(.*)(.)(.)/\1\2@\3/' pass 
+
+```
+
+5
+
+```shell
+1.打印出apache主配置文件中所有的有效内容(至少使用两种方法实现)
+
+grep -Ev "^$|^ *#" /etc/httpd/conf/httpd.conf |wc -l    #grep E选项使grep支持扩展正则
+sed -r '/\#/d;/^$/d' /etc/httpd/conf/httpd.conf|wc -l
+sed -r '/^ *#|^$/d' /etc/httpd/conf/httpd.conf|wc -l
+
+awk '$1!~/\#|^$/{print}' /etc/httpd/conf/httpd.conf|wc -l
+awk '$1!~/^ *#|^$/{print}' /etc/httpd/conf/httpd.conf|wc -l
+
+2.非交互式修改apache监听端口为8080,注意在修改前备份
+
+sed -i.bak 's/^Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf 
+
+3.在含有adm的行下方插入一行空行(sed/awk两种方法做)
+
+sed  '/adm/G' pass
+ awk '/adm/{print $0 "\n"}' /etc/passwd
+
+4.将第2行内容放到第5行上方
+
+sed  '2x;2d;4G' pass
+5.使用第2行内容替换第5行内容
+
+sed '2x;2d;3G;3h;3d;4G;4h;4d;5G' pass
+
+6.将第5行内容替换成hello world
+
+sed -r '5s/(.*)/hello word/g' pass
+
+sed '5c hello word' pass
+
+7.在第5行和第6行之间插入hello world
+
+sed '5a hello word' pass
+
+8.将偶数行的小写字母替换成大写字母
+
+sed -r '2~2s/[a-z]/\u&/g' pass
+
+9.打印出含有adm行的下一行内容
+
+sed -n '/adm/{n;p}' pass
+
+sed -n '1,/adm/p' pass
+10.打印含有adm行及前面所有行内容
+
+sed '/adm/q' pass
+
+11.将所有行的第2个i替换成I,除了含有adm的行和含有root的行外.
+
+sed 's/i/I/2' pass
+
+sed  -r '/adm|root/!s/i/I/2' pass
+
+12.打印UID不等于GID的用户名,UID,GID
+
+awk -F: '$3!=$4{print $1,$3,$4}' /etc/passwd
+
+13.格式化打印UID小于10的所有用户的用户名,UID,GID,用户名左对齐,数字右对齐.
+
+awk -F: '$3<10{printf "%-10s%5s%5s\n", $1,$3,$4}' /etc/passwd
+
+14.打印用户名中仅含3个字符的用户的用户名,UID.输出格式为: 用户名:UID
+
+ awk -F: '$1~/^\<[a-zA-Z]{3}\>/{print "用户名"$1"UID为" $3}' /etc/passwd
+
+		'$1~/^...$/{print $1,$3}'
+
+15.打印所有可登录用户的用户名,UID.输出格式为: XXX的UID为XX
+
+awk -F: '{print $1" 的UID为 "$3}' /etc/passwd
+
+改：
+awk -F: '/sh$/{print $1" 的UID为 "$3}' /etc/passwd
+
+
+```
+
+#### MYSQl
+
+1
+
+```shell
+1. 在qianfeng库中创建表stu_info,有以下字段:
+
+    id	 数据类型为整型
+
+    name 字符串,宽度为10
+
+    sex	 字符串,宽度为10
+
+ create table stu_info(id int,name char(10),sex char(10));
+
+2. 在sex字段前面加上age字段,数据类型为整型
+
+alter table stu_info add age int after name;
+
+3. 将id字段名称改为stu_id
+
+alter table stu_info change id stu_id int;
+
+4. 将name字段的宽度改为50
+
+alter table stu_info change name name char(50);
+
+5. 一次性往stu_info表中插入5条记录
+
+insert into stu_info (stu_id,name,age,sex)values(1,'tom',18,'male'),(2,'jm',19,'male'),(3,'lily',20,'female'),(4,'lucy',17,'female'),(5,'ali',21,'male');
+
+6. 打印出所有学员的平均年龄,用avg表示
+
+select avg(age) as avg from stu_info;
+
+7. 统计学员总数
+
+select count(name) from stu_info;
+8. 分别统计男学员,女学员的数量
+
+select * from stu_info where sex regexp '^m';
+select * from stu_info where sex regexp '^f';
+
+9. 按照学员的年龄从大到小打印出学员的姓名,年龄,性别
+
+select name,age,sex from stu_info order by age desc;
+
+10. 打印出年龄最小的学员的姓名,年龄,性别
+
+select name,age,sex,min(age) from stu_info ;
+
+11. 打印出学员姓名中包含有字符a的所有信息(两种方法)
+
+select * from stu_info where name regexp 'a';
+select * from stu_info where name like '%a%';
+12. 删除年龄最大的学员信息
+
+ select * from stu_info where age=(select max(age)from stu_info);
+ delete from stu_info where age=21;
+
+```
+
+2
+
+```shell
+1. 创建一个表stu_info,有以下字段:
+
+  id	不可重复,不可为空,如果不给定值,会在从当前存在的数据的基础上加1.不可为负数,不会超过10000.
+
+  name  必须要有值
+
+  sex	值只能在male和female中选择
+
+  area	如果有指定地方,则值为指定的地方,如果没有,则值为guangzhou
+
+请设计合适的约束.
+
+create table stu_info10(id int(4) unsigned primary key auto_increment primary key,name char(10) not null,sex enum ('male','female'),area char(10) default 'guangzhou');
+
+2.创建一个表score表,有以下字段:
+  s_id	其值只能中stu_info表中存在的值
+  linux  linux课程的成绩
+  shell  shell课程的成绩
+  mysql  mysql课程的成绩
+使用shell脚本插入100条记录,记录中三科的成绩随机生成,数值在50-100之间
+create table score10(s_id int unsigned primary key auto_increment,linux int,shell int,mysql int,foreign key(s_id) references stu_info10(id));
+
+[root@mysql /]# vim suiji.sh 
+
+#!/bin/bash
+file=/tmp/chengji.sql
+echo "use testt" >$file
+#echo "create table scor10(s_id int unsigned primary key auto_increment primary key\
+#linux int,shell int,mysql int,foreign key(s_id) references stu(id));" >>$file
+for i in {1..100};do
+sex=$[RANDOM%2]
+if [ $sex -eq 1 ];then
+        sex1="male"
+else
+        sex1="female"
+fi
+echo "insert into stu_info10 (name,sex)values('name$i','$sex1');" >>$file
+linux=$[RANDOM%51+50]
+shell=$[RANDOM%51+50]
+mysql=$[RANDOM%51+50]
+echo "insert into score (linux,shell,mysql)values($linux,$shell,$mysql);" >>$file
+done
+
+3.找出mysql成绩最高的学生的姓名,性别及mysql成绩
+
+select stu_info10.name,stu_info10.sex,score10.mysql from stu_info10 left join score10 on stu_info10.id=score10.s_id where mysql=(select max(mysql) from score10);
+
+
+```
+
+3
+
+```shell
+1.创建一个帐户wing,在192.168.10.0/24这个网段的所有主机上可以登录,并可以查看及修改db1库中所有表的记录.
+
+grant select,insert,update,delete on db1.* to wing@'192.168.10.%' identified by '1';
+
+
+2.回收以上账户的修改记录的权限.
+
+MySQL [(none)]> revoke insert,update,delete on db1.* from wing@'192.168.10.%';
+Query OK, 0 rows affected (0.01 sec)
+
+MySQL [(none)]> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+3.请分别列出全局,库级权限中有哪些权限(使用shell命令).
+
+[root@ mysql]# /usr/bin/mysql -p1 -e "select * from mysql.user\G"
+[root@ mysql]# /usr/bin/mysql -p1 -e "select * from mysql.db\G"
+
+4.将db1库中的t1表的存储引擎修改为MYISAM
+
+alter table db1.ti engine=myisam;
+
+5.简述错误日志,慢查询日志,二进制日志的作用及开启方法(可能提问)
+错误日志默认开启，在数据目录下。
+
+慢查询日志默认不开启，需要修改配置文件
+开启记录的是查询时间超过指定时间的查询语句，
+一般用于优化查询
+
+二进制文件默认不开启，记录用户对数据库所做的所有的ddl和dml操作，
+不会记录查询语句，对数据的灾难恢复有至关重要的作用。
+
+6.利用二进制日志恢复数据(可能上台操作)
+```
+
+#### iptables和lvs和keepalived
+
+iptables
+
+```shell
+iptables练习,每个答案需要注明默认策略是放行还是丢弃
+
+
+1.禁止除192.168.10.1外所有的机器ping通本机
+
+[root@localhost ~]# iptables -I INPUT -p icmp -m icmp --icmp-type 8 -j DROP
+[root@localhost ~]# iptables -t filter -I INPUT -p icmp -s 192.168.10.1 -j ACCEPT
+
+2.丢弃其他机器通过本机访问10.3.144.250的包
+
+[root@dns ~]# iptables -t filter -I FORWARD -d 10.3.144.250 -j DROP
+3.只允许由eth0网卡进来,且目标端口为80或443的数据包访问内网的web服务器
+
+[root@dns ~]# iptables -t filter -I FORWARD -p tcp --dport 80 -m tcp --dport 443 -j DROP
+[root@dns ~]# iptables -t filter -I FORWARD -p tcp --dport 80 -m tcp --dport 443 -i eth0 -j ACCEPT
+[root@dns ~]# iptables -t filter -I FORWARD -p tcp --dport 80 -m tcp --sport 443 -o eth0 -j ACCEPT
+4.将由eth1网卡进来,且目标端口为80或443的数据包源ip地址改为1.2.3.4
+
+ iptables -t nat -I PREROUTING -p tcp --dport 80 -m tcp --dport 443 -i ens33 -j DNAT --to 1.2.3.4
+5.禁止本机访问172.16.0.0/16这个网段内的机器
+默认放行
+ iptables -t filter -I OUTPUT  -d 172.16.0.0/16 -j REJECT
+
+6.其他机器只允许ping通本机或访问本机的ssh服务
+
+iptables -t filter -I INPUT -p icmp -j ACCEPT
+iptables -t filter -I INPUT -p tcp --dport 22 -j ACCEPT
+iptables -t filter -I OUTPUT -p tcp --sport 22 -j ACCEPT
+iptables -t filter -I INPUT -j REJECT
+7.配置以下机器:
+	客户端: 192.168.1.100(关闭自身防火墙)
+	客户端防火墙: 180.15.16.17, 192.168.1.2
+	服务器: 172.16.10.25(关闭自身防火墙)
+	服务器防火墙: 180.15.100.100,172.16.10.2
+  要求: 所有的iptables操作都在各自防火墙上完成
+	   为了服务器安全,只对外提供http或https服务
+	   服务器由180.15.1.1管理,ssh只能由这个ip连接	
+
+
+
+服务器ip: 180.180.180.30
+服务器防火墙ip1:180.180.2.9
+	     ip2:192.168.127.110
+echo 1 >/proc/sys/net/ipv4/ip_forward
+iptables -t nat -I PREROUTING -p tcp --dport 80 -j DNAT --to 180.180.180.30
+ iptables -t filter -I FORWARD -p all -d 180.180.180.30 -j REJECT
+iptables -t filter -I FORWARD -p tcp --dport 80 -d 180.180.180.30 -j ACCEPT
+iptables -t filter -I FORWARD -p tcp --dport 22  -s 192.168.127.10 -j ACCEPT
+
+vim /etc/ssh/sshd_config
+Port 23
+
+客户端防火墙：ip1 192.168.127.5
+	     ip2:192.168.1.2
+echo 1 >/proc/sys/net/ipv4/ip_forward
+
+iptables -t nat -I POSTROUTING -s 192.168.1.0/24 -j SNAT --to 192.168.127.5
+
+
+[root@localhost ~]# curl 192.168.127.110
+real-apache
+[root@localhost ~]# ssh 192.168.127.110
+root@192.168.127.110's password: 
+Last login: Mon Feb 18 22:46:50 2019 from 192.168.127.5
+[root@yumlamp ~]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:0c:29:bd:1a:ac brd ff:ff:ff:ff:ffvim:ff
+    inet 180.180.180.30/16 brd 180.180.255.255 scope global ens33
+       valid_lft forever preferred_lft forever
+
+客户端 ip：192.168.1.100
+route add default gw 192.168.1.2
+
+管理服务器IP 192.168.127.110
+ssh 192.168.127.110
+输入服务器密码，连接到180.180.180.30服务器
+
+连接服务器防火墙时使用23端口：ssh 192.168.127.110 -p 23
+
+
+
+```
+
+lvs
+
+```shell
+使用LVS的NAT模式做两台FTP服务器的调度
+要求主动模式,被动模式均能正常使用
+
+客户端ip:192.168.127.99
+lftp 192.168.127.200
+[root@nginx1 ~]# lftp 192.168.127.200
+lftp 192.168.127.200:~> ls
+drwxr-xr-x    2 0        0               6 Oct 30 19:45 pub
+-rw-r--r--    1 0        0               0 Feb 20 09:09 qf2
+
+lftp 192.168.127.200:/> set ftp:passive-mode off    #关闭被动模式，设置为主动模式
+lftp 192.168.127.200:/> ls
+drwxr-xr-x    2 0        0               6 Oct 30 19:45 pub
+-rw-r--r--    1 0        0               0 Feb 20 09:09 qf2
+
+LVS ip1:192.168.127.200
+    ip2:10.10.10.5
+
+vim /etc/sysctl.conf
+net.ipv4.ip_forward=1
+
+iptables -t mangle -A PREROUTING -p tcp -d 192.168.127.200 --dport 21 -j MARK --set-mark 21
+iptables -t mangle -A PREROUTING -p tcp -d 192.168.127.200 --dport 50000:60000 -j MARK --set-mark 21
+iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -j SNAT --to 192.168.127.200 #ftp主动模式 ，也可以给20端口也打上标记，--sport 20
+
+[root@LVS ~]# ipvsadm -A -f 21 -p 300 -s rr
+[root@LVS ~]# ipvsadm -a -f 21 -r 10.10.10.6 -m
+[root@LVS ~]# ipvsadm -a -f 21 -r 10.10.10.7 -m
+
+
+ftp1 ip:10.10.10.6
+route add default gw 10.10.10.5
+vim /etc/vsftpd/vsftpd.conf
+pasv_min=50000
+pasv_max=60000
+pasv_address=192.168.127.200
+systemctl start vsftpd
+
+ftp2 ip:10.10.10.7 
+route add default gw 10.10.10.5
+vim /etc/vsftpd/vsftpd.conf
+pasv_min=50000
+pasv_max=60000
+pasv_address=192.168.127.200
+systemctl start vsftpd
+```
+
+keepalived+nginx代理实现高可用
+
+```shell
+1.解释以下术语
+PV
+ UV
+ IP
+ QPS 
+TPS
+
+
+PV(访问量)：即Page View, 即页面浏览量或点击量，用户每次刷新即被计算一次。
+UV(独立访客)：即UniQue Visitor,访问您网站的一台电脑客户端为一个访客。00:00-24:00内相同的客户端只被
+
+计算一次。
+IP(独立IP)：指独立IP数。00:00-24:00内相同IP地址之被计算一次。
+TPS：是Transactions Per Second的缩写，也就是事务数/秒。它是软件测试结果的测量单位。一个事务是指一个客户机向服务器发送请求然后服务器做出反应的过程。客户机在发送请求时开始计时，收到服务器响应后结束计时，以此来计算使用的时间和完成的事务个数。
+
+QPS：是Queries Per Second的缩写，意思是每秒查询率，是一台服务器每秒能够相应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。
+
+2.nginx日志切割
+
+vim /root/nginxlogs.sh
+#!/bin/bash
+NGINX_BAK_PATH=/var/log/nginx/baklogs/nginx-`date +%F`
+NGINX_LOG_PATH=/var/log/nginx
+[ -d "$NGINX_BAK_PATH" ] || mkdir -p $NGINX_BAK_PATH
+mv ${NGINX_LOG_PATH}/*.log ${NGINX_BAK_PATH}
+kill -USR1 `cat /run/nginx.pid`
+chmod +x /root/nginxlogs.sh
+[root@HAdr1 ~]# crontab -e
+
+59 23 * * * /root/nginxlogs.sh
+59 23 1 1-12 * /usr/bin/tar caf /var/log/nginx/`date +\%F`.tar.gz /var/log/nginx/baklogs/*
+
+
+
+3.nginx+keepalived实现高可用
+
+
+nginx+keepalived IP1 192.168.127.111
+yum install keepalived -y
+yum install nginx -y
+[root@HAdr1 ~]# vim /etc/nginx/nginx.conf
+
+ 36     include /etc/nginx/conf.d/*.conf;
+ 37         upstream apache {
+ 38                 server 192.168.127.200;
+ 39                 server 192.168.127.99;
+ 40         }
+51         location / {
+ 52                 proxy_pass http://apache;
+ 53         }
+
+[root@HAdr1 ~]# vim /etc/keepalived/keepalived.conf 
+
+! Configuration File for keepalived
+
+global_defs {
+   notification_email {
+     acassen@firewall.loc
+     failover@firewall.loc
+     sysadmin@firewall.loc
+   }
+   notification_email_from Alexandre.Cassen@firewall.loc
+   smtp_server 127.0.0.1
+   smtp_connect_timeout 30
+   router_id dr1
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens33
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        192.168.127.100
+    }
+}
+
+systemctl start keepalived
+nginx
+
+nginx+keepalived IP1 192.168.127.112
+#跟第一台同样配置
+#拷贝后,修改 keepalived配置文件
+	state BACKUP
+	priority 90
+
+
+rs1 ip 192.168.127.200
+# echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+# echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+# ifconfig ens33:0 192.168.127.100 netmask 255.255.255.255
+echo apache >/var/www/html/index.html
+systemctl start httpd
+
+
+rs2 ip 192.168.127.99
+# echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+# echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+# ifconfig ens33:0 192.168.127.100 netmask 255.255.255.255
+echo apache2 >/var/www/html/index.html
+systemctl start httpd
+
+
+最终版：nginx+keepalived实现高可用
+
+nginx+keepalived IP1 192.168.127.111
+nginx+keepalived IP1 180.180.180.20
+yum install keepalived -y
+yum install nginx -y
+[root@HAdr1 ~]# vim /etc/nginx/nginx.conf
+
+ 36     include /etc/nginx/conf.d/*.conf;
+ 37         upstream apache {
+ 38                 server 180.180.180.10;
+ 39                 server 180.180.180.11;
+ 40         }
+51         location / {
+ 52                 proxy_pass http://apache;
+ 53         }
+
+[root@HAdr1 ~]# vim /etc/keepalived/keepalived.conf 
+
+! Configuration File for keepalived
+
+global_defs {
+   notification_email {
+     acassen@firewall.loc
+     failover@firewall.loc
+     sysadmin@firewall.loc
+   }
+   notification_email_from Alexandre.Cassen@firewall.loc
+   smtp_server 127.0.0.1
+   smtp_connect_timeout 30
+   router_id dr1
+}
+vrrp_script chk_http_port {
+        script "/usr/local/check_nginx_pid.sh"
+        }
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens33
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+        track_script {
+        chk_http_port
+        }
+    virtual_ipaddress {
+        192.168.127.100
+    }
+}
+
+
+[root@HAdr1 ~]# vim /usr/local/check_nginx_pid.sh 
+
+#!/bin/bash
+ps -C nginx
+if [ $? -ne 0 ];then
+systemctl stop keepalived
+else
+    exit 0
+fi
+
+
+systemctl start keepalived
+nginx
+
+nginx+keepalived IP1 192.168.127.112
+nginx+keepalived IP2 180.180.180.11
+#跟第一台同样配置,不需要监控nginx的脚本
+#修改 keepalived配置文件
+	state BACKUP
+	priority 90
+[root@HAdr2 ~]# vim /etc/keepalived/keepalived.conf 
+
+! Configuration File for keepalived
+
+global_defs {
+   notification_email {
+     acassen@firewall.loc
+     failover@firewall.loc
+     sysadmin@firewall.loc
+   }
+   notification_email_from Alexandre.Cassen@firewall.loc
+   smtp_server 127.0.0.1
+   smtp_connect_timeout 30
+   router_id dr2
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens33
+    virtual_router_id 51
+    priority 90
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        192.168.127.100
+    }
+}
+
+
+rs1 ip 180.180.180.10
+ifconfig ens33 180.180.180.10
+# echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+# echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+echo apache >/var/www/html/index.html
+systemctl start httpd
+
+
+rs2 ip 180.180.180.11
+ifconfig ens33 180.180.180.11
+# echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+# echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+
+echo apache2 >/var/www/html/index.html
+systemctl start httpd
+
+
+客户端测试 
+ip 192.168.127.5
+# curl 192.168.127.100
+apache
+# curl 192.168.127.100
+apache2
+# curl 192.168.127.100
+apache
+# curl 192.168.127.100
+apache2
+
+keepalived +nginx 1 ip1:192.168.127.111
+		    ip2:180.180.180.20
+#nginx -s stop
+nginx服务宕掉之后，vip 192.168.127.100 飘到另一台keepalived服务器上，客户端可以继续正常访问
+防止出现单节点故障，保证了服务高可用。
+
+
+```
+

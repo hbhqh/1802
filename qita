@@ -1,0 +1,688 @@
+# 杂七杂八
+
+```shell
+看文件行数    wc /etc/passwd
+永久别名设置文件： /root/.bashrc
+桌面重命名
+mv /root/桌面  /root/desktop
+修改桌面配置文件
+vim /root.config/user-dirs.dirs
+修改默认网关
+systemctl stop NetworkManager
+  systemctl disable NetworkManager
+    vim /etc/sysconfig/network-scripts/ifcfg-ens33
+ 改成：
+TYPE=Ethernet$
+BOOTPROTO=static$
+DEVICE=ens33$
+ONBOOT=yes$
+IPADDR=10.3.144.177$
+PREFIX=24$
+GATEWAY=10.3.144.1$
+DNS1=114.114.114.114$
+
+    
+    
+    ifdown ens33;ifup ens33
+    ping www.baidu.com
+关闭保护机制SELinux,可设置用户的shell
+setenforce 0
+破密码
+登录界面按e
+找到linux16,在后面LANG=en_US.UTF-8处加入  rd.break,然后按ctrl+x启动
+把/重新挂载 switch_root:/# mount -o rw,remount /sysroot
+切换到真实目录下面 switch_root:/# chroot /sysroot/
+sh-4.2#passwd
+给大家一个初始密码   echo 123456 |passwd --stdin maomao100
+强制用户登录时修改密码  chage -d 0 用户名
+查看当前用户是谁：whoami
+查看终端：who
+切换用户：su -用户名
+阿里云aca要考
+杨哥13520857122
+22883280
+查看系统shell  cat /etc/shells
+系统启动文件：/boot/grub2/grub.cfg
+用于用户提权：visudo
+默认调用vim编辑器：export EDITOR=vim
+出现：忙，请重试时用：
+jobs
+fg 1
+文件查找：locate
+更新数据库updatedb
+
+用户登录会读取的文件 
+ /etc/profile  
+ ~/.bash_profile 
+  /etc/bashrc  在这个etc文件设置会影响全部用户
+
+~/.bashrc 在这个文件设置只会影响当前
+每次新开一个终端都是不完全登录用户
+不完全登录su tom      只会读取两个文件 /etc/bashrc   ~/.bashrc 
+完全登录su - tom
+查找文件并删除：find / -name a.txt -exec rm -rf {} \;
+sudo提权：vim /etc/sudoers  不建议使用这个修改，因为修改错误也不会报错
+建议使用visudo修改提权
+··反引号 可以直接应用输出结果,但不可以嵌套
+rpm -qf  `which useradd`
+&()==``可以嵌套
+
+yum 主配置文件 /etc/yum.conf
+一般在这记录 /etc/yum.repos.d/
+随机数：$RANDOM
+默认挂载配置文件  /etc/fstab
+du  -h /etc 查看目录大小    //统计全部
+df -h  //不统计谓文件系统
+systemctl staus atd
+firwalld 防火墙
+限制可以制作计划任务的配置文件   ：/etc/at.dent   /etc/at.allow
+uptime 查看系统负载  
+死循环脚本：while :; do echo hello;done
+进程本身的进程号echo $$
+查看进程的起点pstree
+可以让子shlle来执行它（cd /tmp;pwd）
+执行结果的返回码：echo $? 
+查看进程的进程号pgrep bash
+查看系统负载：top   uptime   w
+系统平均负载 load average: 0.09, 0.07, 0.06    前一分钟负载，前五分钟负载，前十五分钟负载
+每隔多少时间执行：watch -n2 ps aux（没隔2s执行一次）有时候需要引号引起来
+crontab第一个%之后的数据将作为标准输入发送到命令。
+显示年月日时分秒：date +%Y-%m-%d\ %H:%M:%S==date +%F-%T
+修改系统时间：date -s "20181213 9:50"==date -s 20181213\ 9:50
+修改系统时区:
+ll /etc/localtime
+rm -rf /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
+bit     b
+byte   1B=8b
+KB      1KB=1024B
+MB     1MB=1024KB=1024*1024B
+G        1G=1024M
+宽带：10Mbps
+0-127      A网络        子网掩码默认 8位
+128-192   B 网络     16
+192-223   C 网络      24
+
+
+el6里面开启防火墙：service firewalld start
+          查看防火墙  ：service firewalld    
+          chkconfig
+ 开机不启动SElinux    chkconfig  iptables off          
+ 获取一个ip地址：dhclient
+ 查看网关：route -n
+ 
+无法tab出来status 
+# yum install bash-comp* -y
+防火墙的查看
+#firewall-cmd --permanent --add-service=ftp
+#firewall -cmd --reload
+#firewall -cmd --permanent --list-all
+
+wget --help |grep -A2 '\-m'
+-A2是看后两行
+-C2是看上下两行
+
+搜索-m时需要使用转义符：\-m
+当一条 命令找不到的时候  yum provides  */showmount
+
+监听vsftpd服务器：watch -n0.5 netstat -tuanp|grep vsftpd  
+windows文件在linux中打开是乱码问题
+iconv -f GBK -t UTF-8 file1 -o file2
+
+ftp固定使用端口号：
+vim /etc/vsftpd/vsftpd.conf
+pasv_min_port=10001
+pasv_max_port=10010
+如果服务起不来
+1看端口有没有被占用      netstat -tuanp|grep :21 如果被占用，使用kill pid号
+2配置有没有问题
+3看日志
+查看服务是否支持tcp-warp库：ldd `which vsftpd`|grep warp（用于判断能否使用访问控制）
+查看apache服务是否正常：curl 127.0.0.1
+curl 127.0.0.1查看返回码
+[root@server html]#  curl https://ip.cn
+当前 IP: 61.144.96.12 来自: 广东省广州市 电信
+添加IP:ifconfig ens33:0 192.168.127.9
+返回码403：不允许访问
+返回码404：找不到
+检查语法有没有错误：httpd -t
+查看信息：httpt -V
+tcpdump -nnvv -i ens33 port 80
+金步国
+
+重装apache:
+rm -rf /etc/httpd  先将服务的配置文件删除，否则重装后修改的配置文件不会被覆盖掉
+yum reinstall httpd -y
+查看自己的公网IP:      sshd访问控制白名单中应该写公网IP
+1.curl https://ip.cn
+2.百度搜索ip
+
+nslookup www.qf.com  查看能否解析
+
+nslookup ww.gz.qf.com  127.0.0.1(使用本地解析。不管/etc/resolv.conf里指定的DNS,这里的优先级最高)
+
+转义输出：echo -e "\e[31mhello\e[0m"控制输出字体的颜色和其它字
+体形态
+制表符输出：echo -e "hello\tworld"
+不使用换行符输出（默认带换行符）：echo -n "hello"
+默认不带换行符：printf "hello"\n
+yum sea wireshark-g*   图形化捉包工具(windows版直接搜索下载)
+为了服务器安全隐藏响应头的apache服务器版本：ServerTokens Prod
+看响应头：curl -I IP
+
+命令行捉包工具：tcpdump
+tcpdump -nn -i ens33  指定捉取ens33网卡
+tcpdump -nn -i ens33  est 192.168.132.1   捉取去往真机的包
+捉取并保存到文件：  -w 文件名
+网络嗅探工具(nmap)：yum install nmap 
+测试远程端口有没有开启服务有没有开启：yum install telnet
+telnet 192.168.127.12 80
+
+
+[root@web1 ~]# ssh 10.3.144.176 -p 2000  #NAT模式虚拟机设置端口映射后，可使用真机IP和指定映射的端口连接
+
+DHCP:服务器端口：67 客户端端口：68
+```
+
+# 网络基础
+
+```
+网络的结构：总线型，环形，星型
+通过MAC（物理地址MediaAccessC）地址识别主机
+广播地址：ff:ff:ff:ff:ff:ff(十六进制)    1:1:1:1:1:1（二进制）
+广播方式：谁有192.168.127.12，iP是192.168.127.12会回复mac地址
+CSMA/CD:CSMA/CD(Carrier Sense Multiple Access with Collision Detection)基带冲突检测的载波监听多路访问技术(载波监听多点接入/碰撞检测)
+单双工：只能收或发
+半双工：能收能发，但不能同时收发数据
+全双工：能收能发，可以同时收发数据
+
+arp协议：可以通过IP得到Mac地址
+arping 192.168.127.5   (IP地址较多的时候有可能失败，可以加上选项-I 指定本机网卡)
+通过子网掩码判断IP是否处于同一网络（网络号相同则为同一网络，不相同则不是）
+网络通信需要封包，解包
+data:数据包
+s-port:本地开启的随机端口
+d-port:目标程序的端口
+s-ip:本地IP
+d-ip:目标IP
+s-mac:本地mac地址
+d-mac:路由器mac地址
+```
+
+![file://C:\Users\ADMINI~1\AppData\Local\Temp\ct_tmp/1.png](file://C:\Users\ADMINI~1\AppData\Local\Temp\ct_tmp/1.png)
+
+```shell
+route add default gw 192.168.127.10    设置网关
+网络问题：
+如果没有网关，则直接提示网络不可达
+设置了网关而所访问的网络不可达，则会卡一下
+ping采用ICMP协议
+echo 1> /proc/sys/net/ipv4/ip_forward  打开路由转发表，1为开，0为关
+#route add -net 192.168.20.0/24 gw 192.168.10.10 
+#route add -net 192.168.20.0/24 #指定要通信的目标，可以是网段，也可以是具体IP: 
+#route add -net 192.168.20.11 netmask 255.255.255.0
+#route -n 
+#route del -net 192.168.20.11 netmask 255.255.255.0  #删除一条路由表
+gw 192.168.10.10   下一跳具体IP地址
+#route add -net 192.168.20.0/24 dev eth1 #也可以这样写网卡名
+
+
+NAT路由器实验
+NAT模式添加两个IP
+IP1:192.168.20.10
+IP2:192.168.10.10
+echo 1 > /proc/sys/net/ipv4/ip_forward
+systemctl restartt network
+
+客户端1IP：192.168.10.11
+route add -net 192.168.20.0/24 gw 192.168.10.10#下一跳地址，必须是和主机同一网段的地址，否则会显示网络不可达
+#掩码长的优先级高
+ping 192.168.20.22
+客户端2IP:192.168.20.22
+route add -net 192.168.10.0/24 gw 192.168.20.10
+ping 192.168.10.11
+
+实验二：设计路由使得A和D通过两个路由器相通
+A:192.168.10.10
+B:192.168.10.11
+  192.168.20.11
+C:192.168.20.12
+  192.168.30.12
+D:192.168.30.13
+
+配置：
+A:route add -net 192.168.30.0/24 gw 192.168.10.11
+B:route add -net 192.168.30.0/24 gw 192.168.20.12
+B:echo 1 > /proc/sys/net/ipv4/ip_forward #打开路由转发
+C:route add -net 192.168.10.0/24 gw 192.168.20.12
+C:echo 1 > /proc/sys/net/ipv4/ip_forward
+D:route add -net 192.168.10.0/24 gw 192.168.30.12
+测试：
+A:ping 192.168.30.13
+D:ping 192.168.10.10
+```
+
+# tcp协议
+
+```shell
+TCP(Transmission Control Protocol)传输控制协议:提供面向连接的可靠的数据传输、适合传输大数据、速度慢
+```
+
+#### TCP三次握手
+
+
+
+```
+TCP是面向连接的，无论哪一方向另一方发送数据之前，都必须先在双方之间建立一条连接。
+在TCP/IP协议中，TCP协议提供可靠的连接服务，连接是通过三次握手进行初始化的。
+三次握手的目的是同步连接双方的序列号和确认号并交换 TCP窗口大小信息。
+
+1. 第一次握手：建立连接。客户端发送连接请求报文段，将SYN位置为1，Sequence Number为x；然后，客户
+端进入SYN_SEND状态，等待服务器的确认；
+2. 第二次握手：服务器收到SYN报文段。服务器收到客户端的SYN报文段，需要对这个SYN报文段进行确认，设
+置Acknowledgment Number为x+1(Sequence Number+1)；同时，自己自己还要发送SYN请求信息，将
+SYN位置为1，Sequence Number为y；服务器端将上述所有信息放到一个报文段（即SYN+ACK报文段）中，
+一并发送给客户端，此时服务器进入SYN_RECV状态；
+3. 第三次握手：客户端收到服务器的SYN+ACK报文段。然后将Acknowledgment Number设置为y+1，向服务
+器发送ACK报文段，这个报文段发送完毕以后，客户端和服务器端都进入ESTABLISHED状态，完成TCP三次握
+手。
+完成了三次握手，客户端和服务器端就可以开始传送数据。
+```
+
+#### TCP四次挥手
+
+```
+  由于TCP连接是全双工的，因此每个方向都必须单独进行关闭。这个原则是当一方完成它的数据发送任务后就能发送
+一个FIN来终止这个方向的连接。收到一个 FIN只意味着这一方向上没有数据流动，一个TCP连接在收到一个FIN后仍能
+发送数据。首先进行关闭的一方将执行主动关闭，而另一方执行被动关闭。
+
+客户端或服务器均可主动发起挥手动作，在socket编程中，任何一方执行close()操作即可产生挥手操作。
+1. 第一次挥手：主机1（可以使客户端，也可以是服务器端），设置Sequence Number和Acknowledgment
+Number，向主机2发送一个FIN报文段；此时，主机1进入FIN_WAIT_1状态；这表示主机1没有数据要发送给
+主机2了；
+2. 第二次挥手：主机2收到了主机1发送的FIN报文段，向主机1回一个ACK报文段，Acknowledgment Number
+为Sequence Number加1；主机1进入FIN_WAIT_2状态；主机2告诉主机1，我“同意”你的关闭请求；
+3. 第三次挥手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入LAST_ACK状态；
+4. 第四次挥手：主机1收到主机2发送的FIN报文段，向主机2发送ACK报文段，然后主机1进入TIME_WAIT状态；
+主机2收到主机1的ACK报文段以后，就关闭连接；此时，主机1等待2MSL后依然没有收到回复，则证明主机2
+已正常关闭，那好，主机1也可以关闭连接了。
+
+各个状态的意义
+LISTEN - 侦听来自远方TCP端口的连接请求；
+SYN-SENT -在发送连接请求后等待匹配的连接请求；
+SYN-RECEIVED - 在收到和发送一个连接请求后等待对连接请求的确认；
+ESTABLISHED- 代表一个打开的连接，数据可以传送给用户；
+FIN-WAIT-1 - 等待远程TCP的连接中断请求，或先前的连接中断请求的确认；
+FIN-WAIT-2 - 从远程TCP等待连接中断请求；
+CLOSE-WAIT - 等待从本地用户发来的连接中断请求；
+CLOSING -等待远程TCP对连接中断的确认；
+LAST-ACK - 等待原来发向远程TCP的连接中断请求的确认；
+TIME-WAIT -等待足够的时间以确保远程TCP接收到连接中断请求的确认；
+CLOSED - 没有任何连接状态
+```
+
+# http
+
+```shell
+HTTP协议
+简介
+HTTP的特点
+HTTP请求消息(Request)
+HTTP响应消息(Response)
+HTTP协议，即超文本传输协议(Hypertext transfer protocol)。是一种详细规定了浏览器和万维网(World
+Wide Web)服务器之间互相通信的规则，通过因特网传送万维网文档的数据传送协议.
+HTTP协议是用于从WWW服务器传输超文本到本地浏览器的传送协议。它可以使浏览器更加高效，使网络传输减少。
+它不仅保证计算机正确快速地传输超文本文档，还确定传输文档中的哪一部分，以及哪部分内容首先显示(如文本先于图
+形)等.
+HTTP是一个应用层协议，由请求和响应构成，是一个标准的客户端服务器模型.浏览器作为HTTP客户端通过URL向
+HTTP服务端(即WEB服务器)发送请求。Web服务器根据接收到的请求后，向客户端发送响应信息。
+HTTP协议通常承载于TCP协议之上，有时也承载于TLS或SSL协议层之上，这个时候，就成了我们常说的HTTPS.
+1.HTTP是无连接：无连接的含义是限制每次连接只处理一个请求。服务器处理完客户的请求，并收到客户的应答后，即
+断开连接。采用这种方式可以节省传输时间。
+2.HTTP是媒体独立的：这意味着，只要客户端和服务器知道如何处理的数据内容，任何类型的数据都可以通过HTTP发
+送。客户端以及服务器指定使用适合的MIME-type内容类型。
+3.HTTP是无状态：HTTP协议是无状态协议(Stateless Protocol):无状态是指协议对于事务处理没有记忆能力。缺少
+状态意味着如果后续处理需要前面的信息，则它必须重传，这样可能导致每次连接传送的数据量增大。另一方面，在服
+务器不需要先前信息时它的应答就较快。
+HTTP的请求由请求行(request line)、请求头部(header)、空行和请求数据四个部分组成,如下图:
+HTTP响应也由4部分组成，分别是:状态行、响应头、空行和响应体,如下图所示:
+HTTP状态码
+HTTP请求方法
+HTTP协议的状态码由3位数字组成，第一个数字定义了响应的类别，共有5中类别：
+1.1xx: 指示信息--表示请求已接收，继续处理
+2.2xx: 成功--表示请求已被成功接收、理解、接受
+3.3xx: 重定向--要完成请求必须进行更进一步的操作
+4.4xx: 客户端错误--请求有语法错误或请求无法实现
+5.5xx: 服务器端错误--服务器在处理请求的过程中发生了错误
+常见状态码:
+200: 请求成功
+301: 永久重定向。请求的资源已被永久的移动到新URI，返回信息会包括新的URI，浏览器会自动定向到新URI。今后任
+何新的请求都应使用新的URI代替
+302: 临时重定向。与301类似。但资源只是临时被移动。客户端应继续使用原有URI
+403: 服务器理解请求客户端的请求，但是拒绝执行此请求.可能是没有权限访问或是人为设置不允许访问.
+404: 需要访问的文件不存在
+500: 服务端代码异常,代码语法错误,连接不上数据库等
+502: 代理情况下会出现,一般是后端服务器出现问题,如PHP-FPM挂掉
+504: 后端服务器响应超时.如PHP-FPM的执行时间大于超时时间就会出现504
+HTTP/1.0定义了三种请求方法：GET、POST 和 HEAD
+HTTP/1.1新增了五种请求方法：OPTIONS、PUT、DELETE、TRACE 和 CONNECT。
+各个请求方法的具体功能如下:
+GET 请求指定的页面信息，并返回实体主体。
+HEAD 类似于get请求，只不过返回的响应中没有具体的内容，用于获取报头
+POST 向指定资源提交数据进行处理请求（例如提交表单或者上传文件）。数据被包含在请求体中。
+PUT 从客户端向服务器传送的数据取代指定的文档的内容。
+DELETE 请求服务器删除指定的页面。
+CONNECT HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器。
+OPTIONS 允许客户端查看服务器的性能。
+TRACE 回显服务器收到的请求，主要用于测试或诊断。
+实际应用过程中，GET和POST使用的比较多
+URL
+GET请求会把请求的参数拼接在URL后面，以?分隔，多个参数之间用&连接；如果是英文或数字，原样发送，如果是
+空格或中文，则用Base64编码
+POST请求会把提交的数据放在请求体中，不会在URL中显示出来
+URL(Universal Resource Locator): 统一资源定位符. 如下:
+http://www.qf.com:8080/news/index.asp?boardID=5&ID=24618&page=1#name
+一个完整的URL由以下几部分组成:
+1.协议部分: 该URL的协议部分为"http:"，这代表网页使用的是HTTP协议."//"为分隔符.
+2.域名部分: 该URL的域名部分为"www.qf.com". 这部分也可以是一个IP地址.
+3.端口部分: 跟在域名后面的是端口,域名和端口之间使用":"作为分隔符.如果省略端口部分,将采用默认端口
+4.虚拟目录部分: 从域名后的第一个"/"开始到最后一个"/"为止,是虚拟目录部分.本例为/news/
+5.文件名部分：从域名后的最后一个"/"开始到"？"为止,是文件名部分.如果没有"?",则是从域名后的最后一个"/"开始
+到"#"为止;如果没有"？"和"#",那么从域名后的最后一个"/"开始到结束，都是文件名部分。本例为"index.asp"
+6.锚部分：从"#"开始到最后,都是锚部分.本例中的锚部分是"name".
+7.参数部分：从"？"开始到"#"之间的部分为参数部分,又称搜索部分、查询部分.本例中的参数部分
+为"boardID=5&ID=24618&page=1".参数可以允许有多个参数,参数与参数之间用"&"作为分隔符.
+```
+
+
+
+# 科学上网
+
+```
+科学上网
+一. 墙与翻墙
+Q1: 什么是"墙"?
+Q2: 什么是"翻墙"?
+Q3: 为什么要翻墙?
+Q4: 如何翻墙?
+P.S: 本文只介绍局部代理中的socks5
+二. 使用SS实现科学上网
+shadowsocks是一个可穿透防火墙的快速代理, 简称ss。 ss是主要由@clowwindy开发维护的一个基于socks5协议
+的开源项目，官网为shadowsocks.org(当然，没翻墙泥上不去的啦)，托管在github上。
+防火长城（英语：Great Firewall of China，常用简称：GFW，中文也称中国国家防火墙或防火长城[1]，中国
+大陆民众俗称防火墙[2]），是对中国政府在其互联网边界审查系统（包括相关行政审查系统）的统称。此系统起步于
+1998年[3]，其英文名称得自于2002年5月17日Charles R. Smith所写的一篇关于中国网络审查的文章《The Great
+Firewall of China》[4]，取与Great Wall（长城）相谐的效果，简写为Great Firewall，缩写GFW[5]。随着使用
+的拓广，中文“墙”和英文“GFW”有时也被用作动词，网友所说的“被墙”即指被防火长城所屏蔽。
+--摘自维基百科
+突破网络审查或突破网络封锁，俗称翻墙（穿墙）或破网[1]，是指针对互联网审查封锁的限制，绕过相应的IP封
+锁、端口封锁、内容过滤、域名劫持等，实现对网络内容的访问。相应突破网络审查软件的叫法有：翻墙软件、破网软
+件、破墙软件和穿墙软件
+--摘自维基百科
+绝大多数人翻墙是因为很多曾经很常用的网站(如google、youtube[简称U2B]、twitter[推特]、国外众多新闻媒
+体的网站等)的被墙，为了取得相应的服务，只能翻墙。
+如有段时间GMail被全面封禁，导致很多需要使用GMail的用户(比如正在申请出国留学的孩纸、有国际业务需求的
+公司等)完全无法使用GMail。墙还可导致大多使用了google字体的网站加载速度变慢。实际上即使只使用国内的搜索引
+擎等，依然会被过滤掉相当一部分信息。
+再如有安卓应用开发需求的盆友若需要连接google来获取相应的API等，亦需翻墙才可。
+翻墙分为全局模式和局部模式。
+局部模式只影响浏览器或者用户指定的软件，灵活性较好，有SSH、socks代理(socks4/socks5)、IP代理等。
+全局模式则会影响所有软件,主要有VPN(比如应用广泛的OpenVPN，另外还有L2TP等)。
+但是，不管何种翻墙方式，其根本行为都是将要访问的数据加密传输，网络审查无法检查，得到数据包后本地解
+密，从而达到翻墙的目的。
+国内vps(Virtual Private Server 虚拟专用服务器)主要面向有搭建网站需求的用户，配置中规中矩，价格上也不便
+宜。如果需要搭建自己的ss服务器，建议买一个国外的vps 。
+1.购买国外云服务器 (略)
+2.服务端安装(CentOS7.3)
+3.启动
+启动方式一: 直接启动
+启动方式二: 使用配置文件启动
+可以购买阿里云,腾讯云的香港或国外服务器,比较常见的还有搬瓦工服务器等
+# yum install python-setuptools && easy_install pip
+# pip install shadowsocks
+# ssserver -p 8000 -k mypassword -m rc4-md5 -d start
+选项说明:
+-p 端口
+-k 密码
+-m 加密方式
+-d 以守护进程的方式运行(后台运行)
+配置文件:
+# vim /etc/shadowsocks.json
+{
+"server":"0.0.0.0",
+"server_port":8388,
+"local_address": "127.0.0.1",
+"local_port":1080,
+"password":"mypassword",
+"timeout":300,
+"method":"rc4-md5"
+}
+多用户的情况下可以这样配置:
+# vim /etc/shadowsocks.json
+{
+"server":"0.0.0.0"，
+"local_address": "127.0.0.1",
+"local_port":1080,
+"port_password": {
+"8388": "password",
+"8387": "password",
+"8386": "password",
+"8385": "password"
+},
+"timeout":300,
+p.s: 云服务器要记得打开安全组策略
+客户端安装及配置
+软件下载:
+windows: https://github.com/shadowsocks/shadowsocks-csharp
+android: https://github.com/shadowsocks/shadowsocks-android/releases
+注意: 加密方式一定要和配置的相同
+"method":"rc4-md5",
+"fast_open": false
+}
+启动命令:
+# ssserver -c /etc/shadowsocks.json -d start
+解决rsyslogd占有率高:
+# sed -i 's/^\$ModLoad imklog/#\$ModLoad imklog/g' /etc/rsyslog.conf
+```
+
+
+
+# 网络DHCP批量安装
+
+```shell
+原理
+1）dhcp服务器给客户端分配IP地址,并且告诉客户端谁是tftp服务器以及引导文件的名字
+2）客户端找到tftp服务器获取bootloader文件,内核文件,驱动文件及安装选项和提供镜像的服务器
+3）共享服务器给客户端提供安装方法(ks.cfg)和安装源(光盘或镜像文件)
+4）客户端实现无人值守安装
+
+DHCP:    
+    filename: 指定引导文件名称:pxelinux.0
+    next-server: 指定tftp服务器的地址
+
+TFTP:
+    pxelinux.0 : 引导文件
+    vmlinuz: 内核文件  --------------- 来自于镜像或光盘
+    initrd.img: 虚拟镜像文件   ---- 来自于镜像或光盘
+    default: 定义了默认进入的菜单及ks文件的获取方法  ------ 来自于镜像或光盘
+    
+HTTP:
+    ks.cfg: 定义了获取镜像的方法及安装设置
+    镜像: 镜像内文件的内容
+
+
+
+服务器(NAT): 192.168.10.11  所有的服务全部集中在这一台服务器上
+
+
+*先把vmware自带的DHCP功能关闭
+*dhcp服务器一定要配置静态IP, 默认情况下只能分配自己所在网段的IP 
+1.安装软件
+    # yum install dhcp -y
+    
+2.配置
+    主配置文件: /etc/dhcp/dhcpd.conf
+    # cat /etc/dhcp/dhcpd.conf
+        subnet 192.168.10.0 netmask 255.255.255.0 {
+          range 192.168.10.128 192.168.10.200;
+          next-server 192.168.10.11;
+          filename "pxelinux.0";
+        }
+        
+3.启动服务
+    # systemctl start dhcpd
+    
+4.查看服务运行情况
+    # netstat -uanp |grep 67
+    udp        0      0 0.0.0.0:67              0.0.0.0:*                           1069/dhcpd
+
+5. 测试
+    同一连接方式的另一台机器改成dhcp测试  
+    
+    TFTP配置
+1.软件安装
+    # yum install tftp-server -y
+ 
+2.配置
+    # vim /etc/xinetd.d/tftp
+           disable	= no
+
+3.启动服务
+    # systemctl start tftp
+    
+4.测试
+    先在/var/lib/tftpboot目录中放测试文件
+    在客户端安装tftp
+    
+5.安放pxe所需要的文件
+    1.引导文件: pxelinux.0
+        # yum provides */pxelinux.0
+        # yum install syslinux -y
+        # cp /usr/share/syslinux/pxelinux.0  /var/lib/tftpboot/
+     2.内核文件,虚拟镜像文件
+        # cd /mnt/cdrom/isolinux/
+        # cp initrd.img vmlinuz /var/lib/tftpboot/
+    3.default文件
+        # cp isolinux.cfg  /var/lib/tftpboot/default
+        # cd /var/lib/tftpboot/
+        # mkdir pxelinux.cfg
+        # mv default  pxelinux.cfg/
+        # vim  pxelinux.cfg/default
+            1     default linux                         #直接进入安装标签
+            64   append initrd=initrd.img ks=http://192.168.10.11/ks/ks.cfg   #指定KS文件位置      
+--------------------------------------------------------------------------------------------------------------------------------
+配置完成后的目录结构:
+# tree /var/lib/tftpboot/
+    /var/lib/tftpboot/
+    ├── initrd.img
+    ├── pxelinux.0
+    ├── pxelinux.cfg
+    │   └── default
+    └── vmlinuz
+    
+    HTTP配置：
+HTTP
+
+1. # yum install httpd -y
+2. # cd /var/www/html/
+3. # mkdir ks  iso
+4. # mount /dev/sr0  iso/
+5. 将制作好的KS文件放到ks目录下
+6. # systemctl start httpd
+
+7. 测试下ks文件和镜像内的文件能否下载
+    # firefox 192.168.10.11/ks/ks.cfg
+    # firefox 192.168.10.11/iso
+    
+   制作KS文件
+在有桌面操作系统上进行
+1. 安装kickstart工具
+    # yum install system-config-kickstart -y
+2. # system-config-kickstart
+问题:
+    1.
+        将yum仓库的ID改成development
+        
+    2.新机器内存建议1.5G以上
+
+
+实验：
+dhcp配置：
+[root@localhost html]#  vim /etc/dhcp/dhcpd.conf 
+subnet 192.168.127.0 netmask 255.255.255.0 {
+  range 192.168.127.10 192.168.127.100;
+  option domain-name-servers 114.114.114.114;
+  option domain-name "qh.com";
+  option routers 192.168.127.4;
+  option broadcast-address 192.168.127.255;
+  default-lease-time 600;
+  max-lease-time 7200;
+        next-server 192.168.127.5;
+        filename"pxelinux.0";
+}
+[root@localhost html]#  systemctl restart dhcpd
+
+tftp配置：
+[root@localhost html]# yum install tftp-server -y
+[root@localhost html]# systemctl start tftp
+[root@localhost html]# yum install syslinux -y
+[root@localhost html]# cp /usr/share/syslinux/pxelinux.0  /var/lib/tftpboot/
+[root@localhost html]# mount /dev/sr0 /mnt
+[root@localhost html]# cd /mnt/isolinux/
+   # cp initrd.img vmlinuz /var/lib/tftpboot/
+# cp isolinux.cfg  /var/lib/tftpboot/default
+        # cd /var/lib/tftpboot/
+        # mkdir pxelinux.cfg
+        # mv default  pxelinux.cfg/
+        # vim  pxelinux.cfg/default
+            1     default linux                         #直接进入安装标签
+            64   append initrd=initrd.img ks=http://192.168.10.11/ks/ks.cfg   #指定KS文件位置   
+            
+http配置
+
+1. # yum install httpd -y
+2. # cd /var/www/html/
+3. # mkdir ks  iso
+4. # mount /dev/sr0  iso/
+5. 将制作好的KS文件放到ks目录下
+6. # systemctl start httpd
+
+制作KS文件：
+在有桌面操作系统上进行
+1. 安装kickstart工具
+    # yum install system-config-kickstart -y
+2. # system-config-kickstart
+问题:软件包选择处什么都没有
+    1.
+        将yum仓库的ID改成development
+        
+    2.新机器内存建议1.5G以上
+```
+
+# shell
+
+```shell
+自动传秘钥
+vim ssh.sh 
+1 #!/bin/bash
+  2 rm -rf /root/.ssh/known_hosts #将记录删除，方便捕获关键
+  3 rm -rf /root/.ssh/id*#将原来的秘钥删除，否则会出现不必要的覆盖步骤
+  4 /usr/bin/expect << eof
+  5 set timeout 10 #设置超时时间，随意
+  6 spawn ssh-keygen #spawn 生成命令
+  7 expect "/root/.ssh/id_rsa"  #expect捕获关键字
+  8 send "\n"     #send发送换行符，相当于回车
+  9 expect "empty for nopassphrase" #捕获关键字
+ 10 send "\n"
+ 11 expect "again"
+ 12 send "\n"
+ 13 spawn ssh-copy-id 192.168.127.10 
+ 14 expect "yes/no"
+ 15 send "yes\n"
+ 16 expect "passwd"
+ 17 send "1\n"    #send发送字符串并回车
+ 18 expect eof
+ 19 eof
+
+```
+
